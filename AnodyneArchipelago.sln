@@ -24,6 +24,9 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "AnodyneSharp", "..\..\..\An
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnodyneSharp.Multiplatform", "..\..\..\..\..\..\AnodyneSharp.Multiplatform.csproj", "{62068703-187F-40E7-B79D-33F0DDE75747}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C5E1104C-D6CF-4010-9F53-F19D70E1A421} = {C5E1104C-D6CF-4010-9F53-F19D70E1A421}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
