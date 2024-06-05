@@ -123,7 +123,7 @@ namespace AnodyneArchipelago.Patches
     {
         static void Postfix()
         {
-            FileStream filestream = File.OpenRead($"{AppDomain.CurrentDomain.BaseDirectory}\\Resources\\archipelago.png");
+            FileStream filestream = File.OpenRead($"{AppDomain.CurrentDomain.BaseDirectory}\\Mods\\AnodyneArchipelagoClient\\Source\\Resources\\archipelago.png");
             Texture2D apSprite = Texture2D.FromStream(Plugin.Game.GraphicsDevice, filestream);
 
             FieldInfo texturesField = typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static);

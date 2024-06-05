@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+	  <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -17,13 +18,26 @@
 
   <ItemGroup>
     <Reference Include="AnodyneSharp">
-      <HintPath>..\..\AnodyneSharp\AnodyneSharp\AnodyneSharp.Multiplatform\bin\Debug\net6.0\AnodyneSharp.dll</HintPath>
+      <HintPath>..\..\..\..\AnodyneSharp.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="MonoGame.Framework">
-      <HintPath>..\..\AnodyneSharp\AnodyneSharp\AnodyneSharp.Multiplatform\bin\Debug\net6.0\MonoGame.Framework.dll</HintPath>
+      <HintPath>..\..\..\..\MonoGame.Framework.dll</HintPath>
+		<Private>false</Private>
     </Reference>
   </ItemGroup>
 
   <Import Project="..\AnodyneArchipelago\AnodyneArchipelago.projitems" Label="Shared" />
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<ItemGroup>
+			<!-- Because this ItemGroup is inside the target, this will enumerate
+                 all files just before calling Copy. If the ItemGroup were outside
+                 the target , it would enumerate the files during evaluation, before
+                 the build starts, which may miss files created during the build. -->
+			<DllFiles Include="$(OutputPath)*.dll"/>
+		</ItemGroup>
+		<Copy SourceFiles="@(DllFiles)" DestinationFolder="$(ProjectDir)..\..\Assemblies\" />
+	</Target>
 
 </Project>
