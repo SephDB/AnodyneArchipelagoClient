@@ -107,7 +107,7 @@ namespace AnodyneArchipelago
             }
             catch (Exception e)
             {
-                result = new LoginFailure(e.GetBaseException().Message);
+                return new LoginFailure(e.GetBaseException().Message);
             }
 
             _itemIndex = 0;
