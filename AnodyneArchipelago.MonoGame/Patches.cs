@@ -1,17 +1,17 @@
 ﻿using AnodyneArchipelago.Menu;
 using AnodyneSharp.Registry;
 using AnodyneSharp.States.MainMenu;
+using AnodyneSharp.States.MenuSubstates;
 using HarmonyLib;
 
 namespace AnodyneArchipelago.MonoGame
 {
-    [HarmonyPatch(typeof(MainMenuState), nameof(MainMenuState.Update))]
+    [HarmonyPatch(typeof(MainMenuState), "GetLabels")]
     class MainMenuUpdatePatch
     {
-        static bool Prefix()
+        static void Postfix(ref List<(string name, Func<Substate> create)> __result)
         {
-            GlobalState.GameState.SetState<MenuState>();
-            return false;
+            __result.Insert(0, ("AP", () => new MenuState()));
         }
     }
 }

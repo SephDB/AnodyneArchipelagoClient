@@ -6,22 +6,23 @@ namespace AnodyneArchipelago.Menu
     {
         public TextEntry(string header, string value, CommitChange commitFunc) : base(header, value, commitFunc)
         {
+        }
+
+        public override void GetControl()
+        {
+            base.GetControl();
             Plugin.Game.Window.TextInput += OnMonoGameTextInput;
+        }
+
+        public override void LoseControl()
+        {
+            base.LoseControl();
+            Plugin.Game.Window.TextInput -= OnMonoGameTextInput;
         }
 
         private void OnMonoGameTextInput(object? sender, TextInputEventArgs e)
         {
             OnTextInput(e.Character);
-        }
-
-        public override void Update()
-        {
-            base.Update();
-
-            if (this.Exit)
-            {
-                Plugin.Game.Window.TextInput -= OnMonoGameTextInput;
-            }
         }
     }
 }

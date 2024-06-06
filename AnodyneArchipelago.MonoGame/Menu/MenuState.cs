@@ -3,9 +3,9 @@ using AnodyneSharp.States;
 
 namespace AnodyneArchipelago.Menu
 {
-    internal class MenuState : BaseMenuState
+    internal partial class MenuState
     {
-        protected override void ChangeState()
+        protected void ChangeState()
         {
             if (_isNewGame)
             {
