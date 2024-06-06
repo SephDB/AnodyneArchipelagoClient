@@ -2,16 +2,16 @@
 using AnodyneSharp.Sounds;
 using AnodyneSharp.States;
 using AnodyneSharp.UI;
+using AnodyneSharp.UI.PauseMenu.Config;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 namespace AnodyneArchipelago.Menu
 {
-    internal class BaseTextEntry : State
+    internal class BaseTextEntry : UIOption
     {
         public delegate void CommitChange(string value);
 
-        private readonly string _header;
         private readonly CommitChange _commitFunc;
 
         private string _value;
@@ -20,17 +20,28 @@ namespace AnodyneArchipelago.Menu
         private UILabel _valueLabel;
         private UIEntity _bgBox;
 
+        private bool Active = false;
+
         public BaseTextEntry(string header, string value, CommitChange commitFunc)
         {
-            _header = header;
             _value = value;
             _commitFunc = commitFunc;
 
-            _headerLabel = new(new Vector2(20f, 44f), false, _header, new Color(226, 226, 226), AnodyneSharp.Drawing.DrawOrder.TEXT);
+            _headerLabel = new(new Vector2(20f, 44f), false, header, new Color(226, 226, 226), AnodyneSharp.Drawing.DrawOrder.TEXT);
             _valueLabel = new(new Vector2(20f, 52f), false, "", new Color(), AnodyneSharp.Drawing.DrawOrder.TEXT);
             _bgBox = new UIEntity(new Vector2(16f, 40f), "pop_menu", 16, 16, AnodyneSharp.Drawing.DrawOrder.TEXTBOX);
 
             UpdateDisplay();
+        }
+
+        public override void GetControl()
+        {
+            Active = true;
+        }
+
+        public override void LoseControl()
+        {
+            Active = false;
         }
 
         protected void OnTextInput(char ch)
@@ -57,24 +68,30 @@ namespace AnodyneArchipelago.Menu
 
         public override void Update()
         {
-            if (KeyInput.JustPressedKey(Keys.Escape) || (KeyInput.ControllerMode && KeyInput.JustPressedRebindableKey(KeyFunctions.Cancel)))
+            if (Active)
             {
-                SoundManager.PlaySoundEffect("menu_select");
-                this.Exit = true;
-            }
-            else if (KeyInput.JustPressedKey(Keys.Enter) || (KeyInput.ControllerMode && KeyInput.JustPressedRebindableKey(KeyFunctions.Accept)))
-            {
-                SoundManager.PlaySoundEffect("menu_select");
-                _commitFunc(_value);
-                this.Exit = true;
+                if (KeyInput.JustPressedKey(Keys.Escape) || (KeyInput.ControllerMode && KeyInput.JustPressedRebindableKey(KeyFunctions.Cancel)))
+                {
+                    SoundManager.PlaySoundEffect("menu_select");
+                    this.Exit = true;
+                }
+                else if (KeyInput.JustPressedKey(Keys.Enter) || (KeyInput.ControllerMode && KeyInput.JustPressedRebindableKey(KeyFunctions.Accept)))
+                {
+                    SoundManager.PlaySoundEffect("menu_select");
+                    _commitFunc(_value);
+                    this.Exit = true;
+                }
             }
         }
 
-        public override void DrawUI()
+        public override void Draw()
         {
-            _bgBox.Draw();
-            _headerLabel.Draw();
-            _valueLabel.Draw();
+            if (Active)
+            {
+                _bgBox.Draw();
+                _headerLabel.Draw();
+                _valueLabel.Draw();
+            }
         }
 
         private void UpdateDisplay()
