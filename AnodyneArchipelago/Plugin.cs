@@ -24,8 +24,16 @@ namespace AnodyneArchipelago
             // Make patches
             HarmonyFileLog.Enabled = true;
             HarmonyFileLog.FileWriterPath = "HarmonyLog.txt";
+        }
 
-            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+        public static void OnConnect()
+        {
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(),"anodyneAP");
+        }
+
+        public static void OnDisconnect()
+        {
+            Harmony.UnpatchID("anodyneAP");
         }
     }
 }

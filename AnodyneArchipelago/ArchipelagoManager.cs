@@ -222,6 +222,8 @@ namespace AnodyneArchipelago
 
             _scoutTask = Task.Run(() => ScoutAllLocations());
 
+            Plugin.OnConnect();
+
             return result;
         }
 
@@ -281,6 +283,8 @@ namespace AnodyneArchipelago
             {
                 return;
             }
+
+            Plugin.OnDisconnect();
 
             _session.Socket.DisconnectAsync();
             _session = null;
