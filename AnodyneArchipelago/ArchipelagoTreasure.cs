@@ -1,5 +1,6 @@
 ﻿using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget.Treasures;
+using AnodyneSharp.Logging;
 using AnodyneSharp.Registry;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
@@ -16,12 +17,12 @@ namespace AnodyneArchipelago
             NetworkItem? item = Plugin.ArchipelagoManager.GetScoutedLocation(location);
             if (item == null)
             {
-                return ("archipelago", 0);
+                return ("archipelago", 1);
             }
 
             if (item?.Player != Plugin.ArchipelagoManager.GetPlayer())
             {
-                return ("archipelago", item!.Value.Flags.HasFlag(ItemFlags.Advancement) ? 1 : 0);
+                return ("archipelago", item!.Value.Flags.HasFlag(ItemFlags.Advancement) ? 0 : 1);
             }
 
             string itemName = Plugin.ArchipelagoManager.GetItemName(item?.Item ?? 0);
@@ -78,7 +79,7 @@ namespace AnodyneArchipelago
                 return ("item_jump_shoes", 0);
             }
 
-            return ("archipelago", 0);
+            return ("archipelago", 1);
         }
 
         public static ArchipelagoTreasure Create(string location, Vector2 pos)
