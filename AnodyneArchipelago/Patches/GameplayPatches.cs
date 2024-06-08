@@ -482,7 +482,10 @@ namespace AnodyneArchipelago.Patches
         static void Postfix(SpriteSage __instance, Vector2 pos, Player p)
         {
             if (GlobalState.CURRENT_MAP_NAME == "OVERWORLD" &&
-                !GlobalState.inventory.HasAnyBroom)
+                !(  GlobalState.inventory.HasBroom ||
+                    GlobalState.inventory.HasWiden ||
+                    GlobalState.inventory.HasLengthen
+                ))
             {
                 __instance.exists = false;
             }
