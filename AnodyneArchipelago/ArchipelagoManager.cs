@@ -370,11 +370,7 @@ namespace AnodyneArchipelago
                 _itemIndex = _session.Items.AllItemsReceived.Count;
             }
 
-            if ((GlobalState.Dialogue == null || GlobalState.Dialogue == "") &&
-                !GlobalState.ScreenTransition &&
-                Plugin.Player != null &&
-                GlobalState.black_overlay.alpha == 0f &&
-                !Plugin.IsGamePaused)
+            if (Plugin.ReadyToReceive())
             {
                 if (_itemsToCollect.Count > 0)
                 {

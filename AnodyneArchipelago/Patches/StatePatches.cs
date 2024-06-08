@@ -14,18 +14,6 @@ using System.IO;
 
 namespace AnodyneArchipelago.Patches
 {
-    [HarmonyPatch(typeof(AnodyneGame), "Update")]
-    class GameUpdatePatch
-    {
-        static void Postfix()
-        {
-            if (Plugin.ArchipelagoManager != null)
-            {
-                Plugin.ArchipelagoManager.Update();
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(GlobalState.Save), nameof(GlobalState.Save.SaveTo))]
     class SaveToPatch
     {
@@ -42,8 +30,6 @@ namespace AnodyneArchipelago.Patches
     {
         static void Prefix(PlayState __instance)
         {
-            Plugin.IsGamePaused = false;
-
             // Get player for later access.
             FieldInfo playerField = typeof(PlayState).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance);
             Plugin.Player = (Player)playerField.GetValue(__instance);
@@ -64,34 +50,11 @@ namespace AnodyneArchipelago.Patches
         }
     }
 
-    [HarmonyPatch(typeof(PauseState), MethodType.Constructor, new Type[] { })]
-    class CreatePausePatch
-    {
-        static void Postfix()
-        {
-            Plugin.IsGamePaused = true;
-        }
-    }
-
-    [HarmonyPatch(typeof(PauseState), nameof(PauseState.Update))]
-    class UpdatePausePatch
-    {
-        static void Postfix(PauseState __instance)
-        {
-            if (__instance.Exit)
-            {
-                Plugin.IsGamePaused = false;
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(CreditsState), MethodType.Constructor, new Type[] {})]
     static class CreateCreditsPatch
     {
         static void Postfix()
         {
-            Plugin.IsGamePaused = true;
-
             GlobalState.events.SetEvent("DefeatedBriar", 1);
             if (Plugin.ArchipelagoManager.PostgameMode == PostgameMode.Vanilla)
             {

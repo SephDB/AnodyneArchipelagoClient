@@ -1,6 +1,7 @@
 ﻿using AnodyneSharp;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Registry;
+using AnodyneSharp.States;
 using HarmonyLib;
 using HarmonyLib.Tools;
 using Microsoft.Xna.Framework;
@@ -12,10 +13,9 @@ namespace AnodyneArchipelago
     {
         public static Plugin Instance = null;
 
-        public static Game Game => GlobalState.GameState as AnodyneGame;
+        public static AnodyneGame Game => GlobalState.GameState as AnodyneGame;
         public static Player Player = null;
         public static ArchipelagoManager ArchipelagoManager = null;
-        public static bool IsGamePaused = false;
 
         public const string Version = "0.2.0";
 
@@ -36,6 +36,17 @@ namespace AnodyneArchipelago
         public static void OnDisconnect()
         {
             Harmony.UnpatchID("anodyneAP");
+        }
+
+        public static bool ReadyToReceive()
+        {
+            if(Game.CurrentState is PlayState p)
+            {
+                bool hasStates = (typeof(PlayState).GetField("_childStates", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p) as List<State>)!.Count != 0;
+                PlayStateState s = (PlayStateState)typeof(PlayState).GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p)!;
+                return s == PlayStateState.S_NORMAL && !hasStates;
+            }
+            return false;
         }
     }
 }
