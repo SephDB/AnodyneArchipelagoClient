@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>AnodyneArchipelago</AssemblyName>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,7 +30,7 @@
 
   <Import Project="..\AnodyneArchipelago\AnodyneArchipelago.projitems" Label="Shared" />
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	<Target Name="DllCopy" AfterTargets="PostBuildEvent">
 		<ItemGroup>
 			<!-- Because this ItemGroup is inside the target, this will enumerate
                  all files just before calling Copy. If the ItemGroup were outside
@@ -39,5 +40,17 @@
 		</ItemGroup>
 		<Copy SourceFiles="@(DllFiles)" DestinationFolder="$(ProjectDir)..\..\Assemblies\" />
 	</Target>
+
+	<Target Name="ResourcesCopy" AfterTargets="DllCopy">
+		<ItemGroup>
+			<!-- Because this ItemGroup is inside the target, this will enumerate
+                 all files just before calling Copy. If the ItemGroup were outside
+                 the target , it would enumerate the files during evaluation, before
+                 the build starts, which may miss files created during the build. -->
+			<Files Include="$(ProjectDir)\..\Resources\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(Files)" DestinationFolder="$(ProjectDir)..\..\Content\%(RecursiveDir)" />
+	</Target>
+
 
 </Project>

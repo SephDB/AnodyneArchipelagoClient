@@ -109,20 +109,6 @@ namespace AnodyneArchipelago.Patches
         }
     }
 
-    [HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.LoadResources))]
-    static class LoadResourcesPatch
-    {
-        static void Postfix()
-        {
-            FileStream filestream = File.OpenRead($"{AppDomain.CurrentDomain.BaseDirectory}\\Mods\\AnodyneArchipelagoClient\\Source\\Resources\\archipelago.png");
-            Texture2D apSprite = Texture2D.FromStream(Plugin.Game.GraphicsDevice, filestream);
-
-            FieldInfo texturesField = typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static);
-            Dictionary<string, Texture2D> textures = (Dictionary<string, Texture2D>)texturesField.GetValue(null);
-            textures["archipelago"] = apSprite;
-        }
-    }
-
     [HarmonyPatch(typeof(DeathState), MethodType.Constructor, new Type[] {typeof(Player)})]
     static class DeathStateCtorPatch
     {

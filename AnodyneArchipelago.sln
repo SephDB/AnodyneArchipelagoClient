@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnodyneSharp.Multiplatform"
 		{C5E1104C-D6CF-4010-9F53-F19D70E1A421} = {C5E1104C-D6CF-4010-9F53-F19D70E1A421}
 	EndProjectSection
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnodyneSharp.Shared", "..\..\..\..\..\..\..\AnodyneSharp.Shared\AnodyneSharp.Shared.shproj", "{A0CDBD0E-3A41-42B7-9425-A838BC2C7383}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\..\..\..\..\..\..\AnodyneSharp.Shared\AnodyneSharp.Shared.projitems*{62068703-187f-40e7-b79d-33f0dde75747}*SharedItemsImports = 5
 		AnodyneArchipelago\AnodyneArchipelago.projitems*{66339aa2-c2b1-4a42-ae18-cfce120c5b90}*SharedItemsImports = 13
+		..\..\..\..\..\..\..\AnodyneSharp.Shared\AnodyneSharp.Shared.projitems*{a0cdbd0e-3a41-42b7-9425-a838bc2c7383}*SharedItemsImports = 13
 		AnodyneArchipelago\AnodyneArchipelago.projitems*{c5e1104c-d6cf-4010-9f53-f19d70e1a421}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
