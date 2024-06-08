@@ -1,6 +1,7 @@
 ﻿using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Registry;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Microsoft.Xna.Framework;
 
@@ -20,7 +21,7 @@ namespace AnodyneArchipelago
 
             if (item?.Player != Plugin.ArchipelagoManager.GetPlayer())
             {
-                return ("archipelago", 0);
+                return ("archipelago", item!.Value.Flags.HasFlag(ItemFlags.Advancement) ? 1 : 0);
             }
 
             string itemName = Plugin.ArchipelagoManager.GetItemName(item?.Item ?? 0);
