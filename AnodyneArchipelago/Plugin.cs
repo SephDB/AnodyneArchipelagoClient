@@ -1,4 +1,6 @@
-﻿using AnodyneSharp.Entities;
+﻿using AnodyneSharp;
+using AnodyneSharp.Entities;
+using AnodyneSharp.Registry;
 using HarmonyLib;
 using HarmonyLib.Tools;
 using Microsoft.Xna.Framework;
@@ -10,7 +12,7 @@ namespace AnodyneArchipelago
     {
         public static Plugin Instance = null;
 
-        public static Game Game = null;
+        public static Game Game => GlobalState.GameState as AnodyneGame;
         public static Player Player = null;
         public static ArchipelagoManager ArchipelagoManager = null;
         public static bool IsGamePaused = false;

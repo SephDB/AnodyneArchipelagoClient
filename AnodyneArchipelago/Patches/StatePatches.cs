@@ -14,15 +14,6 @@ using System.IO;
 
 namespace AnodyneArchipelago.Patches
 {
-    [HarmonyPatch(typeof(AnodyneGame), "Initialize")]
-    class AnodyneGameInitializePatch
-    {
-        static void Prefix(AnodyneGame __instance)
-        {
-            Plugin.Game = __instance;
-        }
-    }
-
     [HarmonyPatch(typeof(AnodyneGame), "Update")]
     class GameUpdatePatch
     {

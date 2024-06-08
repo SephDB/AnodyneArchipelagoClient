@@ -297,7 +297,11 @@ namespace AnodyneArchipelago
             Dictionary<string, NetworkItem> result = new();
             foreach (NetworkItem networkItem in locationInfo.Locations)
             {
-                result[_session.Locations.GetLocationNameFromId(networkItem.Location)] = networkItem;
+                string name = _session.Locations.GetLocationNameFromId(networkItem.Location);
+                if (name != null)
+                {
+                    result[_session.Locations.GetLocationNameFromId(networkItem.Location)] = networkItem;
+                }
             }
 
             return result;
