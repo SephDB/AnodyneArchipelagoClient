@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnodyneArchipelago.BepInEx", "AnodyneArchipelago.BepInEx\AnodyneArchipelago.BepInEx.csproj", "{ECD7475F-3E22-4667-879D-7FD2E531E6A2}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnodyneArchipelago", "AnodyneArchipelago\AnodyneArchipelago.shproj", "{66339AA2-C2B1-4A42-AE18-CFCE120C5B90}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnodyneArchipelago.MonoGame", "AnodyneArchipelago.MonoGame\AnodyneArchipelago.MonoGame.csproj", "{C5E1104C-D6CF-4010-9F53-F19D70E1A421}"
@@ -38,12 +36,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{ECD7475F-3E22-4667-879D-7FD2E531E6A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ECD7475F-3E22-4667-879D-7FD2E531E6A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ECD7475F-3E22-4667-879D-7FD2E531E6A2}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{ECD7475F-3E22-4667-879D-7FD2E531E6A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ECD7475F-3E22-4667-879D-7FD2E531E6A2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ECD7475F-3E22-4667-879D-7FD2E531E6A2}.Release|x64.ActiveCfg = Release|Any CPU
 		{C5E1104C-D6CF-4010-9F53-F19D70E1A421}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C5E1104C-D6CF-4010-9F53-F19D70E1A421}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5E1104C-D6CF-4010-9F53-F19D70E1A421}.Debug|x64.ActiveCfg = Debug|Any CPU

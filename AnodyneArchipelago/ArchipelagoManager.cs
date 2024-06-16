@@ -59,13 +59,13 @@ namespace AnodyneArchipelago
         private List<string> _unlockedGates = new();
         private PostgameMode _postgameMode;
 
-        private readonly Queue<NetworkItem> _itemsToCollect = new();
+        private readonly Queue<ItemInfo> _itemsToCollect = new();
         private readonly Queue<string> _messages = new();
         private DeathLink? _pendingDeathLink = null;
         private string _deathLinkReason = null;
         private bool _receiveDeath = false;
 
-        private Task<Dictionary<string, NetworkItem>> _scoutTask;
+        private Task<Dictionary<string, ScoutedItemInfo>> _scoutTask;
 
         public long EndgameCardRequirement => _endgameCardRequirement;
         public ColorPuzzle ColorPuzzle => _colorPuzzle;
@@ -290,24 +290,24 @@ namespace AnodyneArchipelago
             _session = null;
         }
 
-        private async Task<Dictionary<string, NetworkItem>> ScoutAllLocations()
+        private async Task<Dictionary<string, ScoutedItemInfo>> ScoutAllLocations()
         {
-            LocationInfoPacket locationInfo = await _session.Locations.ScoutLocationsAsync(_session.Locations.AllLocations.ToArray());
+            Dictionary<long, ScoutedItemInfo> locationInfo = await _session.Locations.ScoutLocationsAsync([.. _session.Locations.AllLocations]);
 
-            Dictionary<string, NetworkItem> result = new();
-            foreach (NetworkItem networkItem in locationInfo.Locations)
+            Dictionary<string, ScoutedItemInfo> result = new();
+            foreach (ScoutedItemInfo networkItem in locationInfo.Values)
             {
-                string name = _session.Locations.GetLocationNameFromId(networkItem.Location);
+                string name = _session.Locations.GetLocationNameFromId(networkItem.LocationId,networkItem.LocationGame);
                 if (name != null)
                 {
-                    result[_session.Locations.GetLocationNameFromId(networkItem.Location)] = networkItem;
+                    result[name] = networkItem;
                 }
             }
 
             return result;
         }
 
-        public NetworkItem? GetScoutedLocation(string locationName)
+        public ItemInfo? GetScoutedLocation(string locationName)
         {
             if (_scoutTask == null || !_scoutTask.IsCompleted || !_scoutTask.Result.ContainsKey(locationName))
             {
@@ -351,9 +351,9 @@ namespace AnodyneArchipelago
                 return;
             }
 
-            if (_session.Items.AllItemsReceived.Count > _itemIndex)
+            if (_session.Items.Index > _itemIndex)
             {
-                for (int i = _itemIndex; i < _session.Items.AllItemsReceived.Count; i++)
+                for (int i = _itemIndex; i < _session.Items.Index; i++)
                 {
                     string itemKey = $"ArchipelagoItem-{i}";
                     if (GlobalState.events.GetEvent(itemKey) != 0)
@@ -363,7 +363,7 @@ namespace AnodyneArchipelago
 
                     GlobalState.events.SetEvent(itemKey, 1);
 
-                    NetworkItem item = _session.Items.AllItemsReceived[i];
+                    ItemInfo item = _session.Items.AllItemsReceived[i];
                     _itemsToCollect.Enqueue(item);
                 }
 
@@ -374,7 +374,7 @@ namespace AnodyneArchipelago
             {
                 if (_itemsToCollect.Count > 0)
                 {
-                    NetworkItem item = _itemsToCollect.Dequeue();
+                    ItemInfo item = _itemsToCollect.Dequeue();
                     HandleItem(item);
                 }
                 else if (_messages.Count > 0)
@@ -473,11 +473,11 @@ namespace AnodyneArchipelago
             }
         }
 
-        private void HandleItem(NetworkItem item)
+        private void HandleItem(ItemInfo item)
         {
-            if (item.Player == _session.ConnectionInfo.Slot && item.Location >= 0)
+            if (item.Player == _session.ConnectionInfo.Slot && item.LocationId >= 0)
             {
-                string itemKey = $"ArchipelagoLocation-{item.Location}";
+                string itemKey = $"ArchipelagoLocation-{item.LocationId}";
                 if (GlobalState.events.GetEvent(itemKey) > 0)
                 {
                     return;
@@ -486,7 +486,7 @@ namespace AnodyneArchipelago
                 GlobalState.events.SetEvent(itemKey, 1);
             }
 
-            string itemName = _session.Items.GetItemName(item.Item);
+            string itemName = item.ItemName;
 
             if (itemName.StartsWith("Small Key"))
             {
@@ -604,8 +604,8 @@ namespace AnodyneArchipelago
             }
             else if (itemName.StartsWith("Card ("))
             {
-                string cardName = itemName.Substring(6);
-                cardName = cardName.Substring(0, cardName.Length - 1);
+                string cardName = itemName[6..];
+                cardName = cardName[..^1];
 
                 int cardIndex = GetCardNumberForName(cardName);
                 CardTreasure cardTreasure = new(Plugin.Player.Position, cardIndex);
@@ -637,11 +637,7 @@ namespace AnodyneArchipelago
 
         public void ActivateGoal()
         {
-            var statusUpdatePacket = new StatusUpdatePacket
-            {
-                Status = ArchipelagoClientState.ClientGoal
-            };
-            _session.Socket.SendPacket(statusUpdatePacket);
+            _session.SetGoalAchieved();
         }
 
         private void OnMessageReceived(LogMessage message)
@@ -651,7 +647,7 @@ namespace AnodyneArchipelago
                 case ItemSendLogMessage itemSendLogMessage:
                     if (itemSendLogMessage.IsSenderTheActivePlayer && !itemSendLogMessage.IsReceiverTheActivePlayer)
                     {
-                        string itemName = _session.Items.GetItemName(itemSendLogMessage.Item.Item);
+                        string itemName = itemSendLogMessage.Item.ItemName;
 
                         string messageText;
                         string otherPlayer = _session.Players.GetPlayerAlias(itemSendLogMessage.Receiver.Slot);

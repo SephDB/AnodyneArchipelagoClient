@@ -14,7 +14,7 @@ namespace AnodyneArchipelago
 
         private static (string, int) GetSprite(string location)
         {
-            NetworkItem? item = Plugin.ArchipelagoManager.GetScoutedLocation(location);
+            ItemInfo? item = Plugin.ArchipelagoManager.GetScoutedLocation(location);
             if (item == null)
             {
                 return ("archipelago", 1);
@@ -22,10 +22,10 @@ namespace AnodyneArchipelago
 
             if (item?.Player != Plugin.ArchipelagoManager.GetPlayer())
             {
-                return ("archipelago", item!.Value.Flags.HasFlag(ItemFlags.Advancement) ? 0 : 1);
+                return ("archipelago", item!.Flags.HasFlag(ItemFlags.Advancement) ? 0 : 1);
             }
 
-            string itemName = Plugin.ArchipelagoManager.GetItemName(item?.Item ?? 0);
+            string itemName = item?.ItemName ?? "";
             if (itemName.StartsWith("Small Key"))
             {
                 return ("key", 0);
