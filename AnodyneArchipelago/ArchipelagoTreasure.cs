@@ -2,6 +2,7 @@
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Logging;
 using AnodyneSharp.Registry;
+using AnodyneSharp.Sounds;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Microsoft.Xna.Framework;
@@ -17,7 +18,7 @@ namespace AnodyneArchipelago
             ItemInfo? item = Plugin.ArchipelagoManager.GetScoutedLocation(location);
             if (item == null)
             {
-                return ("archipelago", 1);
+                return ("none", -1);
             }
 
             if (item?.Player != Plugin.ArchipelagoManager.GetPlayer())
@@ -78,6 +79,19 @@ namespace AnodyneArchipelago
             {
                 return ("item_jump_shoes", 0);
             }
+            else if (itemName == "Progressive Red Cave")
+            {
+                return ("tentacle", 0);
+            }
+            //TODO name formatting of nexus gate items
+            else if (itemName.StartsWith("Nexus Gate"))
+            {
+                return ("nexusgate", 0);
+            }
+            else if (itemName.StartsWith("Card"))
+            {
+                return ("none", -1);
+            }
 
             return ("archipelago", 1);
         }
@@ -96,7 +110,16 @@ namespace AnodyneArchipelago
 
         public override void GetTreasure()
         {
-            base.GetTreasure();
+            //Cards should not be drawn
+            if (sprite.Frame != -1)
+            {
+                base.GetTreasure();
+            }
+            else
+            {
+                SoundManager.PlaySoundEffect("gettreasure");
+            }
+
 
             Plugin.ArchipelagoManager.SendLocation(_location);
         }
