@@ -12,13 +12,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)ArchipelagoManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ArchipelagoTreasure.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorPuzzle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DeathHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Locations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\ArchipelagoSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\BoxedConfigState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\ConnectionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\MenuState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\TextEntry.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Patches\DeathPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\DebugPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\GameplayPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelper.cs" />

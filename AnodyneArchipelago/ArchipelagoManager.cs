@@ -665,7 +665,8 @@ namespace AnodyneArchipelago
             if (_deathLinkService != null)
             {
                 string player = _session.Players.GetPlayerName(_session.ConnectionInfo.Slot);
-                string reason = null;
+                string reason = $"{player} {DeathHelper.GetDeathReason()}";
+
                 if (_deathLinkReason != null)
                 {
                     reason = $"{player} {_deathLinkReason}";
@@ -673,8 +674,6 @@ namespace AnodyneArchipelago
 
                 _deathLinkService.SendDeathLink(new DeathLink(player, reason));
             }
-
-            _deathLinkReason = null;
         }
 
         private void OnDeathLinkReceived(DeathLink deathLink)
