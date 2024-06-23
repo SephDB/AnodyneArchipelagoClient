@@ -14,17 +14,6 @@ using System.IO;
 
 namespace AnodyneArchipelago.Patches
 {
-    [HarmonyPatch(typeof(GlobalState.Save), nameof(GlobalState.Save.SaveTo))]
-    class SaveToPatch
-    {
-        static bool Prefix(GlobalState.Save __instance)
-        {
-            File.WriteAllText(string.Format("{0}Saves/Save_zzAP{1}_{2}.dat", GameConstants.SavePath, Plugin.ArchipelagoManager.GetSeed(), Plugin.ArchipelagoManager.GetPlayer()), __instance.ToString());
-
-            return false;
-        }
-    }
-
     [HarmonyPatch(typeof(PlayState), nameof(PlayState.Create))]
     class PlayStateCreatePatch
     {

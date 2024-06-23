@@ -252,7 +252,9 @@ namespace AnodyneArchipelago.Menu
 
             Plugin.ArchipelagoManager = archipelagoManager;
 
-            GlobalState.Save saveFile = GlobalState.Save.GetSave(string.Format("{0}Saves/Save_zzAP{1}_{2}.dat", GameConstants.SavePath, Plugin.ArchipelagoManager.GetSeed(), Plugin.ArchipelagoManager.GetPlayer()));
+            GlobalState.CurrentSaveGame = $"zzAP{Plugin.ArchipelagoManager.GetSeed()}_{Plugin.ArchipelagoManager.GetPlayer()}";
+
+            GlobalState.Save? saveFile = GlobalState.Save.GetSave(GlobalState.Save.PathFromId(GlobalState.CurrentSaveGame));
 
             GlobalState.ResetValues();
             if (saveFile != null)
