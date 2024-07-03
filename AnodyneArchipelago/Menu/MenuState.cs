@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Input;
+﻿using AnodyneSharp.Entities;
+using AnodyneSharp.Input;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
 using AnodyneSharp.States;
@@ -257,6 +258,9 @@ namespace AnodyneArchipelago.Menu
             GlobalState.Save? saveFile = GlobalState.Save.GetSave(GlobalState.Save.PathFromId(GlobalState.CurrentSaveGame));
 
             GlobalState.ResetValues();
+
+            EntityManager.Initialize(); //reload Entities.xml
+
             if (saveFile != null)
             {
                 GlobalState.LoadSave(saveFile);

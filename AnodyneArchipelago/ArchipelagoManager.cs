@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Entities;
+﻿using AnodyneArchipelago.Patches;
+using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.MapData;
 using AnodyneSharp.Registry;
@@ -490,8 +491,8 @@ namespace AnodyneArchipelago
 
             if (itemName.StartsWith("Small Key"))
             {
-                string dungeonName = itemName.Substring(11);
-                dungeonName = dungeonName.Substring(0, dungeonName.Length - 1);
+                string dungeonName = itemName[11..];
+                dungeonName = dungeonName[..^1];
 
                 string mapName = GetMapNameForDungeon(dungeonName);
                 GlobalState.inventory.AddMapKey(mapName, 1);
@@ -695,6 +696,15 @@ namespace AnodyneArchipelago
                 SwapperControl swapper = new(mapName);
                 swapperField.SetValue(GlobalState.Map, swapper);
             }
+        }
+
+        internal Stream? PatchFile(Stream stream, string path)
+        {
+            if(path.EndsWith("Entities.xml"))
+            {
+                stream = EntityPatches.Patch(stream);
+            }
+            return stream;
         }
     }
 }

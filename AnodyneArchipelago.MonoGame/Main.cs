@@ -21,5 +21,10 @@ namespace AnodyneArchipelago.MonoGame
             Plugin.ArchipelagoManager?.Update();
         }
 
+        public Stream OnManifestLoad(Stream stream, string path)
+        {
+            return Plugin.ArchipelagoManager?.PatchFile(stream, path) ?? stream;
+        }
+
     }
 }
