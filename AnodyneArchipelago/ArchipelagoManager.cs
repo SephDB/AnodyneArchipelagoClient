@@ -266,11 +266,6 @@ namespace AnodyneArchipelago
                     GlobalState.events.ActivatedNexusPortals.Add(mapName);
                 }
             }
-
-            // Remove barriers from Nexus.
-            EntityManager.State[new Guid("AAAECAD4-F6A9-9756-31E0-C3813862E61B")] = new() { Alive = false };
-            EntityManager.State[new Guid("73FB3BC5-AC42-6439-75EF-8EE824DCF143")] = new() { Alive = false };
-            EntityManager.State[new Guid("335DD556-D1EF-06D5-24B4-DFACCCD59A28")] = new() { Alive = false };
         }
 
         ~ArchipelagoManager()
@@ -702,7 +697,26 @@ namespace AnodyneArchipelago
         {
             if(path.EndsWith("Entities.xml"))
             {
-                stream = EntityPatches.Patch(stream);
+                EntityPatches patcher = new(stream);
+
+                patcher.RemoveNexusBlockers();
+                patcher.RemoveMitraCliff();
+
+                patcher.SetColorPuzzle(ColorPuzzle);
+
+                patcher.Set36CardRequirement((int)_endgameCardRequirement);
+
+                if(UnlockSmallKeyGates)
+                {
+                    patcher.OpenSmallKeyGates();
+                }
+
+                if(BigKeyShuffle == BigKeyShuffle.Unlocked)
+                {
+                    patcher.OpenBigKeyGates();
+                }
+
+                stream = patcher.Get();
             }
             return stream;
         }

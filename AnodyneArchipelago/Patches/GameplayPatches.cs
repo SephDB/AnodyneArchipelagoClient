@@ -150,52 +150,6 @@ namespace AnodyneArchipelago.Patches
     [HarmonyPatch(typeof(EntityPreset), nameof(EntityPreset.Create))]
     class EntityPresetCreatePatch
     {
-        static bool Prefix(EntityPreset __instance, ref Entity __result)
-        {
-            if (__instance.EntityID == new Guid("C8CE6E18-CF07-180B-A550-9DC808A2F7E3"))
-            {
-                // 36 card gate
-                PropertyInfo frameProperty = typeof(EntityPreset).GetProperty("Frame");
-                frameProperty.SetValue(__instance, (int)Plugin.ArchipelagoManager.EndgameCardRequirement);
-            }
-            else if (__instance.EntityID == new Guid("ED2195E9-9798-B9B3-3C15-105C40F7C501"))
-            {
-                // GO color puzzle
-                PropertyInfo typeValueProperty = typeof(EntityPreset).GetProperty("TypeValue");
-
-                Point circusPoint = Plugin.ArchipelagoManager.ColorPuzzle.CircusPos;
-                Point hotelPoint = Plugin.ArchipelagoManager.ColorPuzzle.HotelPos;
-                Point apartmentPoint = Plugin.ArchipelagoManager.ColorPuzzle.ApartmentPos;
-                typeValueProperty.SetValue(__instance, $"{circusPoint.X},{circusPoint.Y};{hotelPoint.X},{hotelPoint.Y};{apartmentPoint.X},{apartmentPoint.Y};1,1");
-            }
-            else if (__instance.Type.FullName == "AnodyneSharp.Entities.Gadget.SmallKeyGate")
-            {
-                if (Plugin.ArchipelagoManager.UnlockSmallKeyGates)
-                {
-                    __result = new Entity(new Vector2(0, 0));
-                    return false;
-                }
-            }
-            else if (__instance.Type.FullName == "AnodyneSharp.Entities.Gadget.BigKeyGate")
-            {
-                if (Plugin.ArchipelagoManager.BigKeyShuffle == BigKeyShuffle.Unlocked)
-                {
-                    __result = new Entity(new Vector2(0, 0));
-                    return false;
-                }
-            }
-            else if (__instance.Type.FullName == "AnodyneSharp.Entities.Interactive.Big_Key")
-            {
-                if (Plugin.ArchipelagoManager.BigKeyShuffle == BigKeyShuffle.Unlocked)
-                {
-                    __result = new Entity(new Vector2(0, 0));
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         static void Postfix(EntityPreset __instance, Entity __result)
         {
             if (__instance.Type.FullName == "AnodyneSharp.Entities.Interactive.DungeonStatue")
@@ -255,12 +209,6 @@ namespace AnodyneArchipelago.Patches
                     __result.exists = false;
                     GlobalState.SpawnEntity((Entity)new DoorToggle(__result.Position, __result.width, __result.height));
                 }
-            }
-            else if (__instance.Type.FullName == "AnodyneSharp.Entities.Interactive.Npc.MitraCliff")
-            {
-                // We want to get rid of this scene entirely.
-                __instance.Alive = false;
-                __result.exists = false;
             }
         }
     }
