@@ -47,106 +47,6 @@ namespace AnodyneArchipelago.Patches
         }
     }
 
-    [HarmonyPatch(typeof(Big_Key), nameof(Big_Key.PlayerInteraction))]
-    class BigKeyTouchPatch
-    {
-        // We basically just rewrite this method, because we need to get rid of the part that adds the key to the inventory.
-        static bool Prefix(Big_Key __instance, ref bool __result)
-        {
-            if (Plugin.ArchipelagoManager.BigKeyShuffle == BigKeyShuffle.Vanilla)
-            {
-                // Vanilla big keys should just use the default implementation.
-                return true;
-            }
-
-            MethodInfo statesMethod = typeof(Big_Key).GetMethod("States", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            EntityPreset preset = PatchHelper.GetEntityPreset(typeof(Big_Key), __instance);
-            preset.Alive = false;
-            __instance.Solid = false;
-            GlobalState.StartCutscene = (IEnumerator<AnodyneSharp.States.CutsceneState.CutsceneEvent>)statesMethod.Invoke(__instance, new object[] { });
-            __result = true;
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(Big_Key), "States")]
-    class BigKeyStatesPatch
-    {
-        static void Postfix(Big_Key __instance)
-        {
-            if (Plugin.ArchipelagoManager.BigKeyShuffle == BigKeyShuffle.Vanilla)
-            {
-                // Vanilla big keys should just use the default implementation.
-                return;
-            }
-
-            EntityPreset preset = PatchHelper.GetEntityPreset(typeof(Big_Key), __instance);
-
-            if (preset.Frame == 0)
-            {
-                Plugin.ArchipelagoManager.SendLocation("Temple of the Seeing One - Green Key");
-            }
-            else if (preset.Frame == 2)
-            {
-                Plugin.ArchipelagoManager.SendLocation("Red Cave - Red Key");
-            }
-            else if (preset.Frame == 4)
-            {
-                Plugin.ArchipelagoManager.SendLocation("Mountain Cavern - Blue Key");
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(HealthCicada), nameof(HealthCicada.Update))]
-    class HealthCicadaUpdatePatch
-    {
-        static void Postfix(HealthCicada __instance)
-        {
-            if (Plugin.ArchipelagoManager.VanillaHealthCicadas)
-            {
-                // Vanilla health cicadas should just use the default implementation.
-                return;
-            }
-
-            Type cicadaType = typeof(HealthCicada);
-            FieldInfo chirpField = cicadaType.GetField("_chirp", BindingFlags.NonPublic | BindingFlags.Instance);
-            FieldInfo sentinelField = cicadaType.GetField("_sentinel", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            HealthCicadaSentinel sentinel = (HealthCicadaSentinel)sentinelField.GetValue(__instance);
-            Type hcsType = typeof(HealthCicadaSentinel);
-            FieldInfo flyDistanceField = hcsType.GetField("_flyDistance", BindingFlags.NonPublic | BindingFlags.Instance);
-            float flyDistance = (float)flyDistanceField.GetValue(sentinel);
-
-            if (__instance.visible && !(bool)chirpField.GetValue(__instance) && flyDistance > 0)
-            {
-                flyDistanceField.SetValue(sentinel, 0f);
-
-                FieldInfo stateField = cicadaType.GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance);
-                stateField.SetValue(__instance, StateLogic(__instance));
-            }
-        }
-
-        static IEnumerator<string> StateLogic(HealthCicada healthCicada)
-        {
-            EntityPreset preset = PatchHelper.GetEntityPreset(typeof(HealthCicada), healthCicada);
-
-            while (!MathUtilities.MoveTo(ref healthCicada.opacity, 0.0f, 0.6f))
-                yield return "FadingOut";
-            preset.Alive = false;
-
-            FieldInfo sentinelField = typeof(HealthCicada).GetField("_sentinel", BindingFlags.NonPublic | BindingFlags.Instance);
-            HealthCicadaSentinel sentinel = (HealthCicadaSentinel)sentinelField.GetValue(healthCicada);
-
-            sentinel.exists = false;
-
-            if (Locations.LocationsByGuid.ContainsKey(preset.EntityID))
-            {
-                Plugin.ArchipelagoManager.SendLocation(Locations.LocationsByGuid[preset.EntityID]);
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(EntityPreset), nameof(EntityPreset.Create))]
     class EntityPresetCreatePatch
     {
@@ -218,7 +118,7 @@ namespace AnodyneArchipelago.Patches
     {
         static MethodInfo TargetMethod()
         {
-            return typeof(Red_Pillar).GetNestedType("Chain", BindingFlags.NonPublic).GetMethod("Collided");
+            return typeof(Red_Pillar.Chain).GetMethod("Collided");
         }
 
         static void Postfix(object __instance)
@@ -228,7 +128,7 @@ namespace AnodyneArchipelago.Patches
                 return;
             }
 
-            Type chainType = typeof(Red_Pillar).GetNestedType("Chain", BindingFlags.NonPublic);
+            Type chainType = typeof(Red_Pillar.Chain);
             FieldInfo parentField = chainType.GetField("_parent", BindingFlags.NonPublic | BindingFlags.Instance);
 
             Red_Pillar redPillar = (Red_Pillar)parentField.GetValue(__instance);

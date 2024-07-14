@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Utilities;
+﻿using AnodyneSharp.Logging;
+using AnodyneSharp.Utilities;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -55,7 +56,7 @@ namespace AnodyneArchipelago.Patches
 
         public void OpenBigKeyGates()
         {
-            var nodes = Doc.SelectNodes(@".//KeyBlock[@frame>""0""] | .//NPC[@type=""big_key""]");
+            var nodes = Doc.SelectNodes(@".//KeyBlock[@frame>""0""]");
             foreach (XmlNode n in nodes!)
             {
                 n.ParentNode!.RemoveChild(n);
@@ -73,10 +74,35 @@ namespace AnodyneArchipelago.Patches
             Point circusPoint = puzzle.CircusPos;
             Point hotelPoint = puzzle.HotelPos;
             Point apartmentPoint = puzzle.ApartmentPos;
-            string typeval = $"{circusPoint.X},{circusPoint.Y};{hotelPoint.X},{hotelPoint.Y};{apartmentPoint.X},{apartmentPoint.Y};1,1");
+            string typeval = $"{circusPoint.X},{circusPoint.Y};{hotelPoint.X},{hotelPoint.Y};{apartmentPoint.X},{apartmentPoint.Y};1,1";
 
             XmlNode puzzleCheck = Doc.SelectSingleNode(@".//*[@guid=""ED2195E9-9798-B9B3-3C15-105C40F7C501""]")!;
             puzzleCheck.Attributes!["type"]!.Value = typeval;
+        }
+
+        public void SetFreeStanding(Guid guid, string location)
+        {
+            XmlElement check = (XmlElement)Doc.SelectSingleNode($".//*[@guid=\"{guid.ToString().ToUpperInvariant()}\"]")!;
+
+            DebugLogger.AddInfo($"Replacing: {check.OuterXml}");
+
+            check = RenameNode(check, "FreeStandingAP");
+
+            check.SetAttribute("type", location);
+        }
+
+        private static XmlElement RenameNode(XmlNode node, string newName)
+        {
+            XmlElement newNode = node.OwnerDocument!.CreateElement(newName);
+
+            foreach (XmlAttribute att in node.Attributes!)
+                newNode.SetAttribute(att.Name, att.Value);
+            foreach (XmlNode child in node.ChildNodes)
+                newNode.AppendChild(child.Clone());
+
+            node.ParentNode!.ReplaceChild(newNode, node);
+
+            return newNode;
         }
     }
 }

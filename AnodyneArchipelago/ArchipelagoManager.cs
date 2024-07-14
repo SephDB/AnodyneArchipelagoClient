@@ -716,6 +716,14 @@ namespace AnodyneArchipelago
                     patcher.OpenBigKeyGates();
                 }
 
+                foreach (long location_id in _session.Locations.AllLocations) {
+                    string name = _session.Locations.GetLocationNameFromId(location_id);
+                    if(name.EndsWith("Key") || name.EndsWith("Cicada"))
+                    {
+                        patcher.SetFreeStanding(Locations.LocationsGuids[name], name);
+                    }
+                }
+
                 stream = patcher.Get();
             }
             return stream;
