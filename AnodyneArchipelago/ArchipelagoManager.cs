@@ -597,6 +597,21 @@ namespace AnodyneArchipelago
             else if (itemName == "Progressive Red Cave")
             {
                 GlobalState.events.IncEvent("ProgressiveRedGrotto");
+                if (!VanillaRedCave)
+                {
+                    switch (GlobalState.events.GetEvent("ProgressiveRedGrotto"))
+                    {
+                        case 1:
+                            GlobalState.events.SetEvent("red_cave_l_ss", 1);
+                            break;
+                        case 2:
+                            GlobalState.events.SetEvent("red_cave_r_ss", 1);
+                            break;
+                        case 3:
+                            GlobalState.events.SetEvent("red_cave_n_ss", 2);
+                            break;
+                    }
+                }
             }
             else if (itemName.StartsWith("Card ("))
             {

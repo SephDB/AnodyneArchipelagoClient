@@ -55,34 +55,6 @@ namespace AnodyneArchipelago.Patches
                     __result.Position += Entity.FacingDirection(moveDir) * 32f;
                 }
             }
-            else if (__instance.Type.FullName.StartsWith("AnodyneSharp.Entities.Decorations.RedCave"))
-            {
-                if (Plugin.ArchipelagoManager.VanillaRedCave)
-                {
-                    return;
-                }
-
-                string side = __instance.Type.FullName.Substring(41);
-                int requiredGrottos = 0;
-                if (side == "Left")
-                {
-                    requiredGrottos = 1;
-                }
-                else if (side == "Right")
-                {
-                    requiredGrottos = 2;
-                }
-                else if (side == "North")
-                {
-                    requiredGrottos = 3;
-                }
-
-                if (GlobalState.events.GetEvent("ProgressiveRedGrotto") < requiredGrottos)
-                {
-                    __result.exists = false;
-                    GlobalState.SpawnEntity((Entity)new DoorToggle(__result.Position, __result.width, __result.height));
-                }
-            }
         }
     }
 
