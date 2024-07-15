@@ -718,9 +718,17 @@ namespace AnodyneArchipelago
 
                 foreach (long location_id in _session.Locations.AllLocations) {
                     string name = _session.Locations.GetLocationNameFromId(location_id);
-                    if(name.EndsWith("Key") || name.EndsWith("Cicada"))
+                    if(name.EndsWith("Key"))
                     {
                         patcher.SetFreeStanding(Locations.LocationsGuids[name], name);
+                    }
+                    else if(name.EndsWith("Cicada"))
+                    {
+                        patcher.SetCicada(Locations.LocationsGuids[name], name);
+                    }
+                    else if(name.EndsWith("Chest"))
+                    {
+                        patcher.SetTreasureChest(Locations.LocationsGuids[name], name);
                     }
                 }
 

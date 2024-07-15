@@ -13,6 +13,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ArchipelagoTreasure.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorPuzzle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DeathHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entities\BossItemAP.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entities\ChestAPInserter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\FreeStandingAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Locations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\ArchipelagoSettings.cs" />

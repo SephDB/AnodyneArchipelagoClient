@@ -20,33 +20,6 @@ using AnodyneSharp;
 
 namespace AnodyneArchipelago.Patches
 {
-    [HarmonyPatch(typeof(TreasureChest), "SetTreasure")]
-    class ChestSetTreasurePatch
-    {
-        static bool Prefix(TreasureChest __instance)
-        {
-            Guid entityId = PatchHelper.GetEntityPreset(typeof(TreasureChest), __instance).EntityID;
-
-            if (!Plugin.ArchipelagoManager.ForestBunnyChest && entityId == new Guid("737247bf-3343-677c-0a6d-0b8c4af030d9"))
-            {
-                // Forest bunny check is completely vanilla when the option is off.
-                return true;
-            }
-
-            if (Locations.LocationsByGuid.ContainsKey(entityId))
-            {
-                BaseTreasure treasure = ArchipelagoTreasure.Create(Locations.LocationsByGuid[entityId], __instance.Position);
-
-                FieldInfo treasureField = typeof(TreasureChest).GetField("_treasure", BindingFlags.NonPublic | BindingFlags.Instance);
-                treasureField.SetValue(__instance, treasure);
-
-                return false;
-            }
-
-            return true;
-        }
-    }
-
     [HarmonyPatch(typeof(EntityPreset), nameof(EntityPreset.Create))]
     class EntityPresetCreatePatch
     {

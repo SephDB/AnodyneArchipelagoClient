@@ -21,12 +21,12 @@ namespace AnodyneArchipelago
                 return ("none", -1);
             }
 
-            if (item?.Player != Plugin.ArchipelagoManager.GetPlayer())
+            if (item.Player != Plugin.ArchipelagoManager.GetPlayer())
             {
-                return ("archipelago", item!.Flags.HasFlag(ItemFlags.Advancement) ? 0 : 1);
+                return ("archipelago", item.Flags.HasFlag(ItemFlags.Advancement) ? 0 : 1);
             }
 
-            string itemName = item?.ItemName ?? "";
+            string itemName = item.ItemName;
             if (itemName.StartsWith("Small Key"))
             {
                 return ("key", 0);

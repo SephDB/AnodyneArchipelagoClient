@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AnodyneArchipelago.Entities;
+using Microsoft.Xna.Framework;
 using System.Text;
 using System.Xml.Linq;
 
@@ -73,8 +74,37 @@ namespace AnodyneArchipelago.Patches
         public void SetFreeStanding(Guid guid, string location)
         {
             var node = GetByID(guid);
-            node.Name = "FreeStandingAP";
+            node.Name = nameof(FreeStandingAP);
             node.SetAttributeValue("type", location);
+        }
+
+        public void SetCicada(Guid guid, string location)
+        {
+            var node = GetByID(guid);
+            if(node.Parent!.Elements("Event").Where(e=>(string)e.Attribute("type")! == "entrance").Any())
+            {
+                node.Name = nameof(BossItemAP);
+            }
+            else
+            {
+                node.Name = nameof(FreeStandingAP);
+            }
+            node.SetAttributeValue("type", location);
+        }
+
+        public void SetTreasureChest(Guid guid, string location)
+        {
+            var node = GetByID(guid);
+            node.AddBeforeSelf(
+                new XElement(
+                    nameof(ChestAPInserter),
+                    new XAttribute("guid",NextID()),
+                    new XAttribute("type",location),
+                    new XAttribute("frame",0),
+                    new XAttribute("x",node.Attribute("x")!.Value),
+                    new XAttribute("y",node.Attribute("y")!.Value)
+                    )
+                );
         }
     }
 }
