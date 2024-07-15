@@ -1,28 +1,24 @@
-﻿using AnodyneSharp.Logging;
-using AnodyneSharp.Utilities;
-using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
 using System.Text;
-using System.Xml;
+using System.Xml.Linq;
 
 namespace AnodyneArchipelago.Patches
 {
     public class EntityPatches
     {
         private int CurrentID = 0;
-        private XmlDocument Doc;
+        private XDocument Document;
+        private XElement root;
 
         public EntityPatches(Stream s)
         {
-            using StreamReader reader = new(s);
-            Doc = new();
-            Doc.LoadXml(reader.ReadToEnd());
+            Document = XDocument.Load(s);
+            root = Document.Root!;
         }
 
         public Stream Get()
         {
-            return new MemoryStream(Encoding.Default.GetBytes(Doc.InnerXml));
+            return new MemoryStream(Encoding.Default.GetBytes(Document.ToString()));
         }
 
         private Guid NextID()
@@ -30,43 +26,38 @@ namespace AnodyneArchipelago.Patches
             return new Guid(Encoding.ASCII.GetBytes($"Archipelago{CurrentID++:D5}"));
         }
 
+        private XElement GetByID(Guid id)
+        {
+            return root.Descendants().Where(e => e.Name != "map" && (Guid)e.Attribute("guid")! == id).First();
+        }
+
         public void RemoveNexusBlockers()
         {
-            var nodes = Doc.SelectNodes(@".//map[@name=""NEXUS""]/Gate | .//map[@name=""NEXUS""]/Button");
-            foreach(XmlNode n in nodes!)
-            {
-                n.ParentNode!.RemoveChild(n);
-            }
+            root!.Elements("map")
+                        .Where(m => (string)m.Attribute("name")! == "NEXUS")
+                        .SelectMany(m => m.Elements("Gate").Concat(m.Elements("Button")))
+                        .Remove();
         }
 
         public void Set36CardRequirement(int required)
         {
-            XmlNode gate = Doc.SelectSingleNode(@".//*[@guid=""C8CE6E18-CF07-180B-A550-9DC808A2F7E3""]")!;
-            gate.Attributes!["frame"]!.Value = required.ToString();
+            var gate = GetByID(new("C8CE6E18-CF07-180B-A550-9DC808A2F7E3"));
+            gate.SetAttributeValue("frame", required.ToString());
         }
 
         public void OpenSmallKeyGates()
         {
-            var nodes = Doc.SelectNodes(@".//KeyBlock[@frame=""0""]");
-            foreach (XmlNode n in nodes!)
-            {
-                n.ParentNode!.RemoveChild(n);
-            }
+            root.Descendants("KeyBlock").Where(k => (int)k.Attribute("frame")! == 0).Remove();
         }
 
         public void OpenBigKeyGates()
         {
-            var nodes = Doc.SelectNodes(@".//KeyBlock[@frame>""0""]");
-            foreach (XmlNode n in nodes!)
-            {
-                n.ParentNode!.RemoveChild(n);
-            }
+            root.Descendants("KeyBlock").Where(k => (int)k.Attribute("frame")! > 0).Remove();
         }
 
         public void RemoveMitraCliff()
         {
-            XmlNode mitra = Doc.SelectSingleNode(@".//map[@name=""CLIFF""]/Mitra")!;
-            mitra.ParentNode!.RemoveChild(mitra);
+            root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "CLIFF").First().Remove();
         }
 
         public void SetColorPuzzle(ColorPuzzle puzzle)
@@ -76,33 +67,14 @@ namespace AnodyneArchipelago.Patches
             Point apartmentPoint = puzzle.ApartmentPos;
             string typeval = $"{circusPoint.X},{circusPoint.Y};{hotelPoint.X},{hotelPoint.Y};{apartmentPoint.X},{apartmentPoint.Y};1,1";
 
-            XmlNode puzzleCheck = Doc.SelectSingleNode(@".//*[@guid=""ED2195E9-9798-B9B3-3C15-105C40F7C501""]")!;
-            puzzleCheck.Attributes!["type"]!.Value = typeval;
+            GetByID(new("ED2195E9-9798-B9B3-3C15-105C40F7C501")).SetAttributeValue("type",typeval);
         }
 
         public void SetFreeStanding(Guid guid, string location)
         {
-            XmlElement check = (XmlElement)Doc.SelectSingleNode($".//*[@guid=\"{guid.ToString().ToUpperInvariant()}\"]")!;
-
-            DebugLogger.AddInfo($"Replacing: {check.OuterXml}");
-
-            check = RenameNode(check, "FreeStandingAP");
-
-            check.SetAttribute("type", location);
-        }
-
-        private static XmlElement RenameNode(XmlNode node, string newName)
-        {
-            XmlElement newNode = node.OwnerDocument!.CreateElement(newName);
-
-            foreach (XmlAttribute att in node.Attributes!)
-                newNode.SetAttribute(att.Name, att.Value);
-            foreach (XmlNode child in node.ChildNodes)
-                newNode.AppendChild(child.Clone());
-
-            node.ParentNode!.ReplaceChild(newNode, node);
-
-            return newNode;
+            var node = GetByID(guid);
+            node.Name = "FreeStandingAP";
+            node.SetAttributeValue("type", location);
         }
     }
 }
