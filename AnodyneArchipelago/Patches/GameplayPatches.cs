@@ -86,36 +86,6 @@ namespace AnodyneArchipelago.Patches
         }
     }
 
-    [HarmonyPatch]
-    class BreakChainPatch
-    {
-        static MethodInfo TargetMethod()
-        {
-            return typeof(Red_Pillar.Chain).GetMethod("Collided");
-        }
-
-        static void Postfix(object __instance)
-        {
-            if (Plugin.ArchipelagoManager.VanillaRedCave)
-            {
-                return;
-            }
-
-            Type chainType = typeof(Red_Pillar.Chain);
-            FieldInfo parentField = chainType.GetField("_parent", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            Red_Pillar redPillar = (Red_Pillar)parentField.GetValue(__instance);
-            EntityPreset preset = PatchHelper.GetEntityPreset(typeof(Red_Pillar), redPillar);
-
-            // Plugin.Instance.Log.LogInfo($"Broke red chain: {preset.EntityID.ToString()}");
-
-            if (Locations.LocationsByGuid.ContainsKey(preset.EntityID))
-            {
-                Plugin.ArchipelagoManager.SendLocation(Locations.LocationsByGuid[preset.EntityID]);
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(Box), nameof(Box.PlayerInteraction))]
     class BoxOpenPatch
     {

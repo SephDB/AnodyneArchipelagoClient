@@ -718,7 +718,7 @@ namespace AnodyneArchipelago
 
                 foreach (long location_id in _session.Locations.AllLocations) {
                     string name = _session.Locations.GetLocationNameFromId(location_id);
-                    if(name.EndsWith("Key"))
+                    if(name.EndsWith("Key") || name.EndsWith("Tentacle"))
                     {
                         patcher.SetFreeStanding(Locations.LocationsGuids[name], name);
                     }
