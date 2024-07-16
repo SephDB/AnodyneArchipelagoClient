@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entities\BossItemAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\ChestAPInserter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\FreeStandingAP.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entities\WindmillCheckAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Locations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\ArchipelagoSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\BoxedConfigState.cs" />

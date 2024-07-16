@@ -137,23 +137,6 @@ namespace AnodyneArchipelago.Patches
         }
     }
 
-    [HarmonyPatch("AnodyneSharp.Entities.Interactive.Npc.Windmill.Console", "PlayerInteraction")]
-    class WindmillInteractPatch
-    {
-        static void Prefix(object __instance)
-        {
-            if (!Plugin.ArchipelagoManager.SplitWindmill)
-            {
-                return;
-            }
-
-            if ((__instance as Entity).CurAnimName == "active")
-            {
-                Plugin.ArchipelagoManager.SendLocation("Windmill - Activation");
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(PlayState), "Warp")]
     class PlayWarpPatch
     {

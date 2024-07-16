@@ -745,6 +745,10 @@ namespace AnodyneArchipelago
                     {
                         patcher.SetTreasureChest(Locations.LocationsGuids[name], name);
                     }
+                    else if(name == "Windmill - Activation")
+                    {
+                        patcher.SetWindmillCheck();
+                    }
                 }
 
                 stream = patcher.Get();

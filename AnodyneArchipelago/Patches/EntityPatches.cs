@@ -106,5 +106,18 @@ namespace AnodyneArchipelago.Patches
                     )
                 );
         }
+
+        public void SetWindmillCheck()
+        {
+            var map = root.Elements().Where(m => (string)m.Attribute("name")! == "WINDMILL").First();
+            map.Add(
+                new XElement("WindmillCheckAP",
+                    new XAttribute("guid",NextID()),
+                    new XAttribute("x",192),
+                    new XAttribute("y", 368),
+                    new XAttribute("frame",0)
+                )
+            );
+        }
     }
 }
