@@ -14,31 +14,6 @@ using System.IO;
 
 namespace AnodyneArchipelago.Patches
 {
-    [HarmonyPatch(typeof(PlayState), nameof(PlayState.Create))]
-    class PlayStateCreatePatch
-    {
-        static void Prefix(PlayState __instance)
-        {
-            // Get player for later access.
-            FieldInfo playerField = typeof(PlayState).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance);
-            Plugin.Player = (Player)playerField.GetValue(__instance);
-
-            // Handle Red Cave stuff.
-            if (!Plugin.ArchipelagoManager.VanillaRedCave)
-            {
-                GlobalState.events.SetEvent("red_cave_l_ss", 999);
-                GlobalState.events.SetEvent("red_cave_n_ss", 999);
-                GlobalState.events.SetEvent("red_cave_r_ss", 999);
-            }
-
-            // Reset death link info.
-            Plugin.ArchipelagoManager.DeathLinkReason = null;
-
-            // Pretend we're always in a pre-credits state so that swap is an allowlist, not a denylist.
-            GlobalState.events.SetEvent("SeenCredits", 0);
-        }
-    }
-
     [HarmonyPatch(typeof(CreditsState), MethodType.Constructor, new Type[] {})]
     static class CreateCreditsPatch
     {

@@ -209,6 +209,8 @@ namespace AnodyneArchipelago
                     GlobalState.events.ActivatedNexusPortals.Add(mapName);
                 }
             }
+            // Pretend we're always in a pre-credits state so that swap is an allowlist, not a denylist.
+            GlobalState.events.SetEvent("SeenCredits", 0);
         }
 
         ~ArchipelagoManager()

@@ -13,9 +13,11 @@ namespace AnodyneArchipelago
     {
         public static Plugin Instance = null;
 
-        public static AnodyneGame Game => GlobalState.GameState as AnodyneGame;
-        public static Player Player = null;
-        public static ArchipelagoManager ArchipelagoManager = null;
+        static FieldInfo playerField = typeof(PlayState).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+        public static AnodyneGame Game => (GlobalState.GameState as AnodyneGame)!;
+        public static Player Player => (Player)playerField.GetValue(Game.CurrentState as PlayState)!;
+        public static ArchipelagoManager? ArchipelagoManager = null;
 
         public const string Version = "0.2.0";
 
