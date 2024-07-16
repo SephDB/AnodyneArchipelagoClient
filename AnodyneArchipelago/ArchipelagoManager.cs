@@ -1,6 +1,7 @@
 ﻿using AnodyneArchipelago.Patches;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget.Treasures;
+using AnodyneSharp.Logging;
 using AnodyneSharp.MapData;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
@@ -484,6 +485,8 @@ namespace AnodyneArchipelago
 
             string itemName = item.ItemName;
 
+            bool handled = true;
+
             if (itemName.StartsWith("Small Key"))
             {
                 string dungeonName = itemName[11..];
@@ -631,6 +634,11 @@ namespace AnodyneArchipelago
             {
                 GlobalState.events.SetEvent("ReceivedBikingShoes", 1);
             }
+            else
+            {
+                handled = false;
+                DebugLogger.AddError($"Missing item handling: {itemName}!", false);
+            }
 
             string message;
             if (item.Player == _session.ConnectionInfo.Slot)
@@ -641,6 +649,11 @@ namespace AnodyneArchipelago
             {
                 string otherPlayer = _session.Players.GetPlayerAlias(item.Player);
                 message = $"Received {itemName} from {otherPlayer}.";
+            }
+
+            if (!handled)
+            {
+                message += " But it didn't have any effect.";
             }
 
             GlobalState.Dialogue = message;
@@ -748,6 +761,10 @@ namespace AnodyneArchipelago
                     else if(name == "Windmill - Activation")
                     {
                         patcher.SetWindmillCheck();
+                    }
+                    else
+                    {
+                        DebugLogger.AddError($"Missing location patch: {name}", false);
                     }
                 }
 
