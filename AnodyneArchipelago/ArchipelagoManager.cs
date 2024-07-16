@@ -61,7 +61,6 @@ namespace AnodyneArchipelago
         private List<string> _unlockedGates = new();
         private PostgameMode _postgameMode;
 
-        private readonly Queue<ItemInfo> _itemsToCollect = new();
         private readonly Queue<string> _messages = new();
         private DeathLink? _pendingDeathLink = null;
         private string? _deathLinkReason = null;
@@ -113,7 +112,6 @@ namespace AnodyneArchipelago
             }
 
             _itemIndex = 0;
-            _itemsToCollect.Clear();
 
             LoginSuccessful login = (result as LoginSuccessful)!;
 
@@ -292,31 +290,22 @@ namespace AnodyneArchipelago
                 return;
             }
 
-            if (_session.Items.Index > _itemIndex)
-            {
-                for (int i = _itemIndex; i < _session.Items.Index; i++)
-                {
-                    string itemKey = $"ArchipelagoItem-{i}";
-                    if (GlobalState.events.GetEvent(itemKey) != 0)
-                    {
-                        continue;
-                    }
-
-                    GlobalState.events.SetEvent(itemKey, 1);
-
-                    ItemInfo item = _session.Items.AllItemsReceived[i];
-                    _itemsToCollect.Enqueue(item);
-                }
-
-                _itemIndex = _session.Items.AllItemsReceived.Count;
-            }
-
             if (Plugin.ReadyToReceive())
             {
-                if (_itemsToCollect.Count > 0)
+                if (_session.Items.Index > _itemIndex)
                 {
-                    ItemInfo item = _itemsToCollect.Dequeue();
-                    HandleItem(item);
+                    (int newindex, string eventname) = Enumerable.Range(_itemIndex,_session.Items.Index - _itemIndex).Select(i => (Index: i,Name: $"Archipelago-{i}")).SkipWhile(e => GlobalState.events.GetEvent(e.Name) != 0).FirstOrDefault((-1,""));
+                    if (newindex != -1)
+                    {
+                        GlobalState.events.IncEvent(eventname);
+                        ItemInfo item = _session.Items.AllItemsReceived[newindex];
+                        HandleItem(item);
+                        _itemIndex = newindex + 1;
+                    }
+                    else
+                    {
+                        _itemIndex = _session.Items.Index;
+                    }
                 }
                 else if (_messages.Count > 0)
                 {
