@@ -273,7 +273,7 @@ namespace AnodyneArchipelago.Menu
 
             _fadingOut = true;
 
-            Plugin.ArchipelagoManager.PostSaveloadInit();
+            Plugin.ArchipelagoManager.PostSaveloadInit(_isNewGame);
         }
     }
 }

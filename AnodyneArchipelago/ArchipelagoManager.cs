@@ -59,6 +59,7 @@ namespace AnodyneArchipelago
         private bool _forestBunnyChest = false;
         private VictoryCondition _victoryCondition;
         private List<string> _unlockedGates = new();
+        private Dictionary<string,Guid> _checkGates = new();
         private PostgameMode _postgameMode;
 
         private readonly Queue<string> _messages = new();
@@ -171,40 +172,34 @@ namespace AnodyneArchipelago
 
         public static string GetNexusGateMapName(string region)
         {
-            switch (region)
+            region = string.Join("",region.Split(' ').TakeWhile(s => Char.IsUpper(s[0]))).ToUpperInvariant();
+
+            return region switch
             {
-                case "Apartment floor 1": return "APARTMENT";
-                case "Beach": return "BEACH";
-                case "Bedroom exit": return "BEDROOM";
-                case "Blue": return "BLUE";
-                case "Cell": return "CELL";
-                case "Circus": return "CIRCUS";
-                case "Cliff": return "CLIFF";
-                case "Crowd floor 1": return "CROWD";
-                case "Fields": return "FIELDS";
-                case "Forest": return "FOREST";
-                case "Go bottom": return "GO";
-                case "Happy": return "HAPPY";
-                case "Hotel floor 4": return "HOTEL";
-                case "Overworld": return "OVERWORLD";
-                case "Red Cave top": return "REDCAVE";
-                case "Red Sea": return "REDSEA";
-                case "Suburb": return "SUBURB";
-                case "Space": return "SPACE";
-                case "Terminal": return "TERMINAL";
-                case "Windmill entrance": return "WINDMILL";
-                default: return "";
-            }
+                "TEMPLE" => "BEDROOM",
+                "CLIFFS" => "CLIFF",
+                "MOUNTAINCAVERN" => "CROWD",
+                "DEEPFOREST" => "FOREST",
+                "YOUNGTOWN" => "SUBURB",
+                _ => region
+            };
         }
 
-        public void PostSaveloadInit()
+        public void PostSaveloadInit(bool newGame)
         {
-            foreach (string gate in _unlockedGates)
+            if (newGame)
             {
-                string mapName = GetNexusGateMapName(gate);
-                if (mapName.Length > 0)
+                foreach (string gate in _unlockedGates)
                 {
-                    GlobalState.events.ActivatedNexusPortals.Add(mapName);
+                    string mapName = GetNexusGateMapName(gate);
+                    if (mapName.Length > 0)
+                    {
+                        GlobalState.events.ActivatedNexusPortals.Add(mapName);
+                    }
+                }
+                foreach (Guid guid in _checkGates.Values)
+                {
+                    EntityManager.SetAlive(guid, false);
                 }
             }
             // Pretend we're always in a pre-credits state so that swap is an allowlist, not a denylist.
@@ -567,6 +562,19 @@ namespace AnodyneArchipelago
             {
                 GlobalState.events.SetEvent("ReceivedBikingShoes", 1);
             }
+            else if (itemName.StartsWith("Nexus Gate"))
+            {
+                string mapname = GetNexusGateMapName(itemName[12..^1]);
+                if(_checkGates.TryGetValue(mapname, out var gate))
+                {
+                    EntityManager.SetAlive(gate, true);
+                    GlobalState.events.ActivatedNexusPortals.Add(mapname);
+                }
+                else
+                {
+                    DebugLogger.AddError($"Couldn't find nexus gate to unlock at {mapname}.", false);
+                }
+            }
             else
             {
                 handled = false;
@@ -694,6 +702,11 @@ namespace AnodyneArchipelago
                     else if(name == "Windmill - Activation")
                     {
                         patcher.SetWindmillCheck();
+                    }
+                    else if(name.EndsWith("Warp Pad"))
+                    {
+                        Guid guid = patcher.SetNexusPad(name);
+                        _checkGates.Add(GetNexusGateMapName(name),guid); //Need to set them not alive when loading save for the first time
                     }
                     else
                     {

@@ -76,6 +76,7 @@ namespace AnodyneArchipelago.Patches
             var node = GetByID(guid);
             node.Name = nameof(FreeStandingAP);
             node.SetAttributeValue("type", location);
+            node.SetAttributeValue("p", 2);
         }
 
         public void SetCicada(Guid guid, string location)
@@ -90,6 +91,7 @@ namespace AnodyneArchipelago.Patches
                 node.Name = nameof(FreeStandingAP);
             }
             node.SetAttributeValue("type", location);
+            node.SetAttributeValue("p", 2);
         }
 
         public void SetTreasureChest(Guid guid, string location)
@@ -98,11 +100,12 @@ namespace AnodyneArchipelago.Patches
             node.AddBeforeSelf(
                 new XElement(
                     nameof(ChestAPInserter),
-                    new XAttribute("guid",NextID()),
-                    new XAttribute("type",location),
-                    new XAttribute("frame",0),
-                    new XAttribute("x",node.Attribute("x")!.Value),
-                    new XAttribute("y",node.Attribute("y")!.Value)
+                    new XAttribute("guid", NextID()),
+                    new XAttribute("type", location),
+                    new XAttribute("frame", 0),
+                    new XAttribute("x", node.Attribute("x")!.Value),
+                    new XAttribute("y", node.Attribute("y")!.Value),
+                    new XAttribute("p", 2)
                     )
                 );
         }
@@ -115,9 +118,32 @@ namespace AnodyneArchipelago.Patches
                     new XAttribute("guid",NextID()),
                     new XAttribute("x",192),
                     new XAttribute("y", 368),
-                    new XAttribute("frame",0)
+                    new XAttribute("frame",0),
+                    new XAttribute("p", 2)
                 )
             );
+        }
+
+        public Guid SetNexusPad(string locationName)
+        {
+            string map = ArchipelagoManager.GetNexusGateMapName(locationName[..^11]);
+
+            var nexusPad = root.Descendants("Door").Where(p => (string)p.Parent!.Attribute("name")! == map && (string)p.Attribute("type")! == "16").First();
+
+            nexusPad.SetAttributeValue("p", 2); //Make sure it despawns
+
+            nexusPad.AddAfterSelf(
+                new XElement(nameof(FreeStandingAP),
+                        new XAttribute("guid",NextID()),
+                        new XAttribute("type", locationName),
+                        new XAttribute("frame", 0),
+                        new XAttribute("x", (int)nexusPad.Attribute("x")!+16),
+                        new XAttribute("y", (int)nexusPad.Attribute("y")!+16),
+                        new XAttribute("p", 2)
+                    )
+                );
+
+            return (Guid)nexusPad.Attribute("guid")!;
         }
     }
 }
