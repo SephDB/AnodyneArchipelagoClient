@@ -64,7 +64,7 @@ namespace AnodyneArchipelago
         private readonly Queue<ItemInfo> _itemsToCollect = new();
         private readonly Queue<string> _messages = new();
         private DeathLink? _pendingDeathLink = null;
-        private string _deathLinkReason = null;
+        private string? _deathLinkReason = null;
         private bool _receiveDeath = false;
 
         private Task<Dictionary<string, ScoutedItemInfo>> _scoutTask;
@@ -88,7 +88,7 @@ namespace AnodyneArchipelago
             set { _receiveDeath = value; }
         }
 
-        public string DeathLinkReason
+        public string? DeathLinkReason
         {
             get { return _deathLinkReason; }
             set { _deathLinkReason = value; }
@@ -115,11 +115,9 @@ namespace AnodyneArchipelago
             _itemIndex = 0;
             _itemsToCollect.Clear();
 
-            LoginSuccessful login = result as LoginSuccessful;
-            if (login.SlotData.ContainsKey("endgame_card_requirement"))
-            {
-                _endgameCardRequirement = (long)login.SlotData["endgame_card_requirement"];
-            }
+            LoginSuccessful login = (result as LoginSuccessful)!;
+
+            _endgameCardRequirement = (long)login.SlotData.GetValueOrDefault("endgame_card_requirement", 36);
 
             if (login.SlotData.ContainsKey("seed"))
             {
@@ -127,68 +125,19 @@ namespace AnodyneArchipelago
                 _colorPuzzle.Initialize(rand);
             }
 
-            if (login.SlotData.ContainsKey("unlock_gates"))
-            {
-                _unlockSmallKeyGates = (bool)login.SlotData["unlock_gates"];
-            }
-            else
-            {
-                _unlockSmallKeyGates = false;
-            }
+            _unlockSmallKeyGates = (bool)login.SlotData.GetValueOrDefault("unlock_gates", false);
 
-            if (login.SlotData.ContainsKey("shuffle_big_gates"))
-            {
-                _bigKeyShuffle = (BigKeyShuffle)(long)login.SlotData["shuffle_big_gates"];
-            }
-            else
-            {
-                _bigKeyShuffle = BigKeyShuffle.AnyWorld;
-            }
+            _bigKeyShuffle = (BigKeyShuffle)(long)login.SlotData.GetValueOrDefault("shuffle_big_gates", BigKeyShuffle.AnyWorld);
 
-            if (login.SlotData.ContainsKey("vanilla_health_cicadas"))
-            {
-                _vanillaHealthCicadas = (bool)login.SlotData["vanilla_health_cicadas"];
-            }
-            else
-            {
-                _vanillaHealthCicadas = false;
-            }
+            _vanillaHealthCicadas = (bool)login.SlotData.GetValueOrDefault("vanilla_health_cicadas", false);
 
-            if (login.SlotData.ContainsKey("vanilla_red_cave"))
-            {
-                _vanillaRedCave = (bool)login.SlotData["vanilla_red_cave"];
-            }
-            else
-            {
-                _vanillaRedCave = false;
-            }
+            _vanillaRedCave = (bool)login.SlotData.GetValueOrDefault("vanilla_red_cave", false);
 
-            if (login.SlotData.ContainsKey("split_windmill"))
-            {
-                _splitWindmill = (bool)login.SlotData["split_windmill"];
-            }
-            else
-            {
-                _splitWindmill = false;
-            }
+            _splitWindmill = (bool)login.SlotData.GetValueOrDefault("split_windmill", false);
 
-            if (login.SlotData.ContainsKey("forest_bunny_chest"))
-            {
-                _forestBunnyChest = (bool)login.SlotData["forest_bunny_chest"];
-            }
-            else
-            {
-                _forestBunnyChest = false;
-            }
+            _forestBunnyChest = (bool)login.SlotData.GetValueOrDefault("forest_bunny_chest", false);
 
-            if (login.SlotData.ContainsKey("victory_condition"))
-            {
-                _victoryCondition = (VictoryCondition)(long)login.SlotData["victory_condition"];
-            }
-            else
-            {
-                _victoryCondition = VictoryCondition.DefeatBriar;
-            }
+            _victoryCondition = (VictoryCondition)(long)login.SlotData.GetValueOrDefault("victory_condition", VictoryCondition.DefeatBriar);
 
             if (login.SlotData.ContainsKey("nexus_gates_unlocked"))
             {
@@ -199,14 +148,7 @@ namespace AnodyneArchipelago
                 _unlockedGates = new();
             }
 
-            if (login.SlotData.ContainsKey("postgame_mode"))
-            {
-                _postgameMode = (PostgameMode)(long)login.SlotData["postgame_mode"];
-            }
-            else
-            {
-                _postgameMode = PostgameMode.Disabled;
-            }
+            _postgameMode = (PostgameMode)(long)login.SlotData.GetValueOrDefault("postgame_mode", PostgameMode.Disabled);
 
             if (login.SlotData.ContainsKey("death_link") && (bool)login.SlotData["death_link"])
             {
