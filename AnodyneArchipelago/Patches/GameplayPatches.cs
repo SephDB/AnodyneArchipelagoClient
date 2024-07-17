@@ -221,20 +221,4 @@ namespace AnodyneArchipelago.Patches
             regionsField.SetValue(__instance, regions);
         }
     }
-
-    [HarmonyPatch(typeof(SpriteSage), MethodType.Constructor, new Type[] { typeof(Vector2), typeof(Player) })]
-    class SageOverworldPatch
-    {
-        static void Postfix(SpriteSage __instance, Vector2 pos, Player p)
-        {
-            if (GlobalState.CURRENT_MAP_NAME == "OVERWORLD" &&
-                !(  GlobalState.inventory.HasBroom ||
-                    GlobalState.inventory.HasWiden ||
-                    GlobalState.inventory.HasLengthen
-                ))
-            {
-                __instance.exists = false;
-            }
-        }
-    }
 }

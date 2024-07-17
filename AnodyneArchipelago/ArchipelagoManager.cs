@@ -670,6 +670,7 @@ namespace AnodyneArchipelago
 
                 patcher.RemoveNexusBlockers();
                 patcher.RemoveMitraCliff();
+                patcher.RemoveSageSoftlock();
 
                 patcher.SetColorPuzzle(ColorPuzzle);
 

@@ -61,6 +61,11 @@ namespace AnodyneArchipelago.Patches
             root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "CLIFF").First().Remove();
         }
 
+        public void RemoveSageSoftlock()
+        {
+            root.Descendants("Sage").Where(m => (string)m.Parent!.Attribute("name")! == "OVERWORLD").First().Remove();
+        }
+
         public void SetColorPuzzle(ColorPuzzle puzzle)
         {
             Point circusPoint = puzzle.CircusPos;
