@@ -1,4 +1,5 @@
 ﻿using AnodyneArchipelago.Entities;
+using AnodyneSharp.Entities.Gadget.Doors;
 using Microsoft.Xna.Framework;
 using System.Text;
 using System.Xml.Linq;
@@ -149,6 +150,31 @@ namespace AnodyneArchipelago.Patches
                 );
 
             return (Guid)nexusPad.Attribute("guid")!;
+        }
+
+        public void SetBoxTradeCheck()
+        {
+            var node = root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 2).First();
+            node.AddAfterSelf(
+                new XElement(
+                    "TradeQuestStarterAP",
+                    new XAttribute("guid", NextID()),
+                        new XAttribute("frame", 0),
+                        new XAttribute("x", (int)node.Attribute("x")!),
+                        new XAttribute("y", (int)node.Attribute("y")!),
+                        new XAttribute("p", 2)
+                    )
+                );
+        }
+
+        public void SetMitraTradeCheck()
+        {
+            root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "FIELDS").First().Name = nameof(MitraTradeQuestAP);
+        }
+
+        public void SetShopkeepTradeCheck()
+        {
+            root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 3).First().Name = nameof(ShopKeepAP);
         }
     }
 }

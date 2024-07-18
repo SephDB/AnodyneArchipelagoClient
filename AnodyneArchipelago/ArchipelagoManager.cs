@@ -709,6 +709,18 @@ namespace AnodyneArchipelago
                         Guid guid = patcher.SetNexusPad(name);
                         _checkGates.Add(GetNexusGateMapName(name),guid); //Need to set them not alive when loading save for the first time
                     }
+                    else if(name.EndsWith("Cardboard Box"))
+                    {
+                        patcher.SetBoxTradeCheck();
+                    }
+                    else if(name.EndsWith("Shopkeeper Trade"))
+                    {
+                        patcher.SetShopkeepTradeCheck();
+                    }
+                    else if(name.EndsWith("Mitra Trade"))
+                    {
+                        patcher.SetMitraTradeCheck();
+                    }
                     else
                     {
                         DebugLogger.AddError($"Missing location patch: {name}", false);
