@@ -31,7 +31,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EntityPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\GameplayPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Patches\StatePatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SwapData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Util.cs" />

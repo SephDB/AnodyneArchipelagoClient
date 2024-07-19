@@ -9,13 +9,13 @@ using System.Reflection;
 
 namespace AnodyneArchipelago
 {
-    public class Plugin
+    public class Plugin : IStateSetter
     {
         public static Plugin Instance = null;
 
         static FieldInfo playerField = typeof(PlayState).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-        public static AnodyneGame Game => (GlobalState.GameState as AnodyneGame)!;
+        public static AnodyneGame Game;
         public static Player Player => (Player)playerField.GetValue(Game.CurrentState as PlayState)!;
         public static ArchipelagoManager? ArchipelagoManager = null;
 
@@ -24,6 +24,9 @@ namespace AnodyneArchipelago
         public void Load()
         {
             Instance = this;
+
+            Game = (AnodyneGame)GlobalState.GameState;
+            GlobalState.GameState = this;
 
             // Make patches
             HarmonyFileLog.Enabled = true;
@@ -49,6 +52,19 @@ namespace AnodyneArchipelago
                 return s == PlayStateState.S_NORMAL && !hasStates && Player.state == PlayerState.GROUND;
             }
             return false;
+        }
+
+        public void SetState<T>() where T : State, new()
+        {
+            Game.SetState<T>();
+            if(Game.CurrentState is CreditsState)
+            {
+                ArchipelagoManager?.OnCredits();
+            }
+            else if(Game.CurrentState is DeathState d)
+            {
+                ArchipelagoManager?.OnDeath(d);
+            }
         }
     }
 }

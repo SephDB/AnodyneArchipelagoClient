@@ -5,12 +5,15 @@ using AnodyneSharp.Logging;
 using AnodyneSharp.MapData;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
+using AnodyneSharp.States;
+using AnodyneSharp.UI;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -735,6 +738,48 @@ namespace AnodyneArchipelago
                 stream = patcher.Get();
             }
             return stream;
+        }
+
+        public void OnCredits()
+        {
+            GlobalState.events.SetEvent("DefeatedBriar", 1);
+            if (PostgameMode == PostgameMode.Vanilla)
+            {
+                EnableExtendedSwap();
+            }
+
+            if (VictoryCondition == VictoryCondition.DefeatBriar)
+            {
+                ActivateGoal();
+            }
+            else if (VictoryCondition == VictoryCondition.AllCards)
+            {
+                SendLocation("GO - Defeat Briar");
+            }
+        }
+
+        public void OnDeath(DeathState deathState)
+        {
+            if (DeathLinkEnabled)
+            {
+                if (ReceivedDeath)
+                {
+                    string message = DeathLinkReason ?? "Received unknown death.";
+                    message = Util.WordWrap(message, 20);
+
+                    FieldInfo labelInfo = typeof(DeathState).GetField("_continueLabel", BindingFlags.NonPublic | BindingFlags.Instance);
+                    UILabel label = (UILabel)labelInfo.GetValue(deathState);
+                    label.SetText(message);
+                    label.Position = new Vector2(8, 8);
+
+                    ReceivedDeath = false;
+                    DeathLinkReason = null;
+                }
+                else
+                {
+                    SendDeath();
+                }
+            }
         }
     }
 }
