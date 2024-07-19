@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DeathHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\BossItemAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\ChestAPInserter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entities\DungeonStatueAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\FreeStandingAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\MitraTradeQuestAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\ShopKeepAP.cs" />

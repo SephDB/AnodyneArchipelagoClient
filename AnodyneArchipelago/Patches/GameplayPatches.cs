@@ -20,44 +20,6 @@ using AnodyneSharp;
 
 namespace AnodyneArchipelago.Patches
 {
-    [HarmonyPatch(typeof(EntityPreset), nameof(EntityPreset.Create))]
-    class EntityPresetCreatePatch
-    {
-        static void Postfix(EntityPreset __instance, Entity __result)
-        {
-            if (__instance.Type.FullName == "AnodyneSharp.Entities.Interactive.DungeonStatue")
-            {
-                if (!Plugin.ArchipelagoManager.SplitWindmill)
-                {
-                    return;
-                }
-
-                __result.Position = __instance.Position + new Vector2(1f, 32f);
-
-                string eventName = "StatueMoved_";
-                Facing moveDir = Facing.RIGHT;
-                if (__instance.Frame == 0)
-                {
-                    eventName += "Temple";
-                    moveDir = Facing.UP;
-                }
-                else if (__instance.Frame == 1)
-                {
-                    eventName += "Grotto";
-                }
-                else if (__instance.Frame == 2)
-                {
-                    eventName += "Mountain";
-                }
-
-                if (GlobalState.events.GetEvent(eventName) > 0)
-                {
-                    __result.Position += Entity.FacingDirection(moveDir) * 32f;
-                }
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(PlayState), "Warp")]
     class PlayWarpPatch
     {

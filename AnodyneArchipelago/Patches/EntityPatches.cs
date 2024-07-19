@@ -128,6 +128,10 @@ namespace AnodyneArchipelago.Patches
                     new XAttribute("p", 2)
                 )
             );
+            foreach(var n in root.Descendants("Dungeon_Statue"))
+            {
+                n.Name = "DungeonStatueAP";
+            }
         }
 
         public Guid SetNexusPad(string locationName)
