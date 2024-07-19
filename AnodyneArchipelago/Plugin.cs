@@ -46,7 +46,7 @@ namespace AnodyneArchipelago
             {
                 bool hasStates = (typeof(PlayState).GetField("_childStates", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p) as List<State>)!.Count != 0;
                 PlayStateState s = (PlayStateState)typeof(PlayState).GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p)!;
-                return s == PlayStateState.S_NORMAL && !hasStates;
+                return s == PlayStateState.S_NORMAL && !hasStates && Player.state == PlayerState.GROUND;
             }
             return false;
         }
