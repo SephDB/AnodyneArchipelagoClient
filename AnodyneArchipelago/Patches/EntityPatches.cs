@@ -171,6 +171,11 @@ namespace AnodyneArchipelago.Patches
                 );
         }
 
+        public void SetAllCardsVictory()
+        {
+            root.Descendants("Console").Where(c => (string)c.Parent!.Attribute("name")! == "BLANK" && (int)c.Attribute("frame")! == 1).First().Name = nameof(BlankConsoleAP);
+        }
+
         public void SetMitraTradeCheck()
         {
             root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "FIELDS").First().Name = nameof(MitraTradeQuestAP);

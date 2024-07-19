@@ -60,23 +60,6 @@ namespace AnodyneArchipelago.Patches
         }
     }
 
-    [HarmonyPatch]
-    class BlankConsoleInteractPatch
-    {
-        static MethodInfo TargetMethod()
-        {
-            return typeof(AnodyneGame).Assembly.GetType("AnodyneSharp.Entities.Interactive.Npc.Blank.BlankConsole").GetMethod("PlayerInteraction");
-        }
-
-        static void Postfix()
-        {
-            if (Plugin.ArchipelagoManager.VictoryCondition == VictoryCondition.AllCards)
-            {
-                Plugin.ArchipelagoManager.ActivateGoal();
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(SwapperControl), MethodType.Constructor, new Type[] {typeof(string)})]
     class SwapperControlCtorPatch
     {

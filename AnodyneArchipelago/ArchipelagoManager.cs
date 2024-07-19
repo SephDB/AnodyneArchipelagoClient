@@ -686,6 +686,11 @@ namespace AnodyneArchipelago
                     patcher.OpenBigKeyGates();
                 }
 
+                if(VictoryCondition == VictoryCondition.AllCards)
+                {
+                    patcher.SetAllCardsVictory();
+                }
+
                 foreach (long location_id in _session.Locations.AllLocations) {
                     string name = _session.Locations.GetLocationNameFromId(location_id);
                     if(name.EndsWith("Key") || name.EndsWith("Tentacle"))

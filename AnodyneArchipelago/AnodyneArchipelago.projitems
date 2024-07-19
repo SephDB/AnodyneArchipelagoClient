@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entities\DungeonStatueAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\FreeStandingAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\MitraTradeQuestAP.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entities\BlankConsoleAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\ShopKeepAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\TradeQuestStarterAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\WindmillCheckAP.cs" />
@@ -27,7 +28,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Menu\ConnectionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\MenuState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\TextEntry.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Patches\DebugPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EntityPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\GameplayPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelper.cs" />
