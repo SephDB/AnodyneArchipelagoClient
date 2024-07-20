@@ -744,7 +744,12 @@ namespace AnodyneArchipelago
                 string newContents = string.Join("\n",
                     SwapData.GetRectanglesForMap(path.Split('.')[^3], GlobalState.events.GetEvent("ExtendedSwap") == 1)
                             .Select(r => $"Allow\t{r.X}\t{r.Y}\t{r.Width}\t{r.Height}"));
-                return new MemoryStream(Encoding.Default.GetBytes(newContents));
+                stream = new MemoryStream(Encoding.Default.GetBytes(newContents));
+            }
+            else if(path.EndsWith("BG.csv"))
+            {
+                using StreamReader reader = new(stream);
+                stream = new MemoryStream(Encoding.Default.GetBytes(MapPatches.ChangeMap(path.Split('.')[^3],reader.ReadToEnd())));
             }
             return stream;
         }

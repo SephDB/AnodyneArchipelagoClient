@@ -29,7 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Menu\MenuState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\TextEntry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EntityPatches.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Patches\GameplayPatches.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\MapPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SwapData.cs" />
