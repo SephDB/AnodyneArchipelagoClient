@@ -398,6 +398,27 @@ namespace AnodyneArchipelago
             }
         }
 
+        private int GetSecretNumber(string secretName)
+        {
+            List<string> secret_items = [
+                "Golden Poop",
+                "Spam Can",
+                "Glitch",
+                "Heart",
+                "Electric Monster",
+                "Cat Statue",
+                "Melos",
+                "Marina",
+                "Black Cube",
+                "Red Cube",
+                "Green Cube",
+                "Blue Cube",
+                "White Cube",
+                "Golden Broom",
+            ];
+            return secret_items.IndexOf( secretName );
+        }
+
         private void HandleItem(ItemInfo item)
         {
             if (item.Player == _session.ConnectionInfo.Slot && item.LocationId >= 0)
@@ -574,6 +595,12 @@ namespace AnodyneArchipelago
                 {
                     DebugLogger.AddError($"Couldn't find nexus gate to unlock at {mapname}.", false);
                 }
+            }
+            else if(GetSecretNumber(itemName) != -1)
+            {
+                SecretTreasure treasure = new(Plugin.Player.Position, GetSecretNumber(itemName), -1);
+                treasure.GetTreasure();
+                GlobalState.SpawnEntity(treasure);
             }
             else
             {
