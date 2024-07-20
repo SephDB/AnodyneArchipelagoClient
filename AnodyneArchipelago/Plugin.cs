@@ -2,8 +2,6 @@
 using AnodyneSharp.Entities;
 using AnodyneSharp.Registry;
 using AnodyneSharp.States;
-using HarmonyLib;
-using HarmonyLib.Tools;
 using Microsoft.Xna.Framework;
 using System.Reflection;
 
@@ -27,20 +25,6 @@ namespace AnodyneArchipelago
 
             Game = (AnodyneGame)GlobalState.GameState;
             GlobalState.GameState = this;
-
-            // Make patches
-            HarmonyFileLog.Enabled = true;
-            HarmonyFileLog.FileWriterPath = "HarmonyLog.txt";
-        }
-
-        public static void OnConnect()
-        {
-            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(),"anodyneAP");
-        }
-
-        public static void OnDisconnect()
-        {
-            Harmony.UnpatchID("anodyneAP");
         }
 
         public static bool ReadyToReceive()

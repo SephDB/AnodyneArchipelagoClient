@@ -167,9 +167,7 @@ namespace AnodyneArchipelago
                 _deathLinkService = null;
             }
 
-            _scoutTask = Task.Run(() => ScoutAllLocations());
-
-            Plugin.OnConnect();
+            _scoutTask = Task.Run(ScoutAllLocations);
 
             return result;
         }
@@ -221,8 +219,6 @@ namespace AnodyneArchipelago
             {
                 return;
             }
-
-            Plugin.OnDisconnect();
 
             _session.Socket.DisconnectAsync();
             _session = null;

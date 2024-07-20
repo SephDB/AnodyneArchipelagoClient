@@ -1,22 +1,4 @@
-﻿using AnodyneSharp.Entities.Events;
-using AnodyneSharp.Entities.Gadget.Treasures;
-using AnodyneSharp.Entities.Gadget;
-using AnodyneSharp.Entities.Interactive;
-using AnodyneSharp.Entities;
-using AnodyneSharp.Registry;
-using AnodyneSharp.Utilities;
-using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Microsoft.Xna.Framework;
-using AnodyneSharp.Entities.Interactive.Npc.RunningTradeNPCs;
-using AnodyneSharp.Dialogue;
-using AnodyneSharp.Sounds;
-using AnodyneSharp.States;
-using AnodyneSharp.Entities.Interactive.Npc;
-using AnodyneSharp.MapData;
-using AnodyneSharp;
+﻿using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Patches
 {
