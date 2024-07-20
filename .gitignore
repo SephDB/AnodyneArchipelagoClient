@@ -1,8 +1,9 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
 /AnodyneArchipelago.MonoGame/obj
 /AnodyneArchipelago.MonoGame/bin/Debug/net6.0
+/AnodyneArchipelago.MonoGame/bin/Release/net6.0
 /AnodyneArchipelago.BepInEx/obj
 /.vs
