@@ -56,7 +56,7 @@ removing the save file from the save file directory.
 ### How does Swap work?
 
 The behavior of the Swap upgrade has been changed in the Archipelago mod. See
-[extended_swap.md](https://github.com/hatkirby/AnodyneArchipelagoClient/blob/main/docs/extended_swap.md)
+[extended_swap.md](https://github.com/SephDB/AnodyneArchipelagoClient/blob/main/docs/extended_swap.md)
 for more information.
 
 ### What about the wiggle glitch?
