@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace AnodyneArchipelago
@@ -736,6 +737,14 @@ namespace AnodyneArchipelago
                 }
 
                 stream = patcher.Get();
+            }
+            else if(path.EndsWith("Swapper.dat"))
+            {
+                stream?.Close();
+                string newContents = string.Join("\n",
+                    SwapData.GetRectanglesForMap(path.Split('.')[^3], GlobalState.events.GetEvent("ExtendedSwap") == 1)
+                            .Select(r => $"Allow\t{r.X}\t{r.Y}\t{r.Width}\t{r.Height}"));
+                return new MemoryStream(Encoding.Default.GetBytes(newContents));
             }
             return stream;
         }
