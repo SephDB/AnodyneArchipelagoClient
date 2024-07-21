@@ -45,9 +45,19 @@ namespace AnodyneArchipelago
             {
                 ArchipelagoManager?.OnCredits();
             }
-            else if(Game.CurrentState is DeathState d)
+            else if(Game.CurrentState is PlayState)
             {
-                ArchipelagoManager?.OnDeath(d);
+                var s = GlobalState.SetSubstate;
+                GlobalState.SetSubstate = state => SubState(s,state);
+            }
+        }
+
+        public void SubState(Action<State> subaction, State next)
+        {
+            subaction(next);
+            if(next is DeathState s)
+            {
+                ArchipelagoManager?.OnDeath(s);
             }
         }
     }
