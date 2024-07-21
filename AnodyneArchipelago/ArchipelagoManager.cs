@@ -637,7 +637,7 @@ namespace AnodyneArchipelago
             switch (message)
             {
                 case ItemSendLogMessage itemSendLogMessage:
-                    if (itemSendLogMessage.IsSenderTheActivePlayer && !itemSendLogMessage.IsReceiverTheActivePlayer)
+                    if (itemSendLogMessage is not HintItemSendLogMessage && itemSendLogMessage.IsSenderTheActivePlayer && !itemSendLogMessage.IsReceiverTheActivePlayer)
                     {
                         string itemName = itemSendLogMessage.Item.ItemName;
 
