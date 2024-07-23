@@ -1,4 +1,5 @@
-﻿using AnodyneArchipelago.Patches;
+﻿using AnodyneArchipelago.Helpers;
+using AnodyneArchipelago.Patches;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Logging;
@@ -398,27 +399,6 @@ namespace AnodyneArchipelago
             }
         }
 
-        private int GetSecretNumber(string secretName)
-        {
-            List<string> secret_items = [
-                "Golden Poop",
-                "Spam Can",
-                "Glitch",
-                "Heart",
-                "Electric Monster",
-                "Cat Statue",
-                "Melos",
-                "Marina",
-                "Black Cube",
-                "Red Cube",
-                "Green Cube",
-                "Blue Cube",
-                "White Cube",
-                "Golden Broom",
-            ];
-            return secret_items.IndexOf( secretName );
-        }
-
         private void HandleItem(ItemInfo item)
         {
             if (item.Player == _session.ConnectionInfo.Slot && item.LocationId >= 0)
@@ -431,6 +411,8 @@ namespace AnodyneArchipelago
 
                 GlobalState.events.SetEvent(itemKey, 1);
             }
+
+            BaseTreasure? treasure = null;
 
             string itemName = item.ItemName;
 
@@ -571,9 +553,7 @@ namespace AnodyneArchipelago
                 cardName = cardName[..^1];
 
                 int cardIndex = GetCardNumberForName(cardName);
-                CardTreasure cardTreasure = new(Plugin.Player.Position, cardIndex);
-                cardTreasure.GetTreasure();
-                GlobalState.SpawnEntity(cardTreasure);
+                treasure = new CardTreasure(Plugin.Player.Position, cardIndex);
             }
             else if (itemName == "Cardboard Box")
             {
@@ -596,11 +576,9 @@ namespace AnodyneArchipelago
                     DebugLogger.AddError($"Couldn't find nexus gate to unlock at {mapname}.", false);
                 }
             }
-            else if(GetSecretNumber(itemName) != -1)
+            else if(TreasureHelper.GetSecretNumber(itemName) != -1)
             {
-                SecretTreasure treasure = new(Plugin.Player.Position, GetSecretNumber(itemName), -1);
-                treasure.GetTreasure();
-                GlobalState.SpawnEntity(treasure);
+                treasure = new SecretTreasure(Plugin.Player.Position, TreasureHelper.GetSecretNumber(itemName), -1);
             }
             else
             {
@@ -625,6 +603,10 @@ namespace AnodyneArchipelago
             }
 
             GlobalState.Dialogue = message;
+            treasure ??= SpriteTreasure.Get(Plugin.Player.Position, itemName);
+
+            treasure.GetTreasure();
+            GlobalState.SpawnEntity(treasure);
         }
 
         public void ActivateGoal()
