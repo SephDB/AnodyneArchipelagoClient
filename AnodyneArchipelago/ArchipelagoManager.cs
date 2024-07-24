@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static AnodyneSharp.States.CutsceneState;
 
 namespace AnodyneArchipelago
 {
@@ -50,7 +51,10 @@ namespace AnodyneArchipelago
     public class ArchipelagoManager
     {
         private ArchipelagoSession _session;
-        private int _itemIndex = 0;
+        private static int ItemIndex { 
+            get => GlobalState.events.GetEvent("ArchipelagoItemIndex"); 
+            set => GlobalState.events.SetEvent("ArchipelagoItemIndex", value);
+        }
         private HashSet<long> Checked = new();
         private DeathLinkService _deathLinkService;
 
@@ -117,8 +121,6 @@ namespace AnodyneArchipelago
             {
                 return new LoginFailure(e.GetBaseException().Message);
             }
-
-            _itemIndex = 0;
 
             LoginSuccessful login = (result as LoginSuccessful)!;
 
@@ -306,24 +308,9 @@ namespace AnodyneArchipelago
 
             if (Plugin.ReadyToReceive())
             {
-                if (_session.Items.Index > _itemIndex)
+                if (_session.Items.Index > ItemIndex || _messages.Count > 0)
                 {
-                    (int newindex, string eventname) = Enumerable.Range(_itemIndex,_session.Items.Index - _itemIndex).Select(i => (Index: i,Name: $"Archipelago-{i}")).SkipWhile(e => GlobalState.events.GetEvent(e.Name) != 0).FirstOrDefault((-1,""));
-                    if (newindex != -1)
-                    {
-                        GlobalState.events.IncEvent(eventname);
-                        ItemInfo item = _session.Items.AllItemsReceived[newindex];
-                        HandleItem(item);
-                        _itemIndex = newindex + 1;
-                    }
-                    else
-                    {
-                        _itemIndex = _session.Items.Index;
-                    }
-                }
-                else if (_messages.Count > 0)
-                {
-                    GlobalState.Dialogue = _messages.Dequeue();
+                    GlobalState.SetSubstate(new APItemCutscene(GetItemsAndMessages()));
                 }
                 else if (_pendingDeathLink != null)
                 {
@@ -344,6 +331,37 @@ namespace AnodyneArchipelago
                     _receiveDeath = true;
                 }
             }
+        }
+
+        private IEnumerator<CutsceneEvent> GetItemsAndMessages()
+        {
+            Queue<BaseTreasure> treasures = new();
+
+            while(ItemIndex < _session.Items.Index)
+            {
+                var item = HandleItem(_session.Items.AllItemsReceived[ItemIndex]);
+                GlobalState.events.IncEvent("ArchipelagoItemIndex");
+                item.treasure.GetTreasure();
+                treasures.Enqueue(item.treasure);
+                yield return new EntityEvent(Enumerable.Repeat(item.treasure, 1));
+                yield return new DialogueEvent(item.diag); //This pauses until dialogue is finished
+            }
+
+            while(_messages.TryDequeue(out string? message))
+            {
+                yield return new DialogueEvent(message);
+            }
+
+            //spawn treasures that aren't done yet into playstate
+            while(treasures.TryDequeue(out BaseTreasure? t))
+            {
+                if(t.exists)
+                {
+                    GlobalState.SpawnEntity(t);
+                }
+            }
+
+            yield break;
         }
 
         private static string GetMapNameForDungeon(string dungeon)
@@ -417,7 +435,7 @@ namespace AnodyneArchipelago
             }
         }
 
-        private void HandleItem(ItemInfo item)
+        private (BaseTreasure treasure, string diag) HandleItem(ItemInfo item)
         {
             BaseTreasure? treasure = null;
 
@@ -609,11 +627,9 @@ namespace AnodyneArchipelago
                 message += " But it didn't have any effect.";
             }
 
-            GlobalState.Dialogue = message;
             treasure ??= SpriteTreasure.Get(Plugin.Player.Position, itemName);
 
-            treasure.GetTreasure();
-            GlobalState.SpawnEntity(treasure);
+            return (treasure, message);
         }
 
         public void ActivateGoal()

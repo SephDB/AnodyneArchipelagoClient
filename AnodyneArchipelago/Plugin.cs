@@ -33,7 +33,8 @@ namespace AnodyneArchipelago
             {
                 bool hasStates = (typeof(PlayState).GetField("_childStates", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p) as List<State>)!.Count != 0;
                 PlayStateState s = (PlayStateState)typeof(PlayState).GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p)!;
-                return s == PlayStateState.S_NORMAL && !hasStates && Player.state == PlayerState.GROUND;
+                bool slipping = (bool)typeof(Player).GetField("isSlipping", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(Player)!;
+                return s == PlayStateState.S_NORMAL && !hasStates && Player.state == PlayerState.GROUND && (Player.ANIM_STATE == PlayerAnimState.as_idle || Player.ANIM_STATE == PlayerAnimState.as_walk) && !slipping;
             }
             return false;
         }
