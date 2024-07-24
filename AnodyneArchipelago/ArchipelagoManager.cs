@@ -401,17 +401,6 @@ namespace AnodyneArchipelago
 
         private void HandleItem(ItemInfo item)
         {
-            if (item.Player == _session.ConnectionInfo.Slot && item.LocationId >= 0)
-            {
-                string itemKey = $"ArchipelagoLocation-{item.LocationId}";
-                if (GlobalState.events.GetEvent(itemKey) > 0)
-                {
-                    return;
-                }
-
-                GlobalState.events.SetEvent(itemKey, 1);
-            }
-
             BaseTreasure? treasure = null;
 
             string itemName = item.ItemName;
@@ -702,9 +691,10 @@ namespace AnodyneArchipelago
 
                 foreach (long location_id in _session.Locations.AllLocations) {
                     string name = _session.Locations.GetLocationNameFromId(location_id);
+
                     if(name.EndsWith("Key") || name.EndsWith("Tentacle"))
                     {
-                        patcher.SetFreeStanding(Locations.LocationsGuids[name], name);
+                        patcher.SetFreeStanding(Locations.LocationsGuids[name], name, (int)location_id);
                     }
                     else if(name.EndsWith("Cicada"))
                     {
@@ -712,20 +702,20 @@ namespace AnodyneArchipelago
                     }
                     else if(name.EndsWith("Chest"))
                     {
-                        patcher.SetTreasureChest(Locations.LocationsGuids[name], name);
+                        patcher.SetTreasureChest(Locations.LocationsGuids[name], name, (int)location_id);
                     }
                     else if(name == "Windmill - Activation")
                     {
-                        patcher.SetWindmillCheck();
+                        patcher.SetWindmillCheck((int)location_id);
                     }
                     else if(name.EndsWith("Warp Pad"))
                     {
-                        Guid guid = patcher.SetNexusPad(name);
+                        Guid guid = patcher.SetNexusPad(name, (int)location_id);
                         _checkGates.Add(GetNexusGateMapName(name),guid); //Need to set them not alive when loading save for the first time
                     }
                     else if(name.EndsWith("Cardboard Box"))
                     {
-                        patcher.SetBoxTradeCheck();
+                        patcher.SetBoxTradeCheck((int)location_id);
                     }
                     else if(name.EndsWith("Shopkeeper Trade"))
                     {
@@ -734,6 +724,10 @@ namespace AnodyneArchipelago
                     else if(name.EndsWith("Mitra Trade"))
                     {
                         patcher.SetMitraTradeCheck();
+                    }
+                    else if(name.EndsWith("Defeat Briar"))
+                    {
+                        //no-op since this is done at credits checking
                     }
                     else
                     {

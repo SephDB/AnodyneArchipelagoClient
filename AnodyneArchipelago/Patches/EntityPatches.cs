@@ -1,6 +1,8 @@
 ﻿using AnodyneArchipelago.Entities;
 using AnodyneSharp.Entities.Gadget.Doors;
 using Microsoft.Xna.Framework;
+using System.Buffers.Binary;
+using System.Net;
 using System.Text;
 using System.Xml.Linq;
 
@@ -23,9 +25,15 @@ namespace AnodyneArchipelago.Patches
             return new MemoryStream(Encoding.Default.GetBytes(Document.ToString()));
         }
 
-        private Guid NextID()
+        private Guid GetID(int location_id)
         {
-            return new Guid(Encoding.ASCII.GetBytes($"Archipelago{CurrentID++:D5}"));
+            byte[] bytes = new byte[16];
+            
+            Encoding.ASCII.GetBytes("Archipelago").CopyTo(bytes, 0);
+
+            BitConverter.GetBytes(IPAddress.HostToNetworkOrder(location_id)).CopyTo(bytes, 12);
+
+            return new Guid(bytes);
         }
 
         private XElement GetByID(Guid id)
@@ -77,7 +85,7 @@ namespace AnodyneArchipelago.Patches
             GetByID(new("ED2195E9-9798-B9B3-3C15-105C40F7C501")).SetAttributeValue("type",typeval);
         }
 
-        public void SetFreeStanding(Guid guid, string location)
+        public void SetFreeStanding(Guid guid, string location, int id)
         {
             var node = GetByID(guid);
             node.Name = nameof(FreeStandingAP);
@@ -100,13 +108,13 @@ namespace AnodyneArchipelago.Patches
             node.SetAttributeValue("p", 2);
         }
 
-        public void SetTreasureChest(Guid guid, string location)
+        public void SetTreasureChest(Guid guid, string location, int id)
         {
             var node = GetByID(guid);
             node.AddBeforeSelf(
                 new XElement(
                     nameof(ChestAPInserter),
-                    new XAttribute("guid", NextID()),
+                    new XAttribute("guid", GetID(id)),
                     new XAttribute("type", location),
                     new XAttribute("frame", 0),
                     new XAttribute("x", node.Attribute("x")!.Value),
@@ -116,12 +124,12 @@ namespace AnodyneArchipelago.Patches
                 );
         }
 
-        public void SetWindmillCheck()
+        public void SetWindmillCheck(int id)
         {
             var map = root.Elements().Where(m => (string)m.Attribute("name")! == "WINDMILL").First();
             map.Add(
                 new XElement("WindmillCheckAP",
-                    new XAttribute("guid",NextID()),
+                    new XAttribute("guid",GetID(id)),
                     new XAttribute("x",192),
                     new XAttribute("y", 368),
                     new XAttribute("frame",0),
@@ -134,7 +142,7 @@ namespace AnodyneArchipelago.Patches
             }
         }
 
-        public Guid SetNexusPad(string locationName)
+        public Guid SetNexusPad(string locationName, int id)
         {
             string map = ArchipelagoManager.GetNexusGateMapName(locationName[..^11]);
 
@@ -144,7 +152,7 @@ namespace AnodyneArchipelago.Patches
 
             nexusPad.AddAfterSelf(
                 new XElement(nameof(FreeStandingAP),
-                        new XAttribute("guid",NextID()),
+                        new XAttribute("guid",GetID(id)),
                         new XAttribute("type", locationName),
                         new XAttribute("frame", 0),
                         new XAttribute("x", (int)nexusPad.Attribute("x")!+16),
@@ -156,13 +164,13 @@ namespace AnodyneArchipelago.Patches
             return (Guid)nexusPad.Attribute("guid")!;
         }
 
-        public void SetBoxTradeCheck()
+        public void SetBoxTradeCheck(int id)
         {
             var node = root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 2).First();
             node.AddAfterSelf(
                 new XElement(
                     "TradeQuestStarterAP",
-                    new XAttribute("guid", NextID()),
+                    new XAttribute("guid", GetID(id)),
                         new XAttribute("frame", 0),
                         new XAttribute("x", (int)node.Attribute("x")!),
                         new XAttribute("y", (int)node.Attribute("y")!),
