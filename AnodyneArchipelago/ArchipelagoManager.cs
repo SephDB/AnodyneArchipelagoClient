@@ -51,6 +51,7 @@ namespace AnodyneArchipelago
     {
         private ArchipelagoSession _session;
         private int _itemIndex = 0;
+        private HashSet<long> Checked = new();
         private DeathLinkService _deathLinkService;
 
         private string _seedName;
@@ -207,6 +208,18 @@ namespace AnodyneArchipelago
             }
             // Pretend we're always in a pre-credits state so that swap is an allowlist, not a denylist.
             GlobalState.events.SetEvent("SeenCredits", 0);
+
+            foreach (long location_id in _session.Locations.AllLocations)
+            {
+                if (GlobalState.events.GetEvent($"ArchipelagoLoc-{location_id}") != 0)
+                {
+                    Checked.Add(location_id);
+                }
+            }
+
+            //Send locations that were missed last time we saved
+            _session.Locations.CompleteLocationChecks(Checked.Except(_session.Locations.AllLocationsChecked).ToArray());
+
         }
 
         ~ArchipelagoManager()
@@ -274,8 +287,13 @@ namespace AnodyneArchipelago
                 //Plugin.Instance.Log.LogError("Attempted to send location while disconnected");
                 return;
             }
+            long id = _session.Locations.GetLocationIdFromName("Anodyne", location);
 
-            _session.Locations.CompleteLocationChecks(_session.Locations.GetLocationIdFromName("Anodyne", location));
+            GlobalState.events.IncEvent($"ArchipelagoLoc-{id}");
+            if (Checked.Add(id))
+            {
+                Task.Run(() => _session.Locations.CompleteLocationChecksAsync(Checked.Except(_session.Locations.AllLocationsChecked).ToArray())).ConfigureAwait(false);
+            }
         }
 
         public void Update()
