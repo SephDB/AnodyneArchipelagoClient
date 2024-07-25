@@ -122,6 +122,11 @@ namespace AnodyneArchipelago
                 return new LoginFailure(e.GetBaseException().Message);
             }
 
+            if(result is LoginFailure failure)
+            {
+                return failure;
+            }
+
             LoginSuccessful login = (result as LoginSuccessful)!;
 
             _endgameCardRequirement = (long)login.SlotData.GetValueOrDefault("endgame_card_requirement", 36);
