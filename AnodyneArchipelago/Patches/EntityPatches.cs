@@ -1,5 +1,6 @@
 ﻿using AnodyneArchipelago.Entities;
 using AnodyneSharp.Entities.Gadget.Doors;
+using AnodyneSharp.Logging;
 using Microsoft.Xna.Framework;
 using System.Buffers.Binary;
 using System.Net;
@@ -84,6 +85,13 @@ namespace AnodyneArchipelago.Patches
 
             GetByID(new("ED2195E9-9798-B9B3-3C15-105C40F7C501")).SetAttributeValue("type",typeval);
         }
+        
+        private void LogLocation(XElement element, string location)
+        {
+#if DEBUG
+            DebugLogger.AddInfo($"{(int)element.Attribute("x")! + 8,4} {(int)element.Attribute("y")! + 8,4} {location}");
+#endif
+        }
 
         public void SetFreeStanding(Guid guid, string location, int id)
         {
@@ -91,7 +99,10 @@ namespace AnodyneArchipelago.Patches
             node.Name = nameof(FreeStandingAP);
             node.SetAttributeValue("type", location);
             node.SetAttributeValue("p", 2);
+            LogLocation(node, location);
         }
+
+
 
         public void SetCicada(Guid guid, string location)
         {
@@ -106,6 +117,7 @@ namespace AnodyneArchipelago.Patches
             }
             node.SetAttributeValue("type", location);
             node.SetAttributeValue("p", 2);
+            LogLocation(node, location);
         }
 
         public void SetTreasureChest(Guid guid, string location, int id)
@@ -122,24 +134,27 @@ namespace AnodyneArchipelago.Patches
                     new XAttribute("p", 2)
                     )
                 );
+            LogLocation(node, location);
         }
 
         public void SetWindmillCheck(int id)
         {
             var map = root.Elements().Where(m => (string)m.Attribute("name")! == "WINDMILL").First();
-            map.Add(
-                new XElement("WindmillCheckAP",
-                    new XAttribute("guid",GetID(id)),
-                    new XAttribute("x",192),
+            var node = new XElement(nameof(WindmillCheckAP),
+                    new XAttribute("guid", GetID(id)),
+                    new XAttribute("x", 192),
                     new XAttribute("y", 368),
-                    new XAttribute("frame",0),
+                    new XAttribute("frame", 0),
                     new XAttribute("p", 2)
-                )
+                );
+            map.Add(
+                node
             );
             foreach(var n in root.Descendants("Dungeon_Statue"))
             {
                 n.Name = "DungeonStatueAP";
             }
+            LogLocation(node, "Windmill - Activation");
         }
 
         public Guid SetNexusPad(string locationName, int id)
@@ -161,6 +176,8 @@ namespace AnodyneArchipelago.Patches
                     )
                 );
 
+            LogLocation(nexusPad, locationName);
+
             return (Guid)nexusPad.Attribute("guid")!;
         }
 
@@ -169,7 +186,7 @@ namespace AnodyneArchipelago.Patches
             var node = root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 2).First();
             node.AddAfterSelf(
                 new XElement(
-                    "TradeQuestStarterAP",
+                    nameof(TradeQuestStarterAP),
                     new XAttribute("guid", GetID(id)),
                         new XAttribute("frame", 0),
                         new XAttribute("x", (int)node.Attribute("x")!),
@@ -177,6 +194,7 @@ namespace AnodyneArchipelago.Patches
                         new XAttribute("p", 2)
                     )
                 );
+            LogLocation(node, "Fields - Cardboard Box");
         }
 
         public void SetAllCardsVictory()
@@ -186,12 +204,16 @@ namespace AnodyneArchipelago.Patches
 
         public void SetMitraTradeCheck()
         {
-            root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "FIELDS").First().Name = nameof(MitraTradeQuestAP);
+            var node = root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "FIELDS").First();
+            node.Name = nameof(MitraTradeQuestAP);
+            LogLocation(node, "Fields - Mitra Trade");
         }
 
         public void SetShopkeepTradeCheck()
         {
-            root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 3).First().Name = nameof(ShopKeepAP);
+            var node = root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 3).First();
+            node.Name = nameof(ShopKeepAP);
+            LogLocation(node, "Fields - Shopkeeper Trade");
         }
     }
 }
