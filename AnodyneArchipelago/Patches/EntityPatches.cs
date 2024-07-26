@@ -26,11 +26,13 @@ namespace AnodyneArchipelago.Patches
             return new MemoryStream(Encoding.Default.GetBytes(Document.ToString()));
         }
 
-        private Guid GetID(int location_id)
+        private Guid GetID(int location_id, byte gen = 0)
         {
             byte[] bytes = new byte[16];
             
             Encoding.ASCII.GetBytes("Archipelago").CopyTo(bytes, 0);
+
+            bytes[11] = gen;
 
             BitConverter.GetBytes(IPAddress.HostToNetworkOrder(location_id)).CopyTo(bytes, 12);
 
@@ -170,9 +172,17 @@ namespace AnodyneArchipelago.Patches
                         new XAttribute("guid",GetID(id)),
                         new XAttribute("type", locationName),
                         new XAttribute("frame", 0),
-                        new XAttribute("x", (int)nexusPad.Attribute("x")!+16),
-                        new XAttribute("y", (int)nexusPad.Attribute("y")!+16),
+                        new XAttribute("x", (int)nexusPad.Attribute("x")!+8),
+                        new XAttribute("y", (int)nexusPad.Attribute("y")!+8),
                         new XAttribute("p", 2)
+                    ),
+                new XElement(nameof(InactiveNexusPad),
+                        new XAttribute("guid", GetID(id,1)),
+                        new XAttribute("type", locationName),
+                        new XAttribute("frame", 0),
+                        new XAttribute("x", (int)nexusPad.Attribute("x")!),
+                        new XAttribute("y", (int)nexusPad.Attribute("y")!),
+                        new XAttribute("p", 0)
                     )
                 );
 

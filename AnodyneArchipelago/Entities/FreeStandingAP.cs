@@ -19,7 +19,7 @@ namespace AnodyneArchipelago.Entities
             {
                 return new("archipelago_items", 16, 16);
             }
-            (string tex, int frame) = TreasureHelper.GetSprite(item.ItemName, item.Flags.HasFlag(Archipelago.MultiClient.Net.Enums.ItemFlags.Advancement));
+            (string tex, int frame) = TreasureHelper.GetSpriteWithTraps(item.ItemName, item.Flags, location);
             return new(tex, 16, 16, frame);
         }
 

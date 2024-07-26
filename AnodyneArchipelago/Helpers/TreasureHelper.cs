@@ -8,10 +8,10 @@ using System.Text;
 
 namespace AnodyneArchipelago.Helpers
 {
-    public static class TreasureHelper {
-        public static int GetSecretNumber(string secretName)
-        {
-            List<string> secret_items = [
+    public static class TreasureHelper
+    {
+
+        private static List<string> secret_items = [
                 "Golden Poop",
                 "Spam Can",
                 "Glitch",
@@ -27,10 +27,49 @@ namespace AnodyneArchipelago.Helpers
                 "White Cube",
                 "Golden Broom",
             ];
+
+        private static List<string> trap_item_sprites = [
+                "Green Key",
+                "Red Key",
+                "Blue Key",
+                "Jump Shoes",
+                "Broom",
+                "Swap",
+                "Extend",
+                "Widen",
+                "Cardboard Box",
+                "Biking Shoes",
+                "Progressive Red Cave",
+                "Card (Null)",
+                "Temple of the Seeing One Statue",
+                "Red Cave Statue",
+                "Mountain Cavern Statue",
+                .. secret_items,
+            ];
+
+        public static int GetSecretNumber(string secretName)
+        {
             return secret_items.IndexOf(secretName);
         }
 
-        public static (string, int) GetSprite(string itemName, bool priority = false)
+        public static (string,int) GetSpriteWithTraps(string itemName, ItemFlags itemFlags, string location)
+        {
+            if (itemFlags.HasFlag(ItemFlags.Trap))
+            {
+                int seed = itemName.GetHashCode() + location.GetHashCode();
+
+                if (seed < 0)
+                {
+                    seed *= -1;
+                }
+
+                itemName = trap_item_sprites[seed % trap_item_sprites.Count];
+            }
+
+            return GetSprite(itemName, itemFlags);
+        }
+
+        public static (string, int) GetSprite(string itemName, ItemFlags itemFlags)
         {
             if (itemName.StartsWith("Small Key"))
             {
@@ -64,7 +103,7 @@ namespace AnodyneArchipelago.Helpers
             {
                 return ("broom-icon", 0);
             }
-            else if (itemName.EndsWith("Swap"))
+            else if (itemName.Contains("Swap"))
             {
                 return ("item_tranformer", 0);
             }
@@ -88,6 +127,18 @@ namespace AnodyneArchipelago.Helpers
             {
                 return ("archipelago_items", 3);
             }
+            else if (itemName == "Temple of the Seeing One Statue")
+            {
+                return ("archipelago_items", 6);
+            }
+            else if (itemName == "Red Cave Statue")
+            {
+                return ("archipelago_items", 7);
+            }
+            else if (itemName == "Mountain Cavern Statue")
+            {
+                return ("archipelago_items", 8);
+            }
             else if (itemName.StartsWith("Nexus Gate"))
             {
                 return ("archipelago_items", 2);
@@ -100,16 +151,20 @@ namespace AnodyneArchipelago.Helpers
             {
                 return ("secret_trophies", GetSecretNumber(itemName));
             }
+            else if (itemName.Contains("Trap"))
+            {
+                return ("archipelago_items", 12);
+            }
 
-            return ("archipelago_items", priority ? 0 : 1);
+            return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : 1);
         }
     }
 
-    public class SpriteTreasure(Vector2 pos, string tex, int frame) : Treasure(tex,pos,frame,-1)
+    public class SpriteTreasure(Vector2 pos, string tex, int frame) : Treasure(tex, pos, frame, -1)
     {
         public static SpriteTreasure Get(Vector2 pos, string itemName)
         {
-            (string tex, int frame) = TreasureHelper.GetSprite(itemName);
+            (string tex, int frame) = TreasureHelper.GetSprite(itemName, ItemFlags.None);
             return new(pos, tex, frame);
         }
 
