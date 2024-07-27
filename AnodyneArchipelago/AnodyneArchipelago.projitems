@@ -30,6 +30,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Menu\BoxedConfigState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\ConnectionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\MenuState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Menu\PauseMenu\KeySubstate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Menu\PauseMenu\APEquipSubstate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\TextEntry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EntityPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\MapPatches.cs" />

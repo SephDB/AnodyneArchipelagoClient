@@ -121,7 +121,7 @@ namespace AnodyneArchipelago.Helpers
             }
             else if (itemName == "Biking Shoes")
             {
-                return ("item_jump_shoes", 0);
+                return ("fields_npcs", 56);
             }
             else if (itemName == "Progressive Red Cave")
             {

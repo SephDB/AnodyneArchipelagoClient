@@ -1,5 +1,6 @@
 ﻿using AnodyneArchipelago.Menu;
 using AnodyneSharp.Modding;
+using AnodyneSharp.States.MenuSubstates;
 
 namespace AnodyneArchipelago.MonoGame
 {
@@ -11,11 +12,21 @@ namespace AnodyneArchipelago.MonoGame
             plugin.Load();
         }
 
-        public void ChangeMainMenu(ref List<(string name, Func<AnodyneSharp.States.MenuSubstates.Substate> create)> menuEntries)
+        public void ChangeMainMenu(ref List<(string name, Func<Substate> create)> menuEntries)
         {
             menuEntries.Insert(0, ("AP", () => new MenuState()));
         }
-        
+
+        public void ChangePauseMenu(ref List<(string name, Func<Substate> create)> menuEntries) 
+        {
+            if (Plugin.ArchipelagoManager != null)
+            {
+                menuEntries.RemoveAt(1);
+                menuEntries.Insert(1, ("Items", () => new APEquipSubstate()));
+                menuEntries.Insert(2, ("Keys", () => new KeySubstate()));
+            }
+        }
+
         public void Update()
         {
             Plugin.ArchipelagoManager?.Update();
