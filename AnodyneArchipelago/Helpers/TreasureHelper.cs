@@ -1,4 +1,7 @@
-﻿using AnodyneSharp.Entities.Gadget.Treasures;
+﻿using AnodyneSharp.Entities.Enemy;
+using AnodyneSharp.Entities;
+using AnodyneSharp.Entities.Gadget.Treasures;
+using AnodyneSharp.Registry;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Microsoft.Xna.Framework;
@@ -151,12 +154,16 @@ namespace AnodyneArchipelago.Helpers
             {
                 return ("secret_trophies", GetSecretNumber(itemName));
             }
-            else if (itemName.Contains("Trap"))
+            else if (itemName == "Person Trap")
             {
-                return ("archipelago_items", 12);
+                return ("person", 0);
+            }
+            else if (itemName == "Gas Trap")
+            {
+                return ("archipelago_items", 13);
             }
 
-            return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : 1);
+            return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1);
         }
     }
 

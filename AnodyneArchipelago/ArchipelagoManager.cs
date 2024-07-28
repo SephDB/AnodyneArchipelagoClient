@@ -1,6 +1,7 @@
 ﻿using AnodyneArchipelago.Helpers;
 using AnodyneArchipelago.Patches;
 using AnodyneSharp.Entities;
+using AnodyneSharp.Entities.Enemy;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Logging;
 using AnodyneSharp.MapData;
@@ -51,8 +52,9 @@ namespace AnodyneArchipelago
     public class ArchipelagoManager
     {
         private ArchipelagoSession _session;
-        private static int ItemIndex { 
-            get => GlobalState.events.GetEvent("ArchipelagoItemIndex"); 
+        private static int ItemIndex
+        {
+            get => GlobalState.events.GetEvent("ArchipelagoItemIndex");
             set => GlobalState.events.SetEvent("ArchipelagoItemIndex", value);
         }
         private HashSet<long> Checked = new();
@@ -69,7 +71,7 @@ namespace AnodyneArchipelago
         private bool _forestBunnyChest = false;
         private VictoryCondition _victoryCondition;
         private List<string> _unlockedGates = new();
-        private Dictionary<string,Guid> _checkGates = new();
+        private Dictionary<string, Guid> _checkGates = new();
         private PostgameMode _postgameMode;
 
         private readonly Queue<string> _messages = new();
@@ -122,7 +124,7 @@ namespace AnodyneArchipelago
                 return new LoginFailure(e.GetBaseException().Message);
             }
 
-            if(result is LoginFailure failure)
+            if (result is LoginFailure failure)
             {
                 return failure;
             }
@@ -183,7 +185,7 @@ namespace AnodyneArchipelago
 
         public static string GetNexusGateMapName(string region)
         {
-            region = string.Join("",region.Split(' ').TakeWhile(s => Char.IsUpper(s[0]))).ToUpperInvariant();
+            region = string.Join("", region.Split(' ').TakeWhile(s => Char.IsUpper(s[0]))).ToUpperInvariant();
 
             return region switch
             {
@@ -252,7 +254,7 @@ namespace AnodyneArchipelago
             Dictionary<string, ScoutedItemInfo> result = new();
             foreach (ScoutedItemInfo networkItem in locationInfo.Values)
             {
-                string name = _session.Locations.GetLocationNameFromId(networkItem.LocationId,networkItem.LocationGame);
+                string name = _session.Locations.GetLocationNameFromId(networkItem.LocationId, networkItem.LocationGame);
                 if (name != null)
                 {
                     result[name] = networkItem;
@@ -342,7 +344,7 @@ namespace AnodyneArchipelago
         {
             Queue<BaseTreasure> treasures = new();
 
-            while(ItemIndex < _session.Items.Index)
+            while (ItemIndex < _session.Items.Index)
             {
                 var item = HandleItem(_session.Items.AllItemsReceived[ItemIndex]);
                 GlobalState.events.IncEvent("ArchipelagoItemIndex");
@@ -352,15 +354,15 @@ namespace AnodyneArchipelago
                 yield return new DialogueEvent(item.diag); //This pauses until dialogue is finished
             }
 
-            while(_messages.TryDequeue(out string? message))
+            while (_messages.TryDequeue(out string? message))
             {
                 yield return new DialogueEvent(message);
             }
 
             //spawn treasures that aren't done yet into playstate
-            while(treasures.TryDequeue(out BaseTreasure? t))
+            while (treasures.TryDequeue(out BaseTreasure? t))
             {
-                if(t.exists)
+                if (t.exists)
                 {
                     GlobalState.SpawnEntity(t);
                 }
@@ -593,10 +595,36 @@ namespace AnodyneArchipelago
             {
                 GlobalState.events.SetEvent("ReceivedBikingShoes", 1);
             }
+            else if (itemName == "Person Trap")
+            {
+                int offset = 16;
+
+                int min = -offset;
+                int max = offset +1;
+
+                for (int i = 0; i < 6; i++)
+                {
+                    GlobalState.SpawnEntity(
+                        new Person(
+                            new EntityPreset(
+                                typeof(Person), 
+                                Plugin.Player.Position + new Vector2(GlobalState.RNG.Next(min, max), GlobalState.RNG.Next(min, max)), 
+                                new Guid(), 
+                                GlobalState.RNG.Next(0, 5)
+                                ),
+                            Plugin.Player)
+                        );
+                }
+            }
+            else if (itemName == "Gas Trap")
+            {
+                Plugin.Player.reversed = true;
+                GlobalState.wave.active = true;
+            }
             else if (itemName.StartsWith("Nexus Gate"))
             {
                 string mapname = GetNexusGateMapName(itemName[12..^1]);
-                if(_checkGates.TryGetValue(mapname, out var gate))
+                if (_checkGates.TryGetValue(mapname, out var gate))
                 {
                     EntityManager.SetAlive(gate, true);
                     GlobalState.events.ActivatedNexusPortals.Add(mapname);
@@ -606,7 +634,7 @@ namespace AnodyneArchipelago
                     DebugLogger.AddError($"Couldn't find nexus gate to unlock at {mapname}.", false);
                 }
             }
-            else if(TreasureHelper.GetSecretNumber(itemName) != -1)
+            else if (TreasureHelper.GetSecretNumber(itemName) != -1)
             {
                 treasure = new SecretTreasure(Plugin.Player.Position, TreasureHelper.GetSecretNumber(itemName), -1);
             }
@@ -701,7 +729,7 @@ namespace AnodyneArchipelago
 
         internal Stream? PatchFile(Stream stream, string path)
         {
-            if(path.EndsWith("Entities.xml"))
+            if (path.EndsWith("Entities.xml"))
             {
                 EntityPatches patcher = new(stream);
 
@@ -713,58 +741,59 @@ namespace AnodyneArchipelago
 
                 patcher.Set36CardRequirement((int)_endgameCardRequirement);
 
-                if(UnlockSmallKeyGates)
+                if (UnlockSmallKeyGates)
                 {
                     patcher.OpenSmallKeyGates();
                 }
 
-                if(BigKeyShuffle == BigKeyShuffle.Unlocked)
+                if (BigKeyShuffle == BigKeyShuffle.Unlocked)
                 {
                     patcher.OpenBigKeyGates();
                 }
 
-                if(VictoryCondition == VictoryCondition.AllCards)
+                if (VictoryCondition == VictoryCondition.AllCards)
                 {
                     patcher.SetAllCardsVictory();
                 }
 
-                foreach (long location_id in _session.Locations.AllLocations) {
+                foreach (long location_id in _session.Locations.AllLocations)
+                {
                     string name = _session.Locations.GetLocationNameFromId(location_id);
 
-                    if(name.EndsWith("Key") || name.EndsWith("Tentacle"))
+                    if (name.EndsWith("Key") || name.EndsWith("Tentacle"))
                     {
                         patcher.SetFreeStanding(Locations.LocationsGuids[name], name, (int)location_id);
                     }
-                    else if(name.EndsWith("Cicada"))
+                    else if (name.EndsWith("Cicada"))
                     {
                         patcher.SetCicada(Locations.LocationsGuids[name], name);
                     }
-                    else if(name.EndsWith("Chest"))
+                    else if (name.EndsWith("Chest"))
                     {
                         patcher.SetTreasureChest(Locations.LocationsGuids[name], name, (int)location_id);
                     }
-                    else if(name == "Windmill - Activation")
+                    else if (name == "Windmill - Activation")
                     {
                         patcher.SetWindmillCheck((int)location_id);
                     }
-                    else if(name.EndsWith("Warp Pad"))
+                    else if (name.EndsWith("Warp Pad"))
                     {
                         Guid guid = patcher.SetNexusPad(name, (int)location_id);
-                        _checkGates.Add(GetNexusGateMapName(name),guid); //Need to set them not alive when loading save for the first time
+                        _checkGates.Add(GetNexusGateMapName(name), guid); //Need to set them not alive when loading save for the first time
                     }
-                    else if(name.EndsWith("Cardboard Box"))
+                    else if (name.EndsWith("Cardboard Box"))
                     {
                         patcher.SetBoxTradeCheck((int)location_id);
                     }
-                    else if(name.EndsWith("Shopkeeper Trade"))
+                    else if (name.EndsWith("Shopkeeper Trade"))
                     {
                         patcher.SetShopkeepTradeCheck();
                     }
-                    else if(name.EndsWith("Mitra Trade"))
+                    else if (name.EndsWith("Mitra Trade"))
                     {
                         patcher.SetMitraTradeCheck();
                     }
-                    else if(name.EndsWith("Defeat Briar"))
+                    else if (name.EndsWith("Defeat Briar"))
                     {
                         //no-op since this is done at credits checking
                     }
@@ -776,7 +805,7 @@ namespace AnodyneArchipelago
 
                 stream = patcher.Get();
             }
-            else if(path.EndsWith("Swapper.dat"))
+            else if (path.EndsWith("Swapper.dat"))
             {
                 stream?.Close();
                 string newContents = string.Join("\n",
@@ -784,10 +813,10 @@ namespace AnodyneArchipelago
                             .Select(r => $"Allow\t{r.X}\t{r.Y}\t{r.Width}\t{r.Height}"));
                 stream = new MemoryStream(Encoding.Default.GetBytes(newContents));
             }
-            else if(path.EndsWith("BG.csv"))
+            else if (path.EndsWith("BG.csv"))
             {
                 using StreamReader reader = new(stream);
-                stream = new MemoryStream(Encoding.Default.GetBytes(MapPatches.ChangeMap(path.Split('.')[^3],reader.ReadToEnd())));
+                stream = new MemoryStream(Encoding.Default.GetBytes(MapPatches.ChangeMap(path.Split('.')[^3], reader.ReadToEnd())));
             }
             return stream;
         }
