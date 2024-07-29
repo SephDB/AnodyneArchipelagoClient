@@ -155,7 +155,7 @@ namespace AnodyneArchipelago
 
             _unlockSmallKeyGates = (bool)login.SlotData.GetValueOrDefault("unlock_gates", false);
 
-            _bigKeyShuffle = (BigKeyShuffle)(long)login.SlotData.GetValueOrDefault("shuffle_big_gates", BigKeyShuffle.AnyWorld);
+            _bigKeyShuffle = (BigKeyShuffle)(long)login.SlotData.GetValueOrDefault("shuffle_big_gates", (long)BigKeyShuffle.AnyWorld);
 
             _vanillaHealthCicadas = (bool)login.SlotData.GetValueOrDefault("vanilla_health_cicadas", false);
 
@@ -165,9 +165,9 @@ namespace AnodyneArchipelago
 
             _forestBunnyChest = (bool)login.SlotData.GetValueOrDefault("forest_bunny_chest", false);
 
-            _victoryCondition = (VictoryCondition)(long)login.SlotData.GetValueOrDefault("victory_condition", VictoryCondition.DefeatBriar);
+            _victoryCondition = (VictoryCondition)(long)login.SlotData.GetValueOrDefault("victory_condition", (long)VictoryCondition.DefeatBriar);
 
-            _playerSprite = (PlayerSprite)(long)login.SlotData.GetValueOrDefault("player_sprite", PlayerSprite.Young);
+            _playerSprite = (PlayerSprite)(long)login.SlotData.GetValueOrDefault("player_sprite", (long)PlayerSprite.Young);
 
             if (login.SlotData.ContainsKey("nexus_gates_unlocked"))
             {
@@ -178,7 +178,7 @@ namespace AnodyneArchipelago
                 _unlockedGates = new();
             }
 
-            _postgameMode = (PostgameMode)(long)login.SlotData.GetValueOrDefault("postgame_mode", PostgameMode.Disabled);
+            _postgameMode = (PostgameMode)(long)login.SlotData.GetValueOrDefault("postgame_mode", (long)PostgameMode.Disabled);
 
             if (login.SlotData.ContainsKey("death_link") && (bool)login.SlotData["death_link"])
             {
