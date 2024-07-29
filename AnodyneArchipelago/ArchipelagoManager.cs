@@ -6,6 +6,7 @@ using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Logging;
 using AnodyneSharp.MapData;
 using AnodyneSharp.Registry;
+using AnodyneSharp.Resources;
 using AnodyneSharp.Sounds;
 using AnodyneSharp.States;
 using AnodyneSharp.UI;
@@ -16,6 +17,7 @@ using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +51,13 @@ namespace AnodyneArchipelago
         Progression = 3,
     }
 
+    public enum PlayerSprite
+    {
+        Young = 0,
+        JPlayer,
+        Nova
+    }
+
     public class ArchipelagoManager
     {
         private ArchipelagoSession _session;
@@ -73,6 +82,11 @@ namespace AnodyneArchipelago
         private List<string> _unlockedGates = new();
         private Dictionary<string, Guid> _checkGates = new();
         private PostgameMode _postgameMode;
+        private PlayerSprite _playerSprite;
+
+        private Texture2D _originalPlayerTexture;
+        private Texture2D _originalCellTexture;
+        private Texture2D _originalReflectionTexture;
 
         private readonly Queue<string> _messages = new();
         private DeathLink? _pendingDeathLink = null;
@@ -153,6 +167,8 @@ namespace AnodyneArchipelago
 
             _victoryCondition = (VictoryCondition)(long)login.SlotData.GetValueOrDefault("victory_condition", VictoryCondition.DefeatBriar);
 
+            _playerSprite = (PlayerSprite)(long)login.SlotData.GetValueOrDefault("player_sprite", PlayerSprite.Young);
+
             if (login.SlotData.ContainsKey("nexus_gates_unlocked"))
             {
                 _unlockedGates = new(((Newtonsoft.Json.Linq.JArray)login.SlotData["nexus_gates_unlocked"]).Values<string>());
@@ -176,7 +192,11 @@ namespace AnodyneArchipelago
             else
             {
                 _deathLinkService = null;
-            }
+            } 
+
+            (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
+
+            PatchPlayerTextures(_playerSprite);
 
             _scoutTask = Task.Run(ScoutAllLocations);
 
@@ -245,6 +265,8 @@ namespace AnodyneArchipelago
 
             _session.Socket.DisconnectAsync();
             _session = null;
+
+            PatchPlayerTextures(_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture);
         }
 
         private async Task<Dictionary<string, ScoutedItemInfo>> ScoutAllLocations()
@@ -600,16 +622,16 @@ namespace AnodyneArchipelago
                 int offset = 16;
 
                 int min = -offset;
-                int max = offset +1;
+                int max = offset + 1;
 
                 for (int i = 0; i < 6; i++)
                 {
                     GlobalState.SpawnEntity(
                         new Person(
                             new EntityPreset(
-                                typeof(Person), 
-                                Plugin.Player.Position + new Vector2(GlobalState.RNG.Next(min, max), GlobalState.RNG.Next(min, max)), 
-                                new Guid(), 
+                                typeof(Person),
+                                Plugin.Player.Position + new Vector2(GlobalState.RNG.Next(min, max), GlobalState.RNG.Next(min, max)),
+                                new Guid(),
                                 GlobalState.RNG.Next(0, 5)
                                 ),
                             Plugin.Player)
@@ -861,6 +883,39 @@ namespace AnodyneArchipelago
                     SendDeath();
                 }
             }
+        }
+
+        private static void PatchPlayerTextures(PlayerSprite playerSprite)
+        {
+            string texture;
+
+            switch (playerSprite)
+            {
+                case PlayerSprite.JPlayer:
+                    texture = "jplayer";
+                    break;
+                case PlayerSprite.Nova:
+                    texture = "nova";
+                    break;
+                default:
+                    return;
+            }
+
+            PatchPlayerTextures(ResourceManager.GetTexture(texture), ResourceManager.GetTexture(texture + "_cell"), ResourceManager.GetTexture(texture + "reflection"));
+        }
+
+        private static void PatchPlayerTextures(Texture2D? texture, Texture2D? textureCell, Texture2D? textureReflection)
+        {
+            Dictionary<string, Texture2D> textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+            textures["young_player"] = texture ?? textures["young_player"];
+            textures["young_player_cell"] = textureCell ?? textures["young_player_cell"];
+            textures["young_player_reflection"] = textureReflection ?? textures["young_player_reflection"];
+        }
+
+        private static (Texture2D texture, Texture2D textureCell, Texture2D textureReflection) GetPlayerTextures()
+        {
+            Dictionary<string, Texture2D> textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+            return (textures["young_player"], textures["young_player_cell"], textures["young_player_reflection"]);
         }
     }
 }
