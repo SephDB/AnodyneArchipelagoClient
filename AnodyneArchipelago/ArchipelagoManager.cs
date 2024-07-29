@@ -127,6 +127,7 @@ namespace AnodyneArchipelago
             {
                 _session = ArchipelagoSessionFactory.CreateSession(url);
                 _session.MessageLog.OnMessageReceived += OnMessageReceived;
+                _session.Locations.CheckedLocationsUpdated += NewCheckedLocations;
 
                 RoomInfoPacket roomInfoPacket = await _session.ConnectAsync();
                 _seedName = roomInfoPacket.SeedName;
@@ -249,6 +250,12 @@ namespace AnodyneArchipelago
             //Send locations that were missed last time we saved
             _session.Locations.CompleteLocationChecks(Checked.Except(_session.Locations.AllLocationsChecked).ToArray());
 
+            Checked.UnionWith(_session.Locations.AllLocationsChecked);
+        }
+
+        private void NewCheckedLocations(System.Collections.ObjectModel.ReadOnlyCollection<long> newCheckedLocations)
+        {
+            Checked.UnionWith(newCheckedLocations);
         }
 
         ~ArchipelagoManager()
@@ -324,6 +331,10 @@ namespace AnodyneArchipelago
             if (Checked.Add(id))
             {
                 Task.Run(() => _session.Locations.CompleteLocationChecksAsync(Checked.Except(_session.Locations.AllLocationsChecked).ToArray())).ConfigureAwait(false);
+            }
+            else
+            {
+                _messages.Enqueue($"{location} was already checked.");
             }
         }
 
