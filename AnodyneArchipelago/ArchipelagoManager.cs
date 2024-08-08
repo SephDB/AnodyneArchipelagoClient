@@ -72,6 +72,7 @@ namespace AnodyneArchipelago
         private string _seedName;
         private long _endgameCardRequirement = 36;
         private ColorPuzzle _colorPuzzle = new();
+        private bool ColorPuzzleRandomized = true;
         private bool _unlockSmallKeyGates = false;
         private BigKeyShuffle _bigKeyShuffle;
         private bool _vanillaHealthCicadas = false;
@@ -94,6 +95,8 @@ namespace AnodyneArchipelago
         private bool _receiveDeath = false;
 
         private Task<Dictionary<string, ScoutedItemInfo>> _scoutTask;
+
+        private ScreenChangeTracker changeTracker = new();
 
         public long EndgameCardRequirement => _endgameCardRequirement;
         public ColorPuzzle ColorPuzzle => _colorPuzzle;
@@ -153,6 +156,8 @@ namespace AnodyneArchipelago
                 Random rand = new Random((int)(long)login.SlotData["seed"]);
                 _colorPuzzle.Initialize(rand);
             }
+
+            ColorPuzzleRandomized = (bool)login.SlotData.GetValueOrDefault("randomize_color_puzzle", true);
 
             _unlockSmallKeyGates = (bool)login.SlotData.GetValueOrDefault("unlock_gates", false);
 
@@ -217,6 +222,30 @@ namespace AnodyneArchipelago
                 "YOUNGTOWN" => "SUBURB",
                 _ => region
             };
+        }
+
+        public static string GetTrackerMapName(string map)
+        {
+            return map switch
+            {
+                "BEDROOM" => "TEMPLE",
+                "CROWD" => "CAVERN",
+                "SUBURB" => "TOWN",
+                _ => map
+            };
+        }
+
+        private void SendTrackerUpdate()
+        {
+            _session.Socket.SendPacketAsync(new BouncePacket()
+            {
+                Slots = [_session.ConnectionInfo.Slot],
+                Data = new()
+                {
+                    ["mapName"] = GetTrackerMapName(changeTracker.Tracker.mapName),
+                    ["mapIndex"] = changeTracker.Tracker.location.X + GlobalState.MAP_GRID_WIDTH * changeTracker.Tracker.location.Y
+                }
+            });
         }
 
         public void PostSaveloadInit(bool newGame)
@@ -344,6 +373,11 @@ namespace AnodyneArchipelago
             {
                 // We're not connected.
                 return;
+            }
+
+            if(changeTracker.Update() && !GlobalState.glitch.active && changeTracker.Tracker.mapName != "")
+            {
+                SendTrackerUpdate();
             }
 
             if (Plugin.ReadyToReceive())
@@ -770,7 +804,10 @@ namespace AnodyneArchipelago
                 patcher.RemoveMitraCliff();
                 patcher.RemoveSageSoftlock();
 
-                patcher.SetColorPuzzle(ColorPuzzle);
+                if (ColorPuzzleRandomized)
+                {
+                    patcher.SetColorPuzzle(ColorPuzzle);
+                }
 
                 patcher.Set36CardRequirement((int)_endgameCardRequirement);
 
