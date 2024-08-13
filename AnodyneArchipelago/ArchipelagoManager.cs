@@ -242,6 +242,7 @@ namespace AnodyneArchipelago
                 Slots = [_session.ConnectionInfo.Slot],
                 Data = new()
                 {
+                    ["type"] = "MapUpdate",
                     ["mapName"] = GetTrackerMapName(changeTracker.Tracker.mapName),
                     ["mapIndex"] = changeTracker.Tracker.location.X + GlobalState.MAP_GRID_WIDTH * changeTracker.Tracker.location.Y
                 }
