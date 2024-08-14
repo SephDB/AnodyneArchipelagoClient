@@ -167,6 +167,12 @@ namespace AnodyneArchipelago.Patches
 
             nexusPad.SetAttributeValue("p", 2); //Make sure it despawns
 
+            if(map == "HAPPY")
+            {
+                nexusPad.SetAttributeValue("x", (int)nexusPad.Attribute("x")! + 72);
+                nexusPad.SetAttributeValue("y", (int)nexusPad.Attribute("y")! - 16);
+            }
+
             nexusPad.AddAfterSelf(
                 new XElement(nameof(FreeStandingAP),
                         new XAttribute("guid",GetID(id)),

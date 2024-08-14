@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entities\TradeQuestStarterAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\WindmillCheckAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\APItemCutscene.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ScreenChangeTracker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\TreasureHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Locations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\ArchipelagoSettings.cs" />
