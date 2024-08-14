@@ -32,9 +32,9 @@ namespace AnodyneArchipelago.Helpers
             ];
 
         private static List<string> trap_item_sprites = [
-                "Green Key",
-                "Red Key",
-                "Blue Key",
+                "Green key",
+                "Red key",
+                "Blue key",
                 "Jump Shoes",
                 "Broom",
                 "Swap",
@@ -55,9 +55,9 @@ namespace AnodyneArchipelago.Helpers
             return secret_items.IndexOf(secretName);
         }
 
-        public static (string,int) GetSpriteWithTraps(string itemName, ItemFlags itemFlags, string location)
+        public static (string, int) GetSpriteWithTraps(string itemName, string playerName, ItemFlags itemFlags, string location)
         {
-            if (itemFlags.HasFlag(ItemFlags.Trap))
+            if (Plugin.ArchipelagoManager!.HideTrapItems && itemFlags.HasFlag(ItemFlags.Trap))
             {
                 int seed = itemName.GetHashCode() + location.GetHashCode();
 
@@ -67,100 +67,187 @@ namespace AnodyneArchipelago.Helpers
                 }
 
                 itemName = trap_item_sprites[seed % trap_item_sprites.Count];
+                playerName = Plugin.ArchipelagoManager.GetPlayerName();
             }
 
-            return GetSprite(itemName, itemFlags);
+            return GetSprite(itemName, playerName, itemFlags);
         }
 
-        public static (string, int) GetSprite(string itemName, ItemFlags itemFlags)
+        public static (string, int) GetSprite(string itemName, string playerName, ItemFlags itemFlags)
         {
-            if (itemName.StartsWith("Small Key"))
+            if (Plugin.ArchipelagoManager!.MatchDifferentWorldItem == MatchDifferentWorldItem.Disabled && playerName != Plugin.ArchipelagoManager.GetPlayerName())
+            {
+                return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1);
+            }
+
+            itemName = itemName.ToLower();
+
+            if (itemName.StartsWith("small key"))
             {
                 return ("key", 0);
             }
-            else if (itemName == "Green Key")
+            else if (itemName == "green key")
             {
                 return ("key_green", 0);
             }
-            else if (itemName == "Blue Key")
+            else if (itemName == "blue key")
             {
                 return ("key_green", 4);
             }
-            else if (itemName == "Red Key")
+            else if (itemName == "red key")
             {
                 return ("key_green", 2);
             }
-            else if (itemName == "Jump Shoes")
+            else if (itemName == "jump shoes")
             {
                 return ("item_jump_shoes", 0);
             }
-            else if (itemName == "Health Cicada")
+            else if (itemName == "health cicada")
             {
                 return ("life_cicada", 0);
             }
-            else if (itemName == "Heal")
+            else if (itemName == "big heal")
+            {
+                return ("big_health_pickup", 0);
+            }
+            else if (itemName == "heal")
             {
                 return ("small_health_pickup", 0);
             }
-            else if (itemName == "Broom")
+            else if (itemName == "broom")
             {
                 return ("broom-icon", 0);
             }
-            else if (itemName.Contains("Swap"))
+            else if (itemName.Contains("swap"))
             {
                 return ("item_tranformer", 0);
             }
-            else if (itemName == "Extend")
+            else if (itemName == "extend")
             {
                 return ("item_long_attack", 0);
             }
-            else if (itemName == "Widen")
+            else if (itemName == "widen")
             {
                 return ("item_wide_attack", 0);
             }
-            else if (itemName == "Cardboard Box")
+            else if (itemName == "cardboard box")
             {
                 return ("fields_npcs", 31);
             }
-            else if (itemName == "Biking Shoes")
+            else if (itemName == "biking shoes" || itemName.Contains("shoes") || itemName.Contains("boots"))
             {
                 return ("fields_npcs", 56);
             }
-            else if (itemName == "Progressive Red Cave")
+            else if (itemName == "progressive red cave")
             {
                 return ("archipelago_items", 3);
             }
-            else if (itemName == "Temple of the Seeing One Statue")
+            else if (itemName == "temple of the seeing one statue")
             {
                 return ("archipelago_items", 6);
             }
-            else if (itemName == "Red Cave Statue")
+            else if (itemName == "red cave statue")
             {
                 return ("archipelago_items", 7);
             }
-            else if (itemName == "Mountain Cavern Statue")
+            else if (itemName == "mountain cavern statue")
             {
                 return ("archipelago_items", 8);
             }
-            else if (itemName.StartsWith("Nexus Gate"))
+            else if (itemName.StartsWith("nexus gate"))
             {
                 return ("archipelago_items", 2);
             }
-            else if (itemName.StartsWith("Card"))
+            else if (itemName.StartsWith("card") || itemName.Contains("card"))
             {
-                return ("archipelago_items", itemName == "Card (Null)" ? 5 : 4);
+                return ("archipelago_items", itemName == "card (null)" ? 5 : 4);
             }
             else if (GetSecretNumber(itemName) != -1)
             {
                 return ("secret_trophies", GetSecretNumber(itemName));
             }
-            else if (itemName == "Person Trap")
+            else if (itemName == "person trap")
             {
                 return ("person", 0);
             }
-            else if (itemName == "Gas Trap")
+            else if (itemName == "gas trap")
             {
                 return ("archipelago_items", 13);
+            }
+            if (Plugin.ArchipelagoManager!.MatchDifferentWorldItem == MatchDifferentWorldItem.MatchExtra)
+            {
+                if (itemName.Contains("mushroom"))
+                {
+                    return ("forest_npcs", 16);
+                }
+                if (itemName.Contains("heart container") || itemName == "love")
+                {
+                    return ("external_items", 0);
+                }
+                else if (itemName.Contains("piece of heart"))
+                {
+                    return ("external_items", 1);
+                }
+                else if (itemName.Contains("sword"))
+                {
+                    return ("external_items", 2);
+                }
+                else if (itemName.Contains("stick") || itemName.Contains("branch") || itemName.Contains("wood"))
+                {
+                    return ("external_items", 3);
+                }
+                else if (itemName.Contains("feather") || itemName.Contains("roc's"))
+                {
+                    return ("external_items", 4);
+                }
+                else if (itemName.Contains("jar") || itemName.Contains("bottle"))
+                {
+                    return ("external_items", 5);
+                }
+                else if (itemName.Contains("coin"))
+                {
+                    return ("external_items", 6);
+                }
+                else if (itemName.Contains("ruppee") || itemName.Contains("gem") || itemName.Contains("crystal"))
+                {
+                    return ("external_items", 7);
+                }
+                else if (itemName.Contains("bean") || itemName.Contains("seed") || itemName.Contains("nut"))
+                {
+                    return ("external_items", 8);
+                }
+                else if (itemName.Contains("bomb"))
+                {
+                    return ("external_items", 9);
+                }
+                else if (itemName.Contains("arrow") || itemName.Contains("bow"))
+                {
+                    return ("external_items", 10);
+                }
+                else if (itemName.Contains("shield"))
+                {
+                    return ("external_items", 11);
+                }
+                else if (itemName.Contains("star") || itemName.Contains("shine"))
+                {
+                    return ("external_items", 12);
+                }
+                else if (itemName.Contains("rock") || itemName.Contains("stone"))
+                {
+                    return ("external_items", 13);
+                }
+                else if (itemName.Contains("ball") || itemName.Contains("orb"))
+                {
+                    return ("external_items", 14);
+                }
+            }
+            if (itemName.Contains("heart"))
+            {
+                return ("small_health_pickup", 0);
+            }
+            else if (itemName.Contains("key"))
+            {
+                return ("key", 0);
             }
 
             return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1);
@@ -169,9 +256,9 @@ namespace AnodyneArchipelago.Helpers
 
     public class SpriteTreasure(Vector2 pos, string tex, int frame) : Treasure(tex, pos, frame, -1)
     {
-        public static SpriteTreasure Get(Vector2 pos, string itemName)
+        public static SpriteTreasure Get(Vector2 pos, string itemName, string playerName)
         {
-            (string tex, int frame) = TreasureHelper.GetSprite(itemName, ItemFlags.None);
+            (string tex, int frame) = TreasureHelper.GetSprite(itemName, playerName, ItemFlags.None);
             return new(pos, tex, frame);
         }
 

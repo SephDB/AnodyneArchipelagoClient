@@ -51,11 +51,11 @@ namespace AnodyneArchipelago
         Progression = 3,
     }
 
-    public enum PlayerSprite
+    public enum MatchDifferentWorldItem
     {
-        Young = 0,
-        JPlayer,
-        Nova
+        Disabled = 0,
+        Match,
+        MatchExtra
     }
 
     public class ArchipelagoManager
@@ -82,7 +82,9 @@ namespace AnodyneArchipelago
         private List<string> _unlockedGates = new();
         private Dictionary<string, Guid> _checkGates = new();
         private PostgameMode _postgameMode;
-        private PlayerSprite _playerSprite;
+        private MatchDifferentWorldItem _matchDifferentWorldItem;
+        private bool _hideTrapItems;
+        private string _playerSpriteName;
 
         private Texture2D _originalPlayerTexture;
         private Texture2D _originalCellTexture;
@@ -103,6 +105,8 @@ namespace AnodyneArchipelago
         public bool VanillaRedCave => _vanillaRedCave;
         public bool SplitWindmill => _splitWindmill;
         public bool ForestBunnyChest => _forestBunnyChest;
+        public MatchDifferentWorldItem MatchDifferentWorldItem => _matchDifferentWorldItem;
+        public bool HideTrapItems => _hideTrapItems;
         public VictoryCondition VictoryCondition => _victoryCondition;
         public PostgameMode PostgameMode => _postgameMode;
 
@@ -168,7 +172,11 @@ namespace AnodyneArchipelago
 
             _victoryCondition = (VictoryCondition)(long)login.SlotData.GetValueOrDefault("victory_condition", (long)VictoryCondition.DefeatBriar);
 
-            _playerSprite = (PlayerSprite)(long)login.SlotData.GetValueOrDefault("player_sprite", (long)PlayerSprite.Young);
+            _matchDifferentWorldItem = (MatchDifferentWorldItem)(long)login.SlotData.GetValueOrDefault("match_different_world_item", (long)MatchDifferentWorldItem.Disabled);
+
+            _hideTrapItems = (bool)login.SlotData.GetValueOrDefault("hide_trap_items", false);
+
+            _playerSpriteName = (string)login.SlotData.GetValueOrDefault("player_sprite_name", "young");
 
             if (login.SlotData.ContainsKey("nexus_gates_unlocked"))
             {
@@ -197,7 +205,7 @@ namespace AnodyneArchipelago
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
 
-            PatchPlayerTextures(_playerSprite);
+            PatchPlayerTextures(_playerSpriteName);
 
             _scoutTask = Task.Run(ScoutAllLocations);
 
@@ -316,6 +324,11 @@ namespace AnodyneArchipelago
         public int GetPlayer()
         {
             return _session.ConnectionInfo.Slot;
+        }
+
+        public string GetPlayerName()
+        {
+            return _session.Players.GetPlayerName(GetPlayer());
         }
 
         public void SendLocation(string location)
@@ -678,14 +691,17 @@ namespace AnodyneArchipelago
             }
 
             string message;
+            string playerName;
+
             if (item.Player == _session.ConnectionInfo.Slot)
             {
                 message = $"Found {itemName}!";
+                playerName = _session.Players.GetPlayerAlias(item.Player);
             }
             else
             {
-                string otherPlayer = _session.Players.GetPlayerAlias(item.Player);
-                message = $"Received {itemName} from {otherPlayer}.";
+                playerName = _session.Players.GetPlayerAlias(item.Player);
+                message = $"Received {itemName} from {playerName}.";
             }
 
             if (!handled)
@@ -693,7 +709,7 @@ namespace AnodyneArchipelago
                 message += " But it didn't have any effect.";
             }
 
-            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemName);
+            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemName, playerName);
 
             return (treasure, message);
         }
@@ -896,23 +912,9 @@ namespace AnodyneArchipelago
             }
         }
 
-        private static void PatchPlayerTextures(PlayerSprite playerSprite)
+        private static void PatchPlayerTextures(string playerSpriteName)
         {
-            string texture;
-
-            switch (playerSprite)
-            {
-                case PlayerSprite.JPlayer:
-                    texture = "jplayer";
-                    break;
-                case PlayerSprite.Nova:
-                    texture = "nova";
-                    break;
-                default:
-                    return;
-            }
-
-            PatchPlayerTextures(ResourceManager.GetTexture(texture), ResourceManager.GetTexture(texture + "_cell"), ResourceManager.GetTexture(texture + "reflection"));
+            PatchPlayerTextures(ResourceManager.GetTexture(playerSpriteName), ResourceManager.GetTexture(playerSpriteName + "_cell"), ResourceManager.GetTexture(playerSpriteName + "_reflection"));
         }
 
         private static void PatchPlayerTextures(Texture2D? texture, Texture2D? textureCell, Texture2D? textureReflection)
