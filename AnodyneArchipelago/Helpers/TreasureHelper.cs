@@ -80,6 +80,7 @@ namespace AnodyneArchipelago.Helpers
                 return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1);
             }
 
+            string fullCapsName = itemName;
             itemName = itemName.ToLower();
 
             if (itemName.StartsWith("small key"))
@@ -176,21 +177,33 @@ namespace AnodyneArchipelago.Helpers
             }
             if (Plugin.ArchipelagoManager!.MatchDifferentWorldItem == MatchDifferentWorldItem.MatchExtra)
             {
-                if (itemName.Contains("mushroom"))
+                if (itemName.Contains("cd") || itemName.Contains("disk") || fullCapsName.Contains("TM") || fullCapsName.Contains("HM"))
                 {
-                    return ("forest_npcs", 16);
+                    return ("external_items", 15);
                 }
-                if (itemName.Contains("heart container") || itemName == "love")
+                else if (itemName.Contains("mushroom"))
+                {
+                    return ("forest_npcs", 20);
+                }
+                else if (itemName.Contains("gun"))
+                {
+                    return ("fields_npcs", 54);
+                }
+                else if (itemName.Contains("wallet"))
+                {
+                    return ("fields_npcs", 55);
+                }
+                else if (itemName.Contains("vacuum"))
+                {
+                    return ("fields_npcs", 56);
+                }
+                else if (itemName.Contains("heart container") || itemName.Contains("love"))
                 {
                     return ("external_items", 0);
                 }
                 else if (itemName.Contains("piece of heart"))
                 {
                     return ("external_items", 1);
-                }
-                else if (itemName.Contains("sword"))
-                {
-                    return ("external_items", 2);
                 }
                 else if (itemName.Contains("stick") || itemName.Contains("branch") || itemName.Contains("wood"))
                 {
@@ -208,7 +221,7 @@ namespace AnodyneArchipelago.Helpers
                 {
                     return ("external_items", 6);
                 }
-                else if (itemName.Contains("ruppee") || itemName.Contains("gem") || itemName.Contains("crystal"))
+                else if (itemName.Contains("rupee") || itemName.Contains("gem") || itemName.Contains("crystal") || itemName.Contains("jewel"))
                 {
                     return ("external_items", 7);
                 }
@@ -240,8 +253,12 @@ namespace AnodyneArchipelago.Helpers
                 {
                     return ("external_items", 14);
                 }
+                else if (itemName.Contains("sword"))
+                {
+                    return ("external_items", 2);
+                }
             }
-            if (itemName.Contains("heart"))
+            if (itemName.Contains("heart") || itemName.Contains("health") || itemName.Contains("heal"))
             {
                 return ("small_health_pickup", 0);
             }

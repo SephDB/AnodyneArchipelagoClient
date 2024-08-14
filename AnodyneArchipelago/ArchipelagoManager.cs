@@ -562,7 +562,11 @@ namespace AnodyneArchipelago
             }
             else if (itemName == "Heal")
             {
-                GlobalState.CUR_HEALTH = GlobalState.MAX_HEALTH;
+                GlobalState.CUR_HEALTH += 1;
+            }
+            else if (itemName == "Big Heal")
+            {
+                GlobalState.CUR_HEALTH += 3;
             }
             else if (itemName == "Broom")
             {
