@@ -109,11 +109,11 @@ namespace AnodyneArchipelago.Helpers
             }
             else if (itemName == "big heal")
             {
-                return ("big_health_pickup", 0);
+                return ("archipelago_items", 15);
             }
             else if (itemName == "heal")
             {
-                return ("small_health_pickup", 0);
+                return ("archipelago_items", 14);
             }
             else if (itemName == "broom")
             {
@@ -205,7 +205,7 @@ namespace AnodyneArchipelago.Helpers
                 {
                     return ("external_items", 1);
                 }
-                else if (itemName.Contains("stick") || itemName.Contains("branch") || itemName.Contains("wood"))
+                else if (itemName.Contains("stick") || itemName.Contains("branch") || itemName.Contains("wood") || itemName.Contains("rod") || itemName.Contains("staff"))
                 {
                     return ("external_items", 3);
                 }
@@ -217,7 +217,7 @@ namespace AnodyneArchipelago.Helpers
                 {
                     return ("external_items", 5);
                 }
-                else if (itemName.Contains("coin"))
+                else if (itemName.Contains("coin") || fullCapsName.EndsWith('G'))
                 {
                     return ("external_items", 6);
                 }
@@ -260,7 +260,7 @@ namespace AnodyneArchipelago.Helpers
             }
             if (itemName.Contains("heart") || itemName.Contains("health") || itemName.Contains("heal"))
             {
-                return ("small_health_pickup", 0);
+                return ("archipelago_items", 14);
             }
             else if (itemName.Contains("key"))
             {
