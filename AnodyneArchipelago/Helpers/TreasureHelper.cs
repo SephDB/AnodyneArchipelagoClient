@@ -87,6 +87,10 @@ namespace AnodyneArchipelago.Helpers
             {
                 return ("key", 0);
             }
+            if (itemName.StartsWith("key ring") || itemName.StartsWith("master key") || itemName.StartsWith("skeleton key"))
+            {
+                return ("archipelago_items", 16);
+            }
             else if (itemName == "green key")
             {
                 return ("key_green", 0);
@@ -98,6 +102,10 @@ namespace AnodyneArchipelago.Helpers
             else if (itemName == "red key")
             {
                 return ("key_green", 2);
+            }
+            if (itemName.Contains("key"))
+            {
+                return ("key", 0);
             }
             else if (itemName == "jump shoes")
             {

@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Dialogue;
+﻿using AnodyneArchipelago;
+using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Input;
 using AnodyneSharp.Registry;
@@ -47,9 +48,27 @@ namespace AnodyneSharp.States.MenuSubstates
 
             _labels = Enumerable.Range(0, 7).Select(i => new UILabel(new(x, y + 18 * i), true, names[i])).ToList();
 
-            _keys = Enumerable.Range(0, 7).Select(i => new UIEntity(new Vector2(_labels[i].Position.X + 64, _labels[i].Position.Y -2), "key", 0, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)).ToArray();
+            if (Plugin.ArchipelagoManager.SmallkeyMode == SmallKeyMode.SmallKeys)
+            {
+                _keys = Enumerable.Range(0, 7).Select(i => new UIEntity(new Vector2(_labels[i].Position.X + 64, _labels[i].Position.Y - 2), "key", 0, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)).ToArray();
 
-            _labels.AddRange(Enumerable.Range(0, 7).Select(i => new UILabel(new(x + 64 + 12, y + 18 * i), true, counts[i])).ToList());
+                _labels.AddRange(Enumerable.Range(0, 7).Select(i => new UILabel(new(x + 64 + 12, y + 18 * i), true, counts[i])).ToList());
+            }
+            else
+            {
+                _keys = Enumerable.Range(0, 7).Select(i => 
+                    new UIEntity(
+                            new Vector2(
+                                    _labels[i].Position.X + 64 + 14, 
+                                    _labels[i].Position.Y - 2
+                                ), 
+                            "archipelago_items",
+                            GlobalState.events.GetEvent($"{names[i]}_KeyRing_Obtained") == 1 ? 16 : 17, 
+                            16, 
+                            16, 
+                            Drawing.DrawOrder.EQUIPMENT_ICON))
+                    .ToArray();
+            }
         }
 
         public override void GetControl()

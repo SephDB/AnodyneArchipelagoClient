@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace AnodyneArchipelago
@@ -43,6 +44,14 @@ namespace AnodyneArchipelago
             }
 
             return sb.ToString();
+        }
+
+
+        public static object ToTitleCase(string s)
+        {
+            TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
+
+            return textInfo.ToTitleCase(s.ToLower());
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AnodyneArchipelago.Entities;
+using AnodyneSharp.Entities.Gadget;
 using AnodyneSharp.Entities.Gadget.Doors;
 using AnodyneSharp.Logging;
 using Microsoft.Xna.Framework;
@@ -61,6 +62,16 @@ namespace AnodyneArchipelago.Patches
         public void OpenSmallKeyGates()
         {
             root.Descendants("KeyBlock").Where(k => (int)k.Attribute("frame")! == 0).Remove();
+        }
+
+        public void MakeKeyRingGates()
+        {
+            var gates = root.Descendants("KeyBlock").Where(k => (int)k.Attribute("frame")! == 0);
+
+            foreach (var gate in gates)
+            {
+                gate.Name = "KeyRingBlock";
+            }
         }
 
         public void OpenBigKeyGates()

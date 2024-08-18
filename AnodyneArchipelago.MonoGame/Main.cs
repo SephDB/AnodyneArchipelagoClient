@@ -23,7 +23,11 @@ namespace AnodyneArchipelago.MonoGame
             {
                 menuEntries.RemoveAt(1);
                 menuEntries.Insert(1, ("Items", () => new APEquipSubstate()));
-                menuEntries.Insert(2, ("Keys", () => new KeySubstate()));
+
+                if (!Plugin.ArchipelagoManager.UnlockSmallKeyGates)
+                {
+                    menuEntries.Insert(2, ("Keys", () => new KeySubstate()));
+                }
             }
         }
 

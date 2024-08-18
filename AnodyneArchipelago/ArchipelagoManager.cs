@@ -10,6 +10,7 @@ using AnodyneSharp.Resources;
 using AnodyneSharp.Sounds;
 using AnodyneSharp.States;
 using AnodyneSharp.UI;
+using AnodyneSharp.Utilities;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
@@ -28,6 +29,13 @@ using static AnodyneSharp.States.CutsceneState;
 
 namespace AnodyneArchipelago
 {
+    public enum SmallKeyMode
+    {
+        Unlocked = 0,
+        SmallKeys = 1,
+        KeyRings = 2
+    }
+
     public enum BigKeyShuffle
     {
         Vanilla = 0,
@@ -73,7 +81,7 @@ namespace AnodyneArchipelago
         private long _endgameCardRequirement = 36;
         private ColorPuzzle _colorPuzzle = new();
         private bool ColorPuzzleRandomized = true;
-        private bool _unlockSmallKeyGates = false;
+        private SmallKeyMode _keyMode = SmallKeyMode.SmallKeys;
         private BigKeyShuffle _bigKeyShuffle;
         private bool _vanillaHealthCicadas = false;
         private bool _vanillaRedCave = false;
@@ -102,7 +110,8 @@ namespace AnodyneArchipelago
 
         public long EndgameCardRequirement => _endgameCardRequirement;
         public ColorPuzzle ColorPuzzle => _colorPuzzle;
-        public bool UnlockSmallKeyGates => _unlockSmallKeyGates;
+        public bool UnlockSmallKeyGates => _keyMode == SmallKeyMode.Unlocked;
+        public SmallKeyMode SmallkeyMode => _keyMode;
         public BigKeyShuffle BigKeyShuffle => _bigKeyShuffle;
         public bool VanillaHealthCicadas => _vanillaHealthCicadas;
         public bool VanillaRedCave => _vanillaRedCave;
@@ -163,7 +172,7 @@ namespace AnodyneArchipelago
 
             ColorPuzzleRandomized = (bool)login.SlotData.GetValueOrDefault("randomize_color_puzzle", true);
 
-            _unlockSmallKeyGates = (bool)login.SlotData.GetValueOrDefault("unlock_gates", false);
+            _keyMode = (SmallKeyMode)(long)login.SlotData.GetValueOrDefault("small_key_mode", (long)SmallKeyMode.SmallKeys);
 
             _bigKeyShuffle = (BigKeyShuffle)(long)login.SlotData.GetValueOrDefault("shuffle_big_gates", (long)BigKeyShuffle.AnyWorld);
 
@@ -539,6 +548,14 @@ namespace AnodyneArchipelago
                 string mapName = GetMapNameForDungeon(dungeonName);
                 GlobalState.inventory.AddMapKey(mapName, 1);
             }
+            if (itemName.StartsWith("Key Ring"))
+            {
+                string dungeonName = itemName[11..];
+                dungeonName = dungeonName[..^1];
+
+                string mapName = GetMapNameForDungeon(dungeonName);
+                GlobalState.events.SetEvent($"{Util.ToTitleCase(mapName)}_KeyRing_Obtained", 1);
+            }
             else if (itemName == "Green Key")
             {
                 GlobalState.inventory.BigKeyStatus[0] = true;
@@ -835,6 +852,10 @@ namespace AnodyneArchipelago
                 if (UnlockSmallKeyGates)
                 {
                     patcher.OpenSmallKeyGates();
+                }
+                else if (_keyMode == SmallKeyMode.KeyRings)
+                {
+                    patcher.MakeKeyRingGates();
                 }
 
                 if (BigKeyShuffle == BigKeyShuffle.Unlocked)
