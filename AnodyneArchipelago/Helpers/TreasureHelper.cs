@@ -59,7 +59,7 @@ namespace AnodyneArchipelago.Helpers
         {
             if (Plugin.ArchipelagoManager!.HideTrapItems && itemFlags.HasFlag(ItemFlags.Trap))
             {
-                int seed = itemName.GetHashCode() + location.GetHashCode();
+                int seed = Plugin.ArchipelagoManager.GetSeed().GetHashCode() + itemName.GetHashCode() + location.GetHashCode();
 
                 if (seed < 0)
                 {
