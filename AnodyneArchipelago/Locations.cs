@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using AnodyneSharp.Entities;
 
 namespace AnodyneArchipelago
 {
@@ -125,6 +126,8 @@ namespace AnodyneArchipelago
             {"Drawer - Game Over Chest", new Guid("34ca70fd-f8d3-6cf8-5408-6c3eb4f9342c") },
             {"Drawer - Brown Area Chest", new Guid("bece469b-e0e5-7d07-d702-751fb24fbc8d") },
             {"Nexus - Isolated Chest", new Guid("d3498803-d92d-4a88-83b1-b0e5ec6d38a8") },
+            {"Street - After Bridge Dust 1", new Guid("05C8157F-9525-931A-72E3-EE1830F122DE") },
+            {"Street - After Bridge Dust 2", new Guid("FC2C9A48-42AD-755E-C5AF-1085580BC0F5") },
         };
     }
 }

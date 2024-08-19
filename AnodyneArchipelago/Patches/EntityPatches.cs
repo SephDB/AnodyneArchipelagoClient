@@ -150,6 +150,15 @@ namespace AnodyneArchipelago.Patches
             LogLocation(node, location);
         }
 
+        public void SetDustCheck(Guid guid, string location)
+        {
+            var node = GetByID(guid);
+            node.Name = nameof(DustAP);
+            node.SetAttributeValue("type",location);
+            
+            LogLocation(node, location);
+        }
+
         public void SetWindmillCheck(int id)
         {
             var map = root.Elements().Where(m => (string)m.Attribute("name")! == "WINDMILL").First();

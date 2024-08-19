@@ -84,6 +84,7 @@ namespace AnodyneArchipelago
         private SmallKeyMode _keyMode = SmallKeyMode.SmallKeys;
         private BigKeyShuffle _bigKeyShuffle;
         private bool _vanillaHealthCicadas = false;
+        private bool _dustsanity = false;
         private bool _vanillaRedCave = false;
         private bool _splitWindmill = false;
         private bool _forestBunnyChest = false;
@@ -177,6 +178,8 @@ namespace AnodyneArchipelago
             _bigKeyShuffle = (BigKeyShuffle)(long)login.SlotData.GetValueOrDefault("shuffle_big_gates", (long)BigKeyShuffle.AnyWorld);
 
             _vanillaHealthCicadas = (bool)login.SlotData.GetValueOrDefault("vanilla_health_cicadas", false);
+
+            _dustsanity = (bool)login.SlotData.GetValueOrDefault("dustsanity", false);
 
             _vanillaRedCave = (bool)login.SlotData.GetValueOrDefault("vanilla_red_cave", false);
 
@@ -883,6 +886,10 @@ namespace AnodyneArchipelago
                     else if (name.EndsWith("Chest"))
                     {
                         patcher.SetTreasureChest(Locations.LocationsGuids[name], name, (int)location_id);
+                    }
+                    else if (name.Contains("Dust"))
+                    {
+                        patcher.SetDustCheck(Locations.LocationsGuids[name], name);
                     }
                     else if (name == "Windmill - Activation")
                     {
