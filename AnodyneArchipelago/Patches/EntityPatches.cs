@@ -15,11 +15,18 @@ namespace AnodyneArchipelago.Patches
         private int CurrentID = 0;
         private XDocument Document;
         private XElement root;
+        private long? DustStartID;
+        private List<XElement> Dusts = new();
 
-        public EntityPatches(Stream s)
+        public EntityPatches(Stream s, long? dustStartID = null)
         {
             Document = XDocument.Load(s);
             root = Document.Root!;
+            DustStartID = dustStartID;
+            if(DustStartID != null)
+            {
+                Dusts = root.Descendants("Dust").ToList();
+            }
         }
 
         public Stream Get()
@@ -43,6 +50,22 @@ namespace AnodyneArchipelago.Patches
         private XElement GetByID(Guid id)
         {
             return root.Descendants().Where(e => e.Name != "map" && (Guid)e.Attribute("guid")! == id).First();
+        }
+
+        public bool IsDustID(long location_id)
+        {
+            if(DustStartID == null)
+            {
+                return false;
+            }
+            return location_id >= DustStartID.Value;
+        }
+
+        public void SetDust(long location_id, string location_name)
+        {
+            var node = Dusts[(int)(location_id - DustStartID!.Value)];
+            node.Name = nameof(DustAP);
+            node.SetAttributeValue("type", location_name);
         }
 
         public void RemoveNexusBlockers()
@@ -115,8 +138,6 @@ namespace AnodyneArchipelago.Patches
             LogLocation(node, location);
         }
 
-
-
         public void SetCicada(Guid guid, string location)
         {
             var node = GetByID(guid);
@@ -147,15 +168,6 @@ namespace AnodyneArchipelago.Patches
                     new XAttribute("p", 2)
                     )
                 );
-            LogLocation(node, location);
-        }
-
-        public void SetDustCheck(Guid guid, string location)
-        {
-            var node = GetByID(guid);
-            node.Name = nameof(DustAP);
-            node.SetAttributeValue("type",location);
-            
             LogLocation(node, location);
         }
 

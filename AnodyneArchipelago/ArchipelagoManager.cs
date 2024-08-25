@@ -84,10 +84,10 @@ namespace AnodyneArchipelago
         private SmallKeyMode _keyMode = SmallKeyMode.SmallKeys;
         private BigKeyShuffle _bigKeyShuffle;
         private bool _vanillaHealthCicadas = false;
-        private bool _dustsanity = false;
         private bool _vanillaRedCave = false;
         private bool _splitWindmill = false;
         private bool _forestBunnyChest = false;
+        private long? _dustsanityBase = null;
         private VictoryCondition _victoryCondition;
         private List<string> _unlockedGates = new();
         private Dictionary<string, Guid> _checkGates = new();
@@ -179,8 +179,6 @@ namespace AnodyneArchipelago
 
             _vanillaHealthCicadas = (bool)login.SlotData.GetValueOrDefault("vanilla_health_cicadas", false);
 
-            _dustsanity = (bool)login.SlotData.GetValueOrDefault("dustsanity", false);
-
             _vanillaRedCave = (bool)login.SlotData.GetValueOrDefault("vanilla_red_cave", false);
 
             _splitWindmill = (bool)login.SlotData.GetValueOrDefault("split_windmill", false);
@@ -219,6 +217,11 @@ namespace AnodyneArchipelago
             {
                 _deathLinkService = null;
             } 
+
+            if(login.SlotData.GetValueOrDefault("dust_sanity_base",null) is long val)
+            {
+                _dustsanityBase = val;
+            }
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
 
@@ -839,7 +842,7 @@ namespace AnodyneArchipelago
         {
             if (path.EndsWith("Entities.xml"))
             {
-                EntityPatches patcher = new(stream);
+                EntityPatches patcher = new(stream,_dustsanityBase);
 
                 patcher.RemoveNexusBlockers();
                 patcher.RemoveMitraCliff();
@@ -875,7 +878,11 @@ namespace AnodyneArchipelago
                 {
                     string name = _session.Locations.GetLocationNameFromId(location_id);
 
-                    if (name.EndsWith("Key") || name.EndsWith("Tentacle"))
+                    if(patcher.IsDustID(location_id))
+                    {
+                        patcher.SetDust(location_id, name);
+                    }
+                    else if (name.EndsWith("Key") || name.EndsWith("Tentacle"))
                     {
                         patcher.SetFreeStanding(Locations.LocationsGuids[name], name, (int)location_id);
                     }
@@ -886,10 +893,6 @@ namespace AnodyneArchipelago
                     else if (name.EndsWith("Chest"))
                     {
                         patcher.SetTreasureChest(Locations.LocationsGuids[name], name, (int)location_id);
-                    }
-                    else if (name.Contains("Dust"))
-                    {
-                        patcher.SetDustCheck(Locations.LocationsGuids[name], name);
                     }
                     else if (name == "Windmill - Activation")
                     {
