@@ -16,6 +16,10 @@ namespace AnodyneArchipelago.Entities
     [NamedEntity, Collision(typeof(Dust), MapCollision = true, KeepOnScreen = true)]
     internal class DustAP : Dust
     {
+        private static readonly Color NormalItemColor = new(255, 199, 79, 255);
+        private static readonly Color ImportantItemColor = new(76, 255, 0, 255);
+        private static readonly Color TrapItemColor = new(255, 0, 0, 255);
+
         private EntityPreset _preset;
 
         public DustAP(EntityPreset preset, Player p)
@@ -25,7 +29,7 @@ namespace AnodyneArchipelago.Entities
 
             if (!_preset.Activated)
             {
-                sprite.Color = new(255, 199, 79, 255);
+                sprite.Color = GetDustColor();
             }
         }
 
@@ -39,6 +43,29 @@ namespace AnodyneArchipelago.Entities
                 _preset.Activated = true;
 
                 Plugin.ArchipelagoManager!.SendLocation(_preset.TypeValue);
+            }
+        }
+
+        private Color GetDustColor()
+        {
+            ItemInfo? info = Plugin.ArchipelagoManager!.GetScoutedLocation(_preset.TypeValue);
+
+            if (info == null)
+            {
+                return Color.Black;
+            }
+
+            if (info.Flags.HasFlag(ItemFlags.Trap))
+            {
+                return Plugin.ArchipelagoManager!.HideTrapItems ? ImportantItemColor : TrapItemColor;
+            }
+            else if (info.Flags.HasFlag(ItemFlags.Advancement))
+            {
+                return ImportantItemColor;
+            }
+            else
+            {
+                return NormalItemColor;
             }
         }
     }

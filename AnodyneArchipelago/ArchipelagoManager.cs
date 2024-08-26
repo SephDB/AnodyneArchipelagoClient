@@ -554,7 +554,7 @@ namespace AnodyneArchipelago
                 string mapName = GetMapNameForDungeon(dungeonName);
                 GlobalState.inventory.AddMapKey(mapName, 1);
             }
-            if (itemName.StartsWith("Key Ring"))
+            else if (itemName.StartsWith("Key Ring"))
             {
                 string dungeonName = itemName[11..];
                 dungeonName = dungeonName[..^1];
