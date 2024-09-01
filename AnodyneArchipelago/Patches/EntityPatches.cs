@@ -2,6 +2,7 @@
 using AnodyneSharp.Entities.Gadget;
 using AnodyneSharp.Entities.Gadget.Doors;
 using AnodyneSharp.Logging;
+using AnodyneSharp.Registry;
 using Microsoft.Xna.Framework;
 using System.Buffers.Binary;
 using System.Net;
