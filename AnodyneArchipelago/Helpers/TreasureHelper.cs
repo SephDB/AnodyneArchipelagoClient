@@ -68,6 +68,7 @@ namespace AnodyneArchipelago.Helpers
 
                 itemName = trap_item_sprites[seed % trap_item_sprites.Count];
                 playerName = Plugin.ArchipelagoManager.GetPlayerName();
+                itemFlags = ItemFlags.None;
             }
 
             return GetSprite(itemName, playerName, itemFlags);

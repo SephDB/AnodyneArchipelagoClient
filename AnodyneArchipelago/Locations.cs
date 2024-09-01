@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using AnodyneSharp.Entities;
 
 namespace AnodyneArchipelago
 {

@@ -87,6 +87,7 @@ namespace AnodyneArchipelago
         private bool _vanillaRedCave = false;
         private bool _splitWindmill = false;
         private bool _forestBunnyChest = false;
+        private long? _dustsanityBase = null;
         private VictoryCondition _victoryCondition;
         private List<string> _unlockedGates = new();
         private Dictionary<string, Guid> _checkGates = new();
@@ -216,6 +217,11 @@ namespace AnodyneArchipelago
             {
                 _deathLinkService = null;
             } 
+
+            if(login.SlotData.GetValueOrDefault("dust_sanity_base",null) is long val)
+            {
+                _dustsanityBase = val;
+            }
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
 
@@ -548,7 +554,7 @@ namespace AnodyneArchipelago
                 string mapName = GetMapNameForDungeon(dungeonName);
                 GlobalState.inventory.AddMapKey(mapName, 1);
             }
-            if (itemName.StartsWith("Key Ring"))
+            else if (itemName.StartsWith("Key Ring"))
             {
                 string dungeonName = itemName[11..];
                 dungeonName = dungeonName[..^1];
@@ -836,7 +842,7 @@ namespace AnodyneArchipelago
         {
             if (path.EndsWith("Entities.xml"))
             {
-                EntityPatches patcher = new(stream);
+                EntityPatches patcher = new(stream,_dustsanityBase);
 
                 patcher.RemoveNexusBlockers();
                 patcher.RemoveMitraCliff();
@@ -872,7 +878,11 @@ namespace AnodyneArchipelago
                 {
                     string name = _session.Locations.GetLocationNameFromId(location_id);
 
-                    if (name.EndsWith("Key") || name.EndsWith("Tentacle"))
+                    if(patcher.IsDustID(location_id))
+                    {
+                        patcher.SetDust(location_id, name);
+                    }
+                    else if (name.EndsWith("Key") || name.EndsWith("Tentacle"))
                     {
                         patcher.SetFreeStanding(Locations.LocationsGuids[name], name, (int)location_id);
                     }
