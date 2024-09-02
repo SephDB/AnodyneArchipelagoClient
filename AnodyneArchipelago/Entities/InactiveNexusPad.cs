@@ -20,6 +20,7 @@ namespace AnodyneArchipelago.Entities
             : base(preset.Position, "nexus_pad", 32, 32, AnodyneSharp.Drawing.DrawOrder.VERY_BG_ENTITIES)
         {
             _preset = preset;
+            _player = player;
 
             if (GlobalState.events.ActivatedNexusPortals.Contains(GlobalState.CURRENT_MAP_NAME))
             {
@@ -46,7 +47,7 @@ namespace AnodyneArchipelago.Entities
                 _preset.Alive = false;
                 exists = false;
 
-                GlobalState.SpawnEntity(new NexusPad(_preset, _player));
+                GlobalState.SpawnEntity(new NexusPad(EntityManager.GetLinkedDoor(EntityManager.GetNexusGateForCurrentMap().Door).Door, _player));
             }
         }
     }
