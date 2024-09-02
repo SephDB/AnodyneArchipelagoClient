@@ -67,6 +67,7 @@ namespace AnodyneArchipelago.Patches
             var node = Dusts[(int)(location_id - DustStartID!.Value)];
             node.Name = nameof(DustAP);
             node.SetAttributeValue("type", location_name);
+            LogLocation(node, location_name);
         }
 
         public void RemoveNexusBlockers()
