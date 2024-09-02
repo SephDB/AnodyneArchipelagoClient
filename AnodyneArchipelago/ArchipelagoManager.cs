@@ -163,7 +163,7 @@ namespace AnodyneArchipelago
 
             LoginSuccessful login = (result as LoginSuccessful)!;
 
-            _endgameCardRequirement = (long)login.SlotData.GetValueOrDefault("endgame_card_requirement", 36);
+            _endgameCardRequirement = (long)login.SlotData.GetValueOrDefault("endgame_card_requirement", (long)36);
 
             if (login.SlotData.ContainsKey("seed"))
             {
