@@ -17,7 +17,7 @@ namespace AnodyneArchipelago
         public static Player Player => (Player)playerField.GetValue(Game.CurrentState as PlayState)!;
         public static ArchipelagoManager? ArchipelagoManager = null;
 
-        public const string Version = "0.2.4";
+        public const string Version = "0.2.5-hotfix";
 
         public void Load()
         {
