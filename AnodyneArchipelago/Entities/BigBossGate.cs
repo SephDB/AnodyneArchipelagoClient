@@ -10,7 +10,7 @@ using System.Text;
 
 namespace AnodyneSharp.Entities.Gadget
 {
-    [NamedEntity("BossGate")]
+    [NamedEntity]
     public class BigBossGate : BigGate
     {
         private static readonly Color DigitColor = new(255, 90, 90);

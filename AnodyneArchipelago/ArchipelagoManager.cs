@@ -78,7 +78,6 @@ namespace AnodyneArchipelago
         private DeathLinkService _deathLinkService;
 
         private string _seedName;
-        private long _endgameCardRequirement = 36;
         private ColorPuzzle _colorPuzzle = new();
         private bool ColorPuzzleRandomized = true;
         private SmallKeyMode _keyMode = SmallKeyMode.SmallKeys;
@@ -88,6 +87,7 @@ namespace AnodyneArchipelago
         private bool _splitWindmill = false;
         private bool _forestBunnyChest = false;
         private long? _dustsanityBase = null;
+        private Dictionary<Guid, string> BigGateTypes = new();
         private VictoryCondition _victoryCondition;
         private List<string> _unlockedGates = new();
         private Dictionary<string, Guid> _checkGates = new();
@@ -109,7 +109,6 @@ namespace AnodyneArchipelago
 
         private ScreenChangeTracker changeTracker = new();
 
-        public long EndgameCardRequirement => _endgameCardRequirement;
         public ColorPuzzle ColorPuzzle => _colorPuzzle;
         public bool UnlockSmallKeyGates => _keyMode == SmallKeyMode.Unlocked;
         public SmallKeyMode SmallkeyMode => _keyMode;
@@ -163,7 +162,16 @@ namespace AnodyneArchipelago
 
             LoginSuccessful login = (result as LoginSuccessful)!;
 
-            _endgameCardRequirement = (long)login.SlotData.GetValueOrDefault("endgame_card_requirement", (long)36);
+            foreach(var (key,(value,id)) in Locations.Gates)
+            {
+                BigGateTypes[id] = (string)login.SlotData.GetValueOrDefault(key, value);
+            }
+
+            if(login.SlotData.ContainsKey("endgame_card_requirement"))
+            {
+                BigGateTypes[Locations.Gates["terminal_endgame_gate"].guid] = $"cards_{(long)login.SlotData["endgame_card_requirement"]}";
+            }
+
 
             if (login.SlotData.ContainsKey("seed"))
             {
@@ -853,7 +861,10 @@ namespace AnodyneArchipelago
                     patcher.SetColorPuzzle(ColorPuzzle);
                 }
 
-                patcher.Set36CardRequirement((int)_endgameCardRequirement);
+                foreach (var (id,value) in BigGateTypes)
+                {
+                    patcher.SetBigGateReq(id, value);
+                }
 
                 if (UnlockSmallKeyGates)
                 {

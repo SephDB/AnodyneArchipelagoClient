@@ -265,5 +265,30 @@ namespace AnodyneArchipelago.Patches
             node.Name = nameof(ShopKeepAP);
             LogLocation(node, "Fields - Shopkeeper Trade");
         }
+
+        public void SetBigGateReq(Guid id, string value)
+        {
+            var node = GetByID(id);
+            if(value.EndsWith("key"))
+            {
+                node.Name = "KeyBlock";
+                List<string> indices = ["green_key", "blue_key", "red_key"];
+                node.SetAttributeValue("frame", indices.IndexOf(value) + 1);
+            }
+            else if(value.StartsWith("cards_"))
+            {
+                node.Name = "CardGate";
+                node.SetAttributeValue("frame", value.Split('_')[1]);
+            }
+            else if(value.StartsWith("bosses_"))
+            {
+                node.Name = nameof(BigBossGate);
+                node.SetAttributeValue("frame", value.Split('_')[1]);
+            }
+            else if(value == "unlocked")
+            {
+                node.Remove();
+            }
+        }
     }
 }
