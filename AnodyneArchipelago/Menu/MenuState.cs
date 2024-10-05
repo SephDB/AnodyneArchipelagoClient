@@ -1,9 +1,11 @@
-﻿using AnodyneSharp.Entities;
+﻿using AnodyneArchipelago.Menu.MenuSubstate;
+using AnodyneSharp.Entities;
 using AnodyneSharp.Input;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
 using AnodyneSharp.States;
 using AnodyneSharp.States.MenuSubstates;
+using AnodyneSharp.States.MenuSubstates.ConfigSubstates;
 using AnodyneSharp.UI;
 using AnodyneSharp.UI.PauseMenu;
 using AnodyneSharp.UI.PauseMenu.Config;
@@ -13,6 +15,8 @@ namespace AnodyneArchipelago.Menu
 {
     internal partial class MenuState : ListSubstate
     {
+        public static ArchipelagoSettings ArchipelagoSettings;
+
         private UILabel _versionLabel1;
         private UILabel _versionLabel2;
         private UILabel _serverValue;
@@ -27,7 +31,6 @@ namespace AnodyneArchipelago.Menu
         private string _apSlot = "";
         private string _apPassword = "";
 
-        private ArchipelagoSettings _archipelagoSettings;
         private int _curPage;
 
         private bool _fadingOut = false;
@@ -41,18 +44,16 @@ namespace AnodyneArchipelago.Menu
                 Plugin.ArchipelagoManager = null;
             }
 
-            _archipelagoSettings = ArchipelagoSettings.Load();
-            if (_archipelagoSettings == null)
+            ArchipelagoSettings = ArchipelagoSettings.Load();
+            if (ArchipelagoSettings == null)
             {
-                _archipelagoSettings = new();
+                ArchipelagoSettings = new();
             }
 
-            
-
-            string[] selectorValues = new string[_archipelagoSettings.ConnectionDetails.Count + 1];
-            for (int i= 0; i < selectorValues.Length; i++)
+            string[] selectorValues = new string[ArchipelagoSettings.ConnectionDetails.Count + 1];
+            for (int i = 0; i < selectorValues.Length; i++)
             {
-                selectorValues[i] = $"{i+1}/{selectorValues.Length}";
+                selectorValues[i] = $"{i + 1}/{selectorValues.Length}";
             }
 
             _connectionSwitcher = new(new Vector2(60f, 95f), 32f, 0, true, selectorValues);
@@ -62,7 +63,7 @@ namespace AnodyneArchipelago.Menu
 
             SetLabels();
 
-            SetPage(_archipelagoSettings.ConnectionDetails.Count == 0 ? 0 : 1);
+            SetPage(ArchipelagoSettings.ConnectionDetails.Count == 0 ? 0 : 1);
         }
 
         protected override void SetLabels()
@@ -72,12 +73,13 @@ namespace AnodyneArchipelago.Menu
             _versionLabel1 = new(new Vector2(10f, 7f), false, "AnodyneArchipelago", new Color(116, 140, 144));
             _versionLabel2 = new(new Vector2(10f, 15f), false, $"v{Plugin.Version}", new Color(116, 140, 144));
             UILabel _serverLabel = new(new Vector2(x, 31f), false, $"Server:", new Color(226, 226, 226));
-            _serverValue = new(new Vector2(x+8, 40f), false, "", new Color());
+            _serverValue = new(new Vector2(x + 8, 40f), false, "", new Color());
             UILabel _slotLabel = new(new Vector2(x, 51f), false, $"Slot:", new Color(226, 226, 226));
-            _slotValue = new(new Vector2(x+8, 60f), false, "", new Color());
+            _slotValue = new(new Vector2(x + 8, 60f), false, "", new Color());
             UILabel _passwordLabel = new(new Vector2(x, 71f), false, $"Password:", new Color(226, 226, 226));
-            _passwordValue = new(new Vector2(x+8, 80f), false, "", new Color());
-            UILabel _connectLabel = new(new Vector2(60f, 115f), false, $"Connect", new Color(116, 140, 144));
+            _passwordValue = new(new Vector2(x + 8, 80f), false, "", new Color());
+            UILabel _settingsLabel = new(new Vector2(60f, 115f), false, $"Settings", new Color(116, 140, 144));
+            UILabel _connectLabel = new(new Vector2(60f, 128f), false, $"Connect", new Color(116, 140, 144));
             UILabel _pageLabel = new(new Vector2(60f, 95f), false, "");
 
             options =
@@ -86,6 +88,7 @@ namespace AnodyneArchipelago.Menu
                 (_slotLabel, new TextEntry("Slot:", _apSlot, (string value) => { _apSlot = value; UpdateLabels(); })),
                 (_passwordLabel, new TextEntry("Password:", _apPassword, (string value) => {_apPassword = value; UpdateLabels(); })),
                 (_pageLabel, new ActionOption(()=>{ })),
+                (_settingsLabel, new SubstateOption<ArchipelagoLocalSettings>()),
                 (_connectLabel, new ActionOption(()=>{ _substate = new ConnectionState(_apServer,_apSlot,_apPassword,OnConnected); }))
             ];
         }
@@ -128,9 +131,9 @@ namespace AnodyneArchipelago.Menu
                 return;
 
             int _oldstate = state;
-            
+
             base.HandleInput();
-            
+
             if (state == 3)
             {
                 selector.visible = false;
@@ -205,7 +208,7 @@ namespace AnodyneArchipelago.Menu
             }
             else if (KeyInput.JustPressedRebindableKey(KeyFunctions.Right))
             {
-                if (state < 3 && _curPage < _archipelagoSettings.ConnectionDetails.Count)
+                if (state < 3 && _curPage < ArchipelagoSettings.ConnectionDetails.Count)
                 {
                     SoundManager.PlaySoundEffect("menu_move");
 
@@ -226,7 +229,7 @@ namespace AnodyneArchipelago.Menu
             }
             else
             {
-                ConnectionDetails details = _archipelagoSettings.ConnectionDetails[index - 1];
+                ConnectionDetails details = ArchipelagoSettings.ConnectionDetails[index - 1];
                 _apServer = details.ApServer;
                 _apSlot = details.ApSlot;
                 _apPassword = details.ApPassword;
@@ -243,17 +246,17 @@ namespace AnodyneArchipelago.Menu
 
         private void OnConnected(ArchipelagoManager archipelagoManager)
         {
-            _archipelagoSettings.AddConnection(new()
+            ArchipelagoSettings.AddConnection(new()
             {
                 ApServer = _apServer,
                 ApSlot = _apSlot,
                 ApPassword = _apPassword
             });
-            _archipelagoSettings.Save();
+            ArchipelagoSettings.Save();
 
             Plugin.ArchipelagoManager = archipelagoManager;
 
-            GlobalState.CurrentSaveGame = $"zzAP{Plugin.ArchipelagoManager.GetSeed()}_{Plugin.ArchipelagoManager.GetPlayer()}";
+            GlobalState.CurrentSaveGame = $"zzAP{archipelagoManager.GetSeed()}_{archipelagoManager.GetPlayer()}";
 
             GlobalState.Save? saveFile = GlobalState.Save.GetSave(GlobalState.Save.PathFromId(GlobalState.CurrentSaveGame));
 
@@ -273,7 +276,12 @@ namespace AnodyneArchipelago.Menu
 
             _fadingOut = true;
 
-            Plugin.ArchipelagoManager.PostSaveloadInit(_isNewGame);
+            archipelagoManager.PostSaveloadInit(
+                _isNewGame, 
+                ArchipelagoSettings.PlayerSprite, 
+                ArchipelagoSettings.MatchDifferentWorldItem,
+                ArchipelagoSettings.HideTrapItems,
+                ArchipelagoSettings.ColorPuzzleHelp);
         }
     }
 }

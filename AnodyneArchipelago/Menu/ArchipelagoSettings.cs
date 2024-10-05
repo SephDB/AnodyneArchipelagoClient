@@ -1,12 +1,9 @@
-﻿using AnodyneSharp.Registry;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
+﻿using System.Text.Json;
+using AnodyneSharp.Registry;
 
 namespace AnodyneArchipelago.Menu
 {
-    internal class ConnectionDetails : IEquatable<ConnectionDetails>
+    public class ConnectionDetails : IEquatable<ConnectionDetails>
     {
         public string ApServer;
         public string ApSlot;
@@ -28,7 +25,7 @@ namespace AnodyneArchipelago.Menu
         }
     }
 
-    internal class ArchipelagoSettings
+    public class ArchipelagoSettings
     {
         public static JsonSerializerOptions serializerOptions = new JsonSerializerOptions()
         {
@@ -36,6 +33,11 @@ namespace AnodyneArchipelago.Menu
         };
 
         public List<ConnectionDetails> ConnectionDetails = new();
+
+        public string PlayerSprite = "young_player";
+        public MatchDifferentWorldItem MatchDifferentWorldItem = MatchDifferentWorldItem.MatchExtra;
+        public bool HideTrapItems = true;
+        internal bool ColorPuzzleHelp = true;
 
         public static string GetFilePath() => string.Format("{0}Saves/ap_settings.dat", GameConstants.SavePath);
 
@@ -45,7 +47,8 @@ namespace AnodyneArchipelago.Menu
             {
                 string s = File.ReadAllText(GetFilePath());
                 return JsonSerializer.Deserialize<ArchipelagoSettings>(s, serializerOptions);
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 return null;
             }

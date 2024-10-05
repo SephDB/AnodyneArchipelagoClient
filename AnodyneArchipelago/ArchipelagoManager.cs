@@ -94,6 +94,7 @@ namespace AnodyneArchipelago
         private PostgameMode _postgameMode;
         private MatchDifferentWorldItem _matchDifferentWorldItem;
         private bool _hideTrapItems;
+        private bool _colorPuzzleHelp;
         private string _playerSpriteName;
 
         private Texture2D _originalPlayerTexture;
@@ -123,6 +124,8 @@ namespace AnodyneArchipelago
         public PostgameMode PostgameMode => _postgameMode;
 
         public bool DeathLinkEnabled => _deathLinkService != null;
+
+        public bool ColorPuzzleHelp => _colorPuzzleHelp;
 
         public bool ReceivedDeath
         {
@@ -195,12 +198,6 @@ namespace AnodyneArchipelago
 
             _victoryCondition = (VictoryCondition)(long)login.SlotData.GetValueOrDefault("victory_condition", (long)VictoryCondition.DefeatBriar);
 
-            _matchDifferentWorldItem = (MatchDifferentWorldItem)(long)login.SlotData.GetValueOrDefault("match_different_world_item", (long)MatchDifferentWorldItem.Disabled);
-
-            _hideTrapItems = (bool)login.SlotData.GetValueOrDefault("hide_trap_items", false);
-
-            _playerSpriteName = (string)login.SlotData.GetValueOrDefault("player_sprite_name", "young");
-
             if (login.SlotData.ContainsKey("nexus_gates_unlocked"))
             {
                 _unlockedGates = new(((Newtonsoft.Json.Linq.JArray)login.SlotData["nexus_gates_unlocked"]).Values<string>());
@@ -232,8 +229,6 @@ namespace AnodyneArchipelago
             }
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
-
-            PatchPlayerTextures(_playerSpriteName);
 
             _scoutTask = Task.Run(ScoutAllLocations);
 
@@ -280,8 +275,17 @@ namespace AnodyneArchipelago
             });
         }
 
-        public void PostSaveloadInit(bool newGame)
+        public void PostSaveloadInit(bool newGame, string playerSprite, MatchDifferentWorldItem matchDifferentWorldItem, bool hideTrapItems, bool colorPuzzleHelp)
         {
+            Checked.UnionWith(_session.Locations.AllLocationsChecked);
+
+            _playerSpriteName = playerSprite == "Random" ? RandomizeSprite() : playerSprite;
+            _matchDifferentWorldItem = matchDifferentWorldItem;
+            _hideTrapItems = hideTrapItems;
+            _colorPuzzleHelp = colorPuzzleHelp;
+
+            PatchPlayerTextures(_playerSpriteName);
+
             if (newGame)
             {
                 foreach (string gate in _unlockedGates)
@@ -310,8 +314,6 @@ namespace AnodyneArchipelago
 
             //Send locations that were missed last time we saved
             _session.Locations.CompleteLocationChecks(Checked.Except(_session.Locations.AllLocationsChecked).ToArray());
-
-            Checked.UnionWith(_session.Locations.AllLocationsChecked);
         }
 
         private void NewCheckedLocations(System.Collections.ObjectModel.ReadOnlyCollection<long> newCheckedLocations)
@@ -994,6 +996,30 @@ namespace AnodyneArchipelago
                     SendDeath();
                 }
             }
+        }
+
+        private string RandomizeSprite()
+        {
+            Dictionary<string, Texture2D> textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+
+            List<string> sprites = [];
+
+            int seed = Plugin.ArchipelagoManager.GetSeed().GetHashCode() + GetPlayerName().GetHashCode();
+
+            if (seed < 0)
+            {
+                seed *= -1;
+            }
+
+            foreach (var sprite in textures.Keys)
+            {
+                if (sprite.EndsWith("_cell") && !sprite.StartsWith("broom"))
+                {
+                    sprites.Add(sprite.Replace("_cell", ""));
+                }
+            }
+
+            return sprites[seed % sprites.Count];
         }
 
         private static void PatchPlayerTextures(string playerSpriteName)
