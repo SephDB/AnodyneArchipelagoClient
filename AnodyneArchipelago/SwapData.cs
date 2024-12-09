@@ -24,8 +24,9 @@ namespace AnodyneArchipelago
                     };
                     case "CELL": return new() {
                         // This is basically all of the map except for the outer walls, the 24 Card Gate area, and the gauntlet
-                        new Rectangle(16, 16, 1248, 704),
-                        new Rectangle(16, 720, 768, 544),
+                        new Rectangle(16,16,1248,304-16),
+                        new Rectangle(16,352,768,912),
+                        new Rectangle(48,304,1216,720-48),
                     };
                     case "CIRCUS": return new() { new Rectangle(1120, 0, 161, 161) };
                     case "DRAWER": return new() { new Rectangle(0, 0, 960, 1440) };

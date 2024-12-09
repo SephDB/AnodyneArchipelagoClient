@@ -22,6 +22,10 @@ namespace AnodyneArchipelago.Patches
                 map[15][72] = 60;
                 map[11 + pos.Y][72 + pos.X] = 46;
             }
+            else if(mapName == "CROWD")
+            {
+                map[43][92] = 4;
+            }
             else if (mapName == "HOTEL")
             {
                 Point pos = puzzle.HotelPos;
