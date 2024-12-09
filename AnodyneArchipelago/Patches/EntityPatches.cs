@@ -78,10 +78,11 @@ namespace AnodyneArchipelago.Patches
                         .Remove();
         }
 
-        public void Set36CardRequirement(int required)
+        public void FixHotelSoftlock()
         {
-            var gate = GetByID(new("C8CE6E18-CF07-180B-A550-9DC808A2F7E3"));
-            gate.SetAttributeValue("frame", required.ToString());
+            var node = GetByID(new("CFE9CC42-595F-EDED-6720-90848DB38C19"));
+            node.SetAttributeValue("x", 552);
+            node.SetAttributeValue("y", 118);
         }
 
         public void OpenSmallKeyGates()

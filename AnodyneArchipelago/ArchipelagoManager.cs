@@ -857,6 +857,7 @@ namespace AnodyneArchipelago
                 patcher.RemoveNexusBlockers();
                 patcher.RemoveMitraCliff();
                 patcher.RemoveSageSoftlock();
+                patcher.FixHotelSoftlock();
 
                 if (ColorPuzzleRandomized)
                 {
