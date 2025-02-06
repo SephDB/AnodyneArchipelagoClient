@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entities\ChestAPInserter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\DungeonStatueAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\DustAP.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entities\FixedCardGate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\FreeStandingAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\InactiveNexusPad.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\KeyRingGate.cs" />
