@@ -10,7 +10,6 @@ using AnodyneSharp.Resources;
 using AnodyneSharp.Sounds;
 using AnodyneSharp.States;
 using AnodyneSharp.UI;
-using AnodyneSharp.Utilities;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
@@ -19,12 +18,8 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using static AnodyneSharp.States.CutsceneState;
 
 namespace AnodyneArchipelago
@@ -79,7 +74,7 @@ namespace AnodyneArchipelago
 
         private string _seedName;
         private ColorPuzzle _colorPuzzle = new();
-        private bool ColorPuzzleRandomized = true;
+        private bool _colorRandomized = true;
         private SmallKeyMode _keyMode = SmallKeyMode.SmallKeys;
         private BigKeyShuffle _bigKeyShuffle;
         private bool _vanillaHealthCicadas = false;
@@ -124,6 +119,8 @@ namespace AnodyneArchipelago
         public PostgameMode PostgameMode => _postgameMode;
 
         public bool DeathLinkEnabled => _deathLinkService != null;
+
+        public bool ColorPuzzleRandomized => _colorRandomized;
 
         public bool ColorPuzzleHelp => _colorPuzzleHelp;
 
@@ -182,7 +179,7 @@ namespace AnodyneArchipelago
                 _colorPuzzle.Initialize(rand);
             }
 
-            ColorPuzzleRandomized = (bool)login.SlotData.GetValueOrDefault("randomize_color_puzzle", true);
+            _colorRandomized = (bool)login.SlotData.GetValueOrDefault("randomize_color_puzzle", true);
 
             _keyMode = (SmallKeyMode)(long)login.SlotData.GetValueOrDefault("small_key_mode", (long)SmallKeyMode.SmallKeys);
 
@@ -859,7 +856,7 @@ namespace AnodyneArchipelago
                 patcher.RemoveSageSoftlock();
                 patcher.FixHotelSoftlock();
 
-                if (ColorPuzzleRandomized)
+                if (_colorRandomized)
                 {
                     patcher.SetColorPuzzle(ColorPuzzle);
                 }

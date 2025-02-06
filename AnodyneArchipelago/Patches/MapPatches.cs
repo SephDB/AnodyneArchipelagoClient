@@ -42,7 +42,10 @@ namespace AnodyneArchipelago.Patches
             }
             else if (mapName == "GO")
             {
-                map[33][26] = map[35][27] = map[36][22] = 114;
+                if (Plugin.ArchipelagoManager!.ColorPuzzleRandomized)
+                {
+                    map[33][26] = map[35][27] = map[36][22] = 114;
+                }
             }
 
             return string.Join('\n', map.Select(line => string.Join(',', line)));
