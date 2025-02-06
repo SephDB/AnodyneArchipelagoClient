@@ -67,7 +67,7 @@ namespace AnodyneArchipelago.Patches
             var node = Dusts[(int)(location_id - DustStartID!.Value)];
             node.Name = nameof(DustAP);
             node.SetAttributeValue("type", location_name);
-            LogLocation(node, location_name);
+            LogLocation(node, location_name, (int)location_id);
         }
 
         public void RemoveNexusBlockers()
@@ -125,10 +125,10 @@ namespace AnodyneArchipelago.Patches
             GetByID(new("ED2195E9-9798-B9B3-3C15-105C40F7C501")).SetAttributeValue("type",typeval);
         }
         
-        private void LogLocation(XElement element, string location)
+        private void LogLocation(XElement element, string location, int id = 0)
         {
 #if DEBUG
-            DebugLogger.AddInfo($"{(int)element.Attribute("x")! + 8,4} {(int)element.Attribute("y")! + 8,4} {location}");
+            DebugLogger.AddInfo($"{id} {(int)element.Attribute("x")! + 8,4} {(int)element.Attribute("y")! + 8,4} {location}");
 #endif
         }
 
@@ -138,7 +138,7 @@ namespace AnodyneArchipelago.Patches
             node.Name = nameof(FreeStandingAP);
             node.SetAttributeValue("type", location);
             node.SetAttributeValue("p", 2);
-            LogLocation(node, location);
+            LogLocation(node, location, id);
         }
 
         public void SetCicada(Guid guid, string location)
