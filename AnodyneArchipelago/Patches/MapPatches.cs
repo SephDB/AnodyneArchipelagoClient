@@ -26,23 +26,24 @@ namespace AnodyneArchipelago.Patches
             {
                 map[43][92] = 4;
             }
-            else if (mapName == "HOTEL")
-            {
-                Point pos = puzzle.HotelPos;
 
-                map[116][78] = 82;
-                map[113 + pos.Y][73 + pos.X] = 31;
-            }
-            else if (mapName == "APARTMENT")
+            if (Plugin.ArchipelagoManager!.ColorPuzzleRandomized)
             {
-                Point pos = puzzle.ApartmentPos;
+                if (mapName == "HOTEL")
+                {
+                    Point pos = puzzle.HotelPos;
 
-                map[52][86] = 153;
-                map[51 + pos.Y][82 + pos.X] = 101;
-            }
-            else if (mapName == "GO")
-            {
-                if (Plugin.ArchipelagoManager!.ColorPuzzleRandomized)
+                    map[116][78] = 82;
+                    map[113 + pos.Y][73 + pos.X] = 31;
+                }
+                else if (mapName == "APARTMENT")
+                {
+                    Point pos = puzzle.ApartmentPos;
+
+                    map[52][86] = 153;
+                    map[51 + pos.Y][82 + pos.X] = 101;
+                }
+                else if (mapName == "GO")
                 {
                     map[33][26] = map[35][27] = map[36][22] = 114;
                 }
