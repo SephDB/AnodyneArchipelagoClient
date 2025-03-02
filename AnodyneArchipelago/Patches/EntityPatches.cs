@@ -273,7 +273,7 @@ namespace AnodyneArchipelago.Patches
             if(value.EndsWith("key"))
             {
                 node.Name = "KeyBlock";
-                List<string> indices = ["green_key", "blue_key", "red_key"];
+                List<string> indices = ["blue_key", "green_key", "red_key"];
                 node.SetAttributeValue("frame", indices.IndexOf(value) + 1);
             }
             else if(value.StartsWith("cards_"))
