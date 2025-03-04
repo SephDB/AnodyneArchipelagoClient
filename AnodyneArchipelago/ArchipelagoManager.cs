@@ -181,7 +181,9 @@ namespace AnodyneArchipelago
 
             _colorRandomized = (bool)login.SlotData.GetValueOrDefault("randomize_color_puzzle", true);
 
-            _keyMode = (SmallKeyMode)(long)login.SlotData.GetValueOrDefault("small_key_mode", (long)SmallKeyMode.SmallKeys);
+            bool smallKeyGateUnlocked = (bool)login.SlotData.GetValueOrDefault("unlock_gates", false);
+
+            _keyMode = (SmallKeyMode)(long)login.SlotData.GetValueOrDefault("small_key_mode", (long)(smallKeyGateUnlocked ? SmallKeyMode.Unlocked : SmallKeyMode.SmallKeys));
 
             _bigKeyShuffle = (BigKeyShuffle)(long)login.SlotData.GetValueOrDefault("shuffle_big_gates", (long)BigKeyShuffle.AnyWorld);
 
