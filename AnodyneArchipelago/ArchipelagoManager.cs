@@ -71,6 +71,7 @@ namespace AnodyneArchipelago
         }
         private HashSet<long> Checked = new();
         private DeathLinkService _deathLinkService;
+        private EventTracker _eventTracker;
 
         private string _seedName;
         private ColorPuzzle _colorPuzzle = new();
@@ -103,7 +104,7 @@ namespace AnodyneArchipelago
 
         private Task<Dictionary<string, ScoutedItemInfo>> _scoutTask;
 
-        private ScreenChangeTracker changeTracker = new();
+        private ScreenChangeTracker screenTracker = new();
 
         public ColorPuzzle ColorPuzzle => _colorPuzzle;
         public bool UnlockSmallKeyGates => _keyMode == SmallKeyMode.Unlocked;
@@ -231,6 +232,8 @@ namespace AnodyneArchipelago
 
             _scoutTask = Task.Run(ScoutAllLocations);
 
+            _eventTracker = new(_session);
+
             return result;
         }
 
@@ -268,8 +271,8 @@ namespace AnodyneArchipelago
                 Data = new()
                 {
                     ["type"] = "MapUpdate",
-                    ["mapName"] = GetTrackerMapName(changeTracker.Tracker.mapName),
-                    ["mapIndex"] = changeTracker.Tracker.location.X + GlobalState.MAP_GRID_WIDTH * changeTracker.Tracker.location.Y
+                    ["mapName"] = GetTrackerMapName(screenTracker.Tracker.mapName),
+                    ["mapIndex"] = screenTracker.Tracker.location.X + GlobalState.MAP_GRID_WIDTH * screenTracker.Tracker.location.Y
                 }
             });
         }
@@ -413,10 +416,11 @@ namespace AnodyneArchipelago
                 return;
             }
 
-            if(changeTracker.Update() && !GlobalState.glitch.active && changeTracker.Tracker.mapName != "")
+            if(screenTracker.Update() && !GlobalState.glitch.active && screenTracker.Tracker.mapName != "")
             {
                 SendTrackerUpdate();
             }
+
 
             if (Plugin.ReadyToReceive())
             {
@@ -443,6 +447,8 @@ namespace AnodyneArchipelago
                     _receiveDeath = true;
                 }
             }
+
+            _eventTracker.Update();
         }
 
         private IEnumerator<CutsceneEvent> GetItemsAndMessages()
