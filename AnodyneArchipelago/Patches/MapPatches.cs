@@ -8,27 +8,21 @@ namespace AnodyneArchipelago.Patches
         {
             var map = BG.Trim().Split('\n').Select(s => s.Split(',').Select(int.Parse).ToArray()).ToArray();
 
-            ColorPuzzle puzzle = Plugin.ArchipelagoManager!.ColorPuzzle;
-
             if (mapName == "FIELDS")
             {
                 // Place a rock blocking access to Terminal without the red key.
                 map[47][31] = 11;
             }
-            else if (mapName == "CIRCUS")
-            {
-                Point pos = puzzle.CircusPos;
-
-                map[15][72] = 60;
-                map[11 + pos.Y][72 + pos.X] = 46;
-            }
             else if(mapName == "CROWD")
             {
+                //Fix easy OOL jump past Crowd's statue
                 map[43][92] = 4;
             }
 
             if (Plugin.ArchipelagoManager!.ColorPuzzleRandomized)
             {
+                ColorPuzzle puzzle = Plugin.ArchipelagoManager!.ColorPuzzle;
+
                 if (mapName == "HOTEL")
                 {
                     Point pos = puzzle.HotelPos;
@@ -42,6 +36,13 @@ namespace AnodyneArchipelago.Patches
 
                     map[52][86] = 153;
                     map[51 + pos.Y][82 + pos.X] = 101;
+                }
+                else if (mapName == "CIRCUS")
+                {
+                    Point pos = puzzle.CircusPos;
+
+                    map[15][72] = 60;
+                    map[11 + pos.Y][72 + pos.X] = 46;
                 }
                 else if (mapName == "GO")
                 {
