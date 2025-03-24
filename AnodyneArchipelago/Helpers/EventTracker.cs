@@ -1,8 +1,18 @@
 ﻿using AnodyneSharp.Entities;
+using AnodyneSharp.Entities.Enemy.Apartment;
+using AnodyneSharp.Entities.Enemy.Bedroom;
+using AnodyneSharp.Entities.Enemy.Circus;
+using AnodyneSharp.Entities.Enemy.Crowd;
+using AnodyneSharp.Entities.Enemy.Etc;
+using AnodyneSharp.Entities.Enemy.Hotel.Boss;
+using AnodyneSharp.Entities.Enemy.Redcave;
+using AnodyneSharp.Entities.Interactive.Npc.Hotel;
 using AnodyneSharp.Registry;
+using AnodyneSharp.States;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
+using Microsoft.Xna.Framework;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -24,22 +34,25 @@ namespace AnodyneArchipelago.Helpers
 
         //Append-only for backwards compatibility reasons
         static readonly List<EventWatch> EventWatchList = [
-                Boss("Defeated_Seer","BEDROOM"),
-                Boss("Defeated_Wall","CROWD"),
-                Boss("Defeated_Rogue","REDCAVE"),
-                Boss("Defeated_Manager","HOTEL"),
-                Boss("Defeated_Watcher","APARTMENT"),
-                Boss("Defeated_Servants","CIRCUS"),
-                Boss("Defeated_Sage","TERMINAL"),
-                Boss("Defeated_Briar","GO"),
+                Boss("Defeated_Seer","BEDROOM", typeof(Seer)),
+                Boss("Defeated_Wall","CROWD", typeof(WallBoss)),
+                Boss("Defeated_Rogue","REDCAVE", typeof(Red_Boss)),
+                Boss("Defeated_Manager","HOTEL", typeof(LandPhase)) with {
+                    RequiresQuickload = () => GlobalState.CURRENT_MAP_NAME == "HOTEL"
+                        && EntityManager.GetGridEntities(GlobalState.CURRENT_MAP_NAME, GlobalState.CurrentMapGrid).Find(p => p.Type == typeof(LandPhase) || p.Type == typeof(WaterPhase)) != null
+                },
+                Boss("Defeated_Watcher","APARTMENT", typeof(SplitBoss)),
+                Boss("Defeated_Servants","CIRCUS", typeof(CircusFolks)),
+                Boss("Defeated_Sage","TERMINAL", typeof(SageBoss)),
+                Boss("Defeated_Briar","GO"), //No boss type for reloading here, Briar always spawns
                 GameEvent("Opened_Windmill","WindmillOpened"),
                 Tentacle("Tentacle_CL", Locations.LocationsGuids["Red Cave - Middle Cave Left Tentacle"]),
                 Tentacle("Tentacle_CR", Locations.LocationsGuids["Red Cave - Middle Cave Right Tentacle"]),
                 Tentacle("Tentacle_L", Locations.LocationsGuids["Red Cave - Left Cave Tentacle"]),
                 Tentacle("Tentacle_R", Locations.LocationsGuids["Red Cave - Right Cave Tentacle"]),
-                GameEvent("Opened_Redcave_R","red_cave_r_ss"),
-                GameEvent("Opened_Redcave_L","red_cave_l_ss"),
-                GameEvent("Opened_Redcave_C","red_cave_n_ss",2) with {Set = () => { } }, //no-op set since tentacle set handles this already. If not, we're not in vanilla and the relevant item sets this directly
+                GameEvent("Opened_Redcave_R","red_cave_r_ss",1, () => GlobalState.CURRENT_MAP_NAME == "REDSEA" && GlobalState.CurrentMapGrid == new Point(4,4)),
+                GameEvent("Opened_Redcave_L","red_cave_l_ss",1, () => GlobalState.CURRENT_MAP_NAME == "REDSEA" && GlobalState.CurrentMapGrid == new Point(2,4)),
+                GameEvent("Opened_Redcave_N","red_cave_n_ss",2, () => GlobalState.CURRENT_MAP_NAME == "REDSEA" && GlobalState.CurrentMapGrid == new Point(3,3)),
                 new("Extended_Swap",() => GlobalState.events.GetEvent("ExtendedSwap") > 0, () => Plugin.ArchipelagoManager!.EnableExtendedSwap()),
                 BigKey("Green_Key",0),
                 BigKey("Red_Key",1),
@@ -51,10 +64,23 @@ namespace AnodyneArchipelago.Helpers
             return new(DataName, () => GlobalState.events.GetEvent(EventName) >= count, () => GlobalState.events.SetEvent(EventName, count), RequiresQuickload);
         }
 
-        static EventWatch Boss(string DataName, string AreaName)
+        static EventWatch Boss(string DataName, string AreaName, Type? boss_type = null)
         {
-            return new(DataName, () => GlobalState.events.BossDefeated.Contains(AreaName), () => GlobalState.events.BossDefeated.Add(AreaName));
+            EventWatch ret = new(DataName, () => GlobalState.events.BossDefeated.Contains(AreaName), () =>
+            {
+                GlobalState.events.BossDefeated.Add(AreaName);
+                EntityManager.GetMapEntities(AreaName).Find(p => p.Type == boss_type)!.Alive = false;
+            });
+            if (boss_type != null)
+            {
+                ret = ret with
+                {
+                    RequiresQuickload = () => GlobalState.CURRENT_MAP_NAME == AreaName && EntityManager.GetGridEntities(GlobalState.CURRENT_MAP_NAME, GlobalState.CurrentMapGrid).Find(p => p.Type == boss_type) != null
+                };
+            }
+            return ret;
         }
+
 
         static EventWatch Tentacle(string DataName, Guid guid)
         {
@@ -64,11 +90,10 @@ namespace AnodyneArchipelago.Helpers
                 {
                     EntityPreset preset = EntityManager.GetMapEntities("REDCAVE").Find(p => p.EntityID == guid)!;
                     int f = preset.Frame;
-                    EntityManager.SetAlive(guid, false);
-                    //re-count the number the event should be to prevent local double counting, in case both co-op players are in the cutscene with perfect timing difference
-                    int count = EntityManager.GetMapEntities("REDCAVE").Where(p => p.Type == typeof(Red_Pillar) && p.Frame == f && EntityManager.State.TryGetValue(p.EntityID, out var s) && !s.Alive).Count();
+                    preset.Alive = false;
+
                     char c = " nnlr"[f];
-                    GlobalState.events.SetEvent($"red_cave_{c}_ss", count);
+                    GlobalState.events.IncEvent($"red_cave_{c}_ss");
                 }
             },
             () => Plugin.ArchipelagoManager!.VanillaRedCave && EntityManager.GetGridEntities(GlobalState.CURRENT_MAP_NAME, GlobalState.CurrentMapGrid).Find(p => p.EntityID == guid) != null
@@ -111,7 +136,7 @@ namespace AnodyneArchipelago.Helpers
                 //Only get the events we actually added and add them to the datastorage set
                 long mask = NewlySet((long)originalValue & requested, (long)newValue & requested);
                 var newEvents = MaskToEvents(mask);
-                EventArray = EventArray + newEvents.Select(e=>e.EventName).ToArray();
+                EventArray = EventArray + newEvents.Select(e => e.EventName).ToArray();
             }
         }
 
@@ -142,6 +167,20 @@ namespace AnodyneArchipelago.Helpers
             }
 
             LastFrameMask = CurrentMask();
+
+            if (needsQuickLoad)
+            {
+                GlobalState.CheckPoint quicksave_checkpoint = new(GlobalState.CURRENT_MAP_NAME, Plugin.Player!.Position);
+                GlobalState.Save save = new();
+                GlobalState.ResetValues();
+                GlobalState.LoadSave(save);
+                quicksave_checkpoint.Warp(Vector2.Zero);
+                GlobalState.WARP = false;
+                GlobalState.GameState.SetState<PlayState>();
+                //Instant transition
+                GlobalState.black_overlay.Deactivate();
+                GlobalState.pixelation.Deactivate();
+            }
         }
 
         static List<EventWatch> MaskToEvents(long mask)
