@@ -1,5 +1,6 @@
 ﻿using AnodyneArchipelago.Helpers;
 using AnodyneArchipelago.Patches;
+using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy;
 using AnodyneSharp.Entities.Gadget.Treasures;
@@ -72,6 +73,8 @@ namespace AnodyneArchipelago
         private HashSet<long> Checked = new();
         private DeathLinkService _deathLinkService;
         private EventTracker _eventTracker;
+
+        private EntityPatches _patches;
 
         private string _seedName;
         private ColorPuzzle _colorPuzzle = new();
@@ -302,6 +305,13 @@ namespace AnodyneArchipelago
                 {
                     EntityManager.SetAlive(guid, false);
                 }
+
+                //Shut up Sage
+                foreach(Guid guid in _patches.GetSages())
+                {
+                    EntityManager.SetActive(guid, true);
+                }
+                DialogueManager.GetDialogue("sage", "TERMINAL", "entrance"); //Sage in TERMINAL has its own logic, can be mostly shut up by setting this dialogue to dirty
             }
             // Pretend we're always in a pre-credits state so that swap is an allowlist, not a denylist.
             GlobalState.events.SetEvent("SeenCredits", 0);
@@ -857,82 +867,81 @@ namespace AnodyneArchipelago
         {
             if (path.EndsWith("Entities.xml"))
             {
-                EntityPatches patcher = new(stream,_dustsanityBase);
+                _patches = new(stream,_dustsanityBase);
 
-                patcher.RemoveNexusBlockers();
-                patcher.RemoveMitraCliff();
-                patcher.RemoveSageSoftlock();
-                patcher.FixHotelSoftlock();
+                _patches.RemoveNexusBlockers();
+                _patches.RemoveMitraCliff();
+                _patches.FixHotelSoftlock();
 
                 if (_colorRandomized)
                 {
-                    patcher.SetColorPuzzle(ColorPuzzle);
+                    _patches.SetColorPuzzle(ColorPuzzle);
                 }
 
                 foreach (var (id,value) in BigGateTypes)
                 {
-                    patcher.SetBigGateReq(id, value);
+                    _patches.SetBigGateReq(id, value);
                 }
 
                 if (UnlockSmallKeyGates)
                 {
-                    patcher.OpenSmallKeyGates();
+                    _patches.OpenSmallKeyGates();
                 }
                 else if (_keyMode == SmallKeyMode.KeyRings)
                 {
-                    patcher.MakeKeyRingGates();
+                    _patches.MakeKeyRingGates();
                 }
 
                 if (BigKeyShuffle == BigKeyShuffle.Unlocked)
                 {
-                    patcher.OpenBigKeyGates();
+                    _patches.OpenBigKeyGates();
                 }
 
                 if (VictoryCondition == VictoryCondition.AllCards)
                 {
-                    patcher.SetAllCardsVictory();
+                    _patches.SetAllCardsVictory();
                 }
 
                 foreach (long location_id in _session.Locations.AllLocations)
                 {
                     string name = _session.Locations.GetLocationNameFromId(location_id);
 
-                    if(patcher.IsDustID(location_id))
+                    if(_patches.IsDustID(location_id))
                     {
-                        patcher.SetDust(location_id, name);
+                        _patches.SetDust(location_id, name);
                     }
                     else if (name.EndsWith("Key") || name.EndsWith("Tentacle"))
                     {
-                        patcher.SetFreeStanding(Locations.LocationsGuids[name], name, (int)location_id);
+                        _patches.SetFreeStanding(Locations.LocationsGuids[name], name, (int)location_id);
                     }
                     else if (name.EndsWith("Cicada"))
                     {
-                        patcher.SetCicada(Locations.LocationsGuids[name], name);
+                        _patches.SetCicada(Locations.LocationsGuids[name], name);
                     }
                     else if (name.EndsWith("Chest"))
                     {
-                        patcher.SetTreasureChest(Locations.LocationsGuids[name], name, (int)location_id);
+                        _patches.SetTreasureChest(Locations.LocationsGuids[name], name, (int)location_id);
                     }
                     else if (name == "Windmill - Activation")
                     {
-                        patcher.SetWindmillCheck((int)location_id);
+                        _patches.SetWindmillCheck((int)location_id);
                     }
                     else if (name.EndsWith("Warp Pad"))
                     {
-                        Guid guid = patcher.SetNexusPad(name, (int)location_id);
+                        Guid guid = _patches.SetNexusPad(name, (int)location_id);
                         _checkGates.Add(GetNexusGateMapName(name), guid); //Need to set them not alive when loading save for the first time
                     }
                     else if (name.EndsWith("Cardboard Box"))
                     {
-                        patcher.SetBoxTradeCheck((int)location_id);
+                        _patches.SetBoxTradeCheck((int)location_id);
                     }
                     else if (name.EndsWith("Shopkeeper Trade"))
                     {
-                        patcher.SetShopkeepTradeCheck();
+                        _patches.SetShopkeepTradeCheck();
                     }
                     else if (name.EndsWith("Mitra Trade"))
                     {
-                        patcher.SetMitraTradeCheck();
+                        _patches.SetMitraTradeCheck();
                     }
                     else if (name.EndsWith("Defeat Briar"))
                     {
@@ -944,7 +953,7 @@ namespace AnodyneArchipelago
                     }
                 }
 
-                stream = patcher.Get();
+                stream = _patches.Get();
             }
             else if (path.EndsWith("Swapper.dat"))
             {

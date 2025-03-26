@@ -13,7 +13,6 @@ namespace AnodyneArchipelago.Patches
 {
     public class EntityPatches
     {
-        private int CurrentID = 0;
         private XDocument Document;
         private XElement root;
         private long? DustStartID;
@@ -26,7 +25,7 @@ namespace AnodyneArchipelago.Patches
             DustStartID = dustStartID;
             if(DustStartID != null)
             {
-                Dusts = root.Descendants("Dust").ToList();
+                Dusts = [.. root.Descendants("Dust")];
             }
         }
 
@@ -110,9 +109,9 @@ namespace AnodyneArchipelago.Patches
             root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "CLIFF").First().Remove();
         }
 
-        public void RemoveSageSoftlock()
+        public IEnumerable<Guid> GetSages()
         {
-            root.Descendants("Sage").Where(m => (string)m.Parent!.Attribute("name")! == "OVERWORLD").First().Remove();
+            return root.Descendants("Sage").Select(s => (Guid)s.Attribute("guid")!);
         }
 
         public void SetColorPuzzle(ColorPuzzle puzzle)
