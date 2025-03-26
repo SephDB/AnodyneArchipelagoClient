@@ -312,6 +312,8 @@ namespace AnodyneArchipelago
                     EntityManager.SetActive(guid, true);
                 }
                 DialogueManager.GetDialogue("sage", "TERMINAL", "entrance"); //Sage in TERMINAL has its own logic, can be mostly shut up by setting this dialogue to dirty
+
+                GlobalState.events.IncEvent("CheckpointTutorial"); //turn off the checkpoint tutorial
             }
             // Pretend we're always in a pre-credits state so that swap is an allowlist, not a denylist.
             GlobalState.events.SetEvent("SeenCredits", 0);
