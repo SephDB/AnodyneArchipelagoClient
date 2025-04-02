@@ -395,9 +395,24 @@ namespace AnodyneArchipelago
             return _session.ConnectionInfo.Slot;
         }
 
-        public string GetPlayerName()
+        public string GetPlayerName(int slot)
         {
-            return _session.Players.GetPlayerName(GetPlayer());
+            return _session.Players.GetPlayerName(slot);
+        }
+
+        public string GetCurrentPlayerName()
+        {
+            return GetPlayerName(GetPlayer());
+        }
+
+        public string GetLocationName(long locationId, string game)
+        {
+            return _session.Locations.GetLocationNameFromId(locationId, game);
+        }
+
+        public string GetPlayerLocationName(long locationId, int player)
+        {
+            return GetLocationName(locationId, _session.Players.GetPlayerInfo(player).Game);
         }
 
         public void SendLocation(string location)
@@ -780,16 +795,14 @@ namespace AnodyneArchipelago
             }
 
             string message;
-            string playerName;
 
             if (item.Player == _session.ConnectionInfo.Slot)
             {
                 message = $"Found {itemName}!";
-                playerName = _session.Players.GetPlayerAlias(item.Player);
             }
             else
             {
-                playerName = _session.Players.GetPlayerAlias(item.Player);
+                string playerName = _session.Players.GetPlayerAlias(item.Player);
                 message = $"Received {itemName} from {playerName}.";
             }
 
@@ -798,7 +811,7 @@ namespace AnodyneArchipelago
                 message += " But it didn't have any effect.";
             }
 
-            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemName, playerName);
+            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemName, item.Player.Slot);
 
             return (treasure, message);
         }
@@ -1021,7 +1034,7 @@ namespace AnodyneArchipelago
 
             List<string> sprites = [];
 
-            int seed = Plugin.ArchipelagoManager.GetSeed().GetHashCode() + GetPlayerName().GetHashCode();
+            int seed = Plugin.ArchipelagoManager.GetSeed().GetHashCode() + GetCurrentPlayerName().GetHashCode();
 
             if (seed < 0)
             {

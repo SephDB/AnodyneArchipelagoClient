@@ -55,7 +55,7 @@ namespace AnodyneArchipelago.Helpers
             return secret_items.IndexOf(secretName);
         }
 
-        public static (string, int) GetSpriteWithTraps(string itemName, string playerName, ItemFlags itemFlags, string location)
+        public static (string, int) GetSpriteWithTraps(string itemName, int player, ItemFlags itemFlags, string location)
         {
             if (Plugin.ArchipelagoManager!.HideTrapItems && itemFlags.HasFlag(ItemFlags.Trap))
             {
@@ -67,16 +67,16 @@ namespace AnodyneArchipelago.Helpers
                 }
 
                 itemName = trap_item_sprites[seed % trap_item_sprites.Count];
-                playerName = Plugin.ArchipelagoManager.GetPlayerName();
+                player = Plugin.ArchipelagoManager.GetPlayer();
                 itemFlags = ItemFlags.None;
             }
 
-            return GetSprite(itemName, playerName, itemFlags);
+            return GetSprite(itemName, player, itemFlags);
         }
 
-        public static (string, int) GetSprite(string itemName, string playerName, ItemFlags itemFlags)
+        public static (string, int) GetSprite(string itemName, int player, ItemFlags itemFlags)
         {
-            if (Plugin.ArchipelagoManager!.MatchDifferentWorldItem == MatchDifferentWorldItem.Disabled && playerName != Plugin.ArchipelagoManager.GetPlayerName())
+            if (Plugin.ArchipelagoManager!.MatchDifferentWorldItem == MatchDifferentWorldItem.Disabled && player != Plugin.ArchipelagoManager.GetPlayer())
             {
                 return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1);
             }
@@ -282,9 +282,9 @@ namespace AnodyneArchipelago.Helpers
 
     public class SpriteTreasure(Vector2 pos, string tex, int frame) : Treasure(tex, pos, frame, -1)
     {
-        public static SpriteTreasure Get(Vector2 pos, string itemName, string playerName)
+        public static SpriteTreasure Get(Vector2 pos, string itemName, int player)
         {
-            (string tex, int frame) = TreasureHelper.GetSprite(itemName, playerName, ItemFlags.None);
+            (string tex, int frame) = TreasureHelper.GetSprite(itemName, player, ItemFlags.None);
             return new(pos, tex, frame);
         }
 
