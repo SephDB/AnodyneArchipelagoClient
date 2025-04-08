@@ -114,6 +114,19 @@ namespace AnodyneArchipelago.Patches
             return root.Descendants("Sage").Select(s => (Guid)s.Attribute("guid")!);
         }
 
+        void SetColorPuzzleNotifier(Vector2 location, string map)
+        {
+            var mapNode = root.Elements().Where(m => (string)m.Attribute("name")! == map).First();
+            mapNode.Add(new XElement(nameof(ColorPuzzleNotifier),
+                new XAttribute("guid", GetID(map[0])),
+                new XAttribute("x", location.X),
+                new XAttribute("y",location.Y),
+                new XAttribute("frame",0),
+                new XAttribute("p",2)
+                )
+            );
+        }
+
         public void SetColorPuzzle(ColorPuzzle puzzle)
         {
             Point circusPoint = puzzle.CircusPos;
@@ -122,6 +135,10 @@ namespace AnodyneArchipelago.Patches
             string typeval = $"{circusPoint.X},{circusPoint.Y};{hotelPoint.X},{hotelPoint.Y};{apartmentPoint.X},{apartmentPoint.Y};1,1";
 
             GetByID(new("ED2195E9-9798-B9B3-3C15-105C40F7C501")).SetAttributeValue("type",typeval);
+
+            SetColorPuzzleNotifier(new Vector2(circusPoint.X+72,circusPoint.Y+11)*16, "CIRCUS");
+            SetColorPuzzleNotifier(new Vector2(hotelPoint.X + 73, hotelPoint.Y + 113) * 16, "HOTEL");
+            SetColorPuzzleNotifier(new Vector2(apartmentPoint.X + 82, apartmentPoint.Y + 51) * 16, "APARTMENT");
         }
         
         private void LogLocation(XElement element, string location, int id = 0)

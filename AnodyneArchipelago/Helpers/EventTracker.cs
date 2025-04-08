@@ -57,6 +57,9 @@ namespace AnodyneArchipelago.Helpers
                 BigKey("Green_Key",0),
                 BigKey("Red_Key",1),
                 BigKey("Blue_Key",2),
+                GameEvent("SeenPuzzleHOTEL","SeenPuzzleHOTEL", RequiresQuickload:() => GlobalState.CURRENT_MAP_NAME == "GO" && GlobalState.CurrentMapGrid == new Point(2,3)),
+                GameEvent("SeenPuzzleAPARTMENT","SeenPuzzleAPARTMENT", RequiresQuickload:() => GlobalState.CURRENT_MAP_NAME == "GO" && GlobalState.CurrentMapGrid == new Point(2,3)),
+                GameEvent("SeenPuzzleCIRCUS","SeenPuzzleCIRCUS", RequiresQuickload:() => GlobalState.CURRENT_MAP_NAME == "GO" && GlobalState.CurrentMapGrid == new Point(2,3))
             ];
 
         static EventWatch GameEvent(string DataName, string EventName, int count = 1, Func<bool>? RequiresQuickload = null)

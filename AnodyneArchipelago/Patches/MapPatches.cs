@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AnodyneSharp.Registry;
+using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Patches
 {
@@ -46,7 +47,25 @@ namespace AnodyneArchipelago.Patches
                 }
                 else if (mapName == "GO")
                 {
+                    int hotelTile = map[35][27];
+                    int apartmentTile = map[33][26];
+                    int circusTile = map[36][22];
                     map[33][26] = map[35][27] = map[36][22] = 114;
+                    if(Plugin.ArchipelagoManager!.ColorPuzzleHelp)
+                    {
+                        if(GlobalState.events.GetEvent("SeenPuzzleHOTEL") > 0)
+                        {
+                            map[32 + puzzle.HotelPos.Y][22 + puzzle.HotelPos.X] = hotelTile;
+                        }
+                        if (GlobalState.events.GetEvent("SeenPuzzleAPARTMENT") > 0)
+                        {
+                            map[32 + puzzle.ApartmentPos.Y][22 + puzzle.ApartmentPos.X] = apartmentTile;
+                        }
+                        if (GlobalState.events.GetEvent("SeenPuzzleCIRCUS") > 0)
+                        {
+                            map[32 + puzzle.CircusPos.Y][22 + puzzle.CircusPos.X] = circusTile;
+                        }
+                    }
                 }
             }
 
