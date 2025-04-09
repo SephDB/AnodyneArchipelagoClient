@@ -887,6 +887,7 @@ namespace AnodyneArchipelago
                 _patches.RemoveNexusBlockers();
                 _patches.RemoveMitraCliff();
                 _patches.FixHotelSoftlock();
+                _patches.FixHappyNexusPad();
 
                 if (_colorRandomized)
                 {

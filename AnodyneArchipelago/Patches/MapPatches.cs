@@ -20,7 +20,7 @@ namespace AnodyneArchipelago.Patches
                 map[43][92] = 4;
             }
 
-            if (Plugin.ArchipelagoManager!.ColorPuzzleRandomized)
+            if (Plugin.ArchipelagoManager?.ColorPuzzleRandomized ?? false)
             {
                 ColorPuzzle puzzle = Plugin.ArchipelagoManager!.ColorPuzzle;
 

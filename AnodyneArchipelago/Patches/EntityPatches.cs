@@ -210,19 +210,25 @@ namespace AnodyneArchipelago.Patches
             LogLocation(node, "Windmill - Activation");
         }
 
+        public XElement GetNexuspad(string map)
+        {
+            return root.Descendants("Door").Where(p => (string)p.Parent!.Attribute("name")! == map && (string)p.Attribute("type")! == "16").First();
+        }
+
+        public void FixHappyNexusPad()
+        {
+            var nexusPad = GetNexuspad("HAPPY");
+            nexusPad.SetAttributeValue("x", (int)nexusPad.Attribute("x")! + 72);
+            nexusPad.SetAttributeValue("y", (int)nexusPad.Attribute("y")! - 16);
+        }
+
         public Guid SetNexusPad(string locationName, int id)
         {
             string map = ArchipelagoManager.GetNexusGateMapName(locationName[..^11]);
 
-            var nexusPad = root.Descendants("Door").Where(p => (string)p.Parent!.Attribute("name")! == map && (string)p.Attribute("type")! == "16").First();
+            var nexusPad = GetNexuspad(map);
 
             nexusPad.SetAttributeValue("p", 2); //Make sure it despawns
-
-            if(map == "HAPPY")
-            {
-                nexusPad.SetAttributeValue("x", (int)nexusPad.Attribute("x")! + 72);
-                nexusPad.SetAttributeValue("y", (int)nexusPad.Attribute("y")! - 16);
-            }
 
             nexusPad.AddAfterSelf(
                 new XElement(nameof(FreeStandingAP),
