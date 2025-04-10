@@ -17,6 +17,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace AnodyneArchipelago.Helpers
@@ -59,8 +60,34 @@ namespace AnodyneArchipelago.Helpers
                 BigKey("Blue_Key",2),
                 GameEvent("SeenPuzzleHOTEL","SeenPuzzleHOTEL", RequiresQuickload:() => GlobalState.CURRENT_MAP_NAME == "GO" && GlobalState.CurrentMapGrid == new Point(2,3)),
                 GameEvent("SeenPuzzleAPARTMENT","SeenPuzzleAPARTMENT", RequiresQuickload:() => GlobalState.CURRENT_MAP_NAME == "GO" && GlobalState.CurrentMapGrid == new Point(2,3)),
-                GameEvent("SeenPuzzleCIRCUS","SeenPuzzleCIRCUS", RequiresQuickload:() => GlobalState.CURRENT_MAP_NAME == "GO" && GlobalState.CurrentMapGrid == new Point(2,3))
+                GameEvent("SeenPuzzleCIRCUS","SeenPuzzleCIRCUS", RequiresQuickload:() => GlobalState.CURRENT_MAP_NAME == "GO" && GlobalState.CurrentMapGrid == new Point(2,3)),
+                NexusGate("STREET", "Street"),
+                NexusGate("OVERWORLD", "Overworld"),
+                NexusGate("REDCAVE", "Red Cave exit"),
+                NexusGate("CROWD", "Crowd exit"),
+                NexusGate("APARTMENT", "Apartment floor 1"),
+                NexusGate("HOTEL", "Hotel floor 4"),
+                NexusGate("CIRCUS", "Circus"),
+                NexusGate("CLIFF", "Cliff"),
+                NexusGate("FOREST", "Forest"),
+                NexusGate("WINDMILL", "Windmill entrance"),
+                NexusGate("REDSEA", "Red Sea"),
+                NexusGate("BEACH", "Beach"),
+                NexusGate("BEDROOM", "Bedroom exit"),
+                NexusGate("FIELDS", "Fields"),
+                NexusGate("GO", "Go bottom"),
+                NexusGate("TERMINAL", "Terminal"),
+                NexusGate("HAPPY", "Happy"),
+                NexusGate("SPACE", "Space"),
+                NexusGate("CELL", "Cell"),
+                NexusGate("SUBURB", "Suburb"),
+                NexusGate("BLUE", "Blue")
             ];
+
+        static EventWatch NexusGate(string MapName, string eventName)
+        {
+            return new($"Nexus{eventName}", () => GlobalState.events.ActivatedNexusPortals.Contains(MapName), () => GlobalState.events.ActivatedNexusPortals.Add(MapName), () => GlobalState.CURRENT_MAP_NAME == "NEXUS");
+        }
 
         static EventWatch GameEvent(string DataName, string EventName, int count = 1, Func<bool>? RequiresQuickload = null)
         {
