@@ -4,7 +4,7 @@ namespace AnodyneArchipelago.Menu
 {
     internal class TextEntry : BaseTextEntry
     {
-        public TextEntry(string header, string value, CommitChange commitFunc) : base(header, value, commitFunc)
+        public TextEntry(string header, GetValue getValueFunc, CommitChange commitFunc) : base(header, getValueFunc, commitFunc)
         {
         }
 

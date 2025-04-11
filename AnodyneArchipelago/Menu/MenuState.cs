@@ -84,9 +84,9 @@ namespace AnodyneArchipelago.Menu
 
             options =
             [
-                (_serverLabel, new TextEntry("Server:", _apServer, (string value) => { _apServer = value; UpdateLabels(); })),
-                (_slotLabel, new TextEntry("Slot:", _apSlot, (string value) => { _apSlot = value; UpdateLabels(); })),
-                (_passwordLabel, new TextEntry("Password:", _apPassword, (string value) => {_apPassword = value; UpdateLabels(); })),
+                (_serverLabel, new TextEntry("Server:", () => _apServer, (string value) => { _apServer = value; UpdateLabels(); })),
+                (_slotLabel, new TextEntry("Slot:", () => _apSlot, (string value) => { _apSlot = value; UpdateLabels(); })),
+                (_passwordLabel, new TextEntry("Password:", () => _apPassword, (string value) => {_apPassword = value; UpdateLabels(); })),
                 (_pageLabel, new ActionOption(()=>{ })),
                 (_settingsLabel, new SubstateOption<ArchipelagoLocalSettings>()),
                 (_connectLabel, new ActionOption(()=>{ _substate = new ConnectionState(_apServer,_apSlot,_apPassword,OnConnected); }))
@@ -197,6 +197,11 @@ namespace AnodyneArchipelago.Menu
 
         private void BrowseInput()
         {
+            if(state < 3 && ((TextEntry)options[state].option).Active)
+            {
+                return;
+            }
+
             if (KeyInput.JustPressedRebindableKey(KeyFunctions.Left))
             {
                 if (state < 3 && _curPage > 0)

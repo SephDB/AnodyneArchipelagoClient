@@ -5,26 +5,33 @@ using AnodyneSharp.UI;
 using AnodyneSharp.UI.PauseMenu.Config;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json.Linq;
 
 namespace AnodyneArchipelago.Menu
 {
     internal class BaseTextEntry : UIOption
     {
+        public delegate string GetValue();
         public delegate void CommitChange(string value);
 
+        private readonly GetValue _getValueFunc;
         private readonly CommitChange _commitFunc;
 
         private string _value;
+        private string _originalValue;
 
         private UILabel _headerLabel;
         private UILabel _valueLabel;
         private UIEntity _bgBox;
 
-        private bool Active = false;
+        public bool Active { get; private set; } = false;
 
-        public BaseTextEntry(string header, string value, CommitChange commitFunc)
+        public BaseTextEntry(string header, GetValue getValueFunc, CommitChange commitFunc)
         {
-            _value = value;
+            _getValueFunc = getValueFunc;
+
+            _value = _getValueFunc();
+            _originalValue = _value;
             _commitFunc = commitFunc;
 
             _headerLabel = new(new Vector2(20f, 44f), false, header, new Color(226, 226, 226), AnodyneSharp.Drawing.DrawOrder.TEXT);
@@ -37,6 +44,11 @@ namespace AnodyneArchipelago.Menu
         public override void GetControl()
         {
             Active = true;
+
+            _value = _getValueFunc();
+            _originalValue = _value;
+
+            UpdateDisplay();
         }
 
         public override void LoseControl()
@@ -52,17 +64,21 @@ namespace AnodyneArchipelago.Menu
                 {
                     _value = _value.Substring(0, _value.Length - 1);
                     UpdateDisplay();
+
+                    SoundManager.PlaySoundEffect("menu_move");
                 }
             }
-            else if (ch == 22)
-            {
-                _value += Functions.GetClipboard();
-                UpdateDisplay();
-            }
+            //else if (ch == 22)
+            //{
+            //    _value += Functions.GetClipboard();
+            //    UpdateDisplay();
+            //}
             else if (!char.IsControl(ch))
             {
                 _value += ch;
                 UpdateDisplay();
+
+                SoundManager.PlaySoundEffect("menu_move");
             }
         }
 
@@ -74,12 +90,22 @@ namespace AnodyneArchipelago.Menu
                 {
                     SoundManager.PlaySoundEffect("menu_select");
                     this.Exit = true;
+
+                    _value = _originalValue;
+                    UpdateDisplay();
                 }
                 else if (KeyInput.JustPressedKey(Keys.Enter) || (KeyInput.ControllerMode && KeyInput.JustPressedRebindableKey(KeyFunctions.Accept)))
                 {
                     SoundManager.PlaySoundEffect("menu_select");
                     _commitFunc(_value);
                     this.Exit = true;
+                }
+                else if ((KeyInput.IsKeyPressed(Keys.LeftControl) || KeyInput.IsKeyPressed(Keys.RightControl)) && KeyInput.JustPressedKey(Keys.V))
+                {
+                    _value += Functions.GetClipboard().Trim();
+                    UpdateDisplay();
+
+                    SoundManager.PlaySoundEffect("menu_move");
                 }
             }
         }
