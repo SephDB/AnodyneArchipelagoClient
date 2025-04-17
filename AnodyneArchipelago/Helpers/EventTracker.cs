@@ -173,6 +173,10 @@ namespace AnodyneArchipelago.Helpers
                 ulong mask = NewlySet((ulong)originalValue & requested, (ulong)newValue & requested);
                 DebugLogger.AddDebug($"Received new mask {mask}");
                 var newEvents = MaskToEvents(mask);
+                foreach(var ev in newEvents)
+                {
+                    DebugLogger.AddDebug($"Setting {ev.EventName}");
+                }
                 EventArray = EventArray + newEvents.Select(e => e.EventName).ToArray();
             }
         }
@@ -200,6 +204,10 @@ namespace AnodyneArchipelago.Helpers
             {
                 Guid guid = Guid.NewGuid();
                 _requestedChanges.TryAdd(guid, newEntries);
+                foreach (var ev in MaskToEvents(newEntries))
+                {
+                    DebugLogger.AddDebug($"Setting mask for {ev.EventName}");
+                }
                 BitMap = BitMap + Bitwise.Or(newEntries) + AdditionalArgument.Add("UpdateCheck", guid);
             }
 
