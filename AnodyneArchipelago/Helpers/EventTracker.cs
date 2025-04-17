@@ -7,6 +7,7 @@ using AnodyneSharp.Entities.Enemy.Etc;
 using AnodyneSharp.Entities.Enemy.Hotel.Boss;
 using AnodyneSharp.Entities.Enemy.Redcave;
 using AnodyneSharp.Entities.Interactive.Npc.Hotel;
+using AnodyneSharp.Logging;
 using AnodyneSharp.Registry;
 using AnodyneSharp.States;
 using Archipelago.MultiClient.Net;
@@ -27,7 +28,7 @@ namespace AnodyneArchipelago.Helpers
     {
         private record EventWatch(string EventName, Func<bool> Test, Action Set, Func<bool>? RequiresQuickload = null)
         {
-            public long BitMask => 1 << EventWatchList.IndexOf(this);
+            public ulong BitMask => ((ulong)1) << EventWatchList.IndexOf(this);
         };
 
         static readonly string BitMapName = "EventMap";
@@ -137,8 +138,8 @@ namespace AnodyneArchipelago.Helpers
 
         private ArchipelagoSession _session;
         private ConcurrentQueue<EventWatch> _serverEvents = new();
-        private ConcurrentDictionary<Guid, long> _requestedChanges = new();
-        private long LastFrameMask = 0;
+        private ConcurrentDictionary<Guid, ulong> _requestedChanges = new();
+        private ulong LastFrameMask = 0;
 
         private DataStorageElement BitMap { get => _session.DataStorage[Scope.Slot, BitMapName]; set => _session.DataStorage[Scope.Slot, BitMapName] = value; }
         private DataStorageElement EventArray { get => _session.DataStorage[Scope.Slot, ArrayName]; set => _session.DataStorage[Scope.Slot, ArrayName] = value; }
@@ -147,24 +148,30 @@ namespace AnodyneArchipelago.Helpers
         {
             _session = session;
 
+            foreach(var ev in EventWatchList)
+            {
+                DebugLogger.AddDebug($"{ev.BitMask}");
+            }
+
             BitMap.OnValueChanged += BitMap_OnValueChanged;
             BitMap.Initialize(0);
             EventArray.Initialize(Enumerable.Empty<string>());
 
-            BitMap.GetAsync<long>().ContinueWith(m => MaskToEvents(m.Result).ForEach(_serverEvents.Enqueue));
+            BitMap.GetAsync<ulong>().ContinueWith(m => MaskToEvents(m.Result).ForEach(_serverEvents.Enqueue));
         }
 
         private void BitMap_OnValueChanged(JToken originalValue, JToken newValue, Dictionary<string, JToken> additionalArguments)
         {
             //Throw everything in to update next frame, it can filter there on what is actually set
-            long bitmask = (long)newValue;
+            ulong bitmask = (ulong)newValue;
             var events = MaskToEvents(bitmask);
             events.ForEach(_serverEvents.Enqueue);
 
-            if (additionalArguments.TryGetValue("UpdateCheck", out JToken? value) && _requestedChanges.TryRemove((Guid)value, out long requested))
+            if (additionalArguments.TryGetValue("UpdateCheck", out JToken? value) && _requestedChanges.TryRemove((Guid)value, out ulong requested))
             {
                 //Only get the events we actually added and add them to the datastorage set
-                long mask = NewlySet((long)originalValue & requested, (long)newValue & requested);
+                ulong mask = NewlySet((ulong)originalValue & requested, (ulong)newValue & requested);
+                DebugLogger.AddDebug($"Received new mask {mask}");
                 var newEvents = MaskToEvents(mask);
                 EventArray = EventArray + newEvents.Select(e => e.EventName).ToArray();
             }
@@ -172,14 +179,14 @@ namespace AnodyneArchipelago.Helpers
 
         public void Update()
         {
-            long currentMask = CurrentMask();
-            long newEntries = NewlySet(LastFrameMask, currentMask);
+            ulong currentMask = CurrentMask();
+            ulong newEntries = NewlySet(LastFrameMask, currentMask);
 
             bool needsQuickLoad = false;
 
             while (_serverEvents.TryDequeue(out var ev))
             {
-                long mask = ev.BitMask;
+                ulong mask = ev.BitMask;
                 if ((mask & currentMask) == mask)
                 {
                     newEntries &= ~mask;
@@ -213,38 +220,35 @@ namespace AnodyneArchipelago.Helpers
             }
         }
 
-        static List<EventWatch> MaskToEvents(long mask)
+        static List<EventWatch> MaskToEvents(ulong mask)
         {
             List<EventWatch> ret = [];
             foreach (var ev in EventWatchList)
             {
-                if ((mask & 1) == 1)
+                if ((mask & ev.BitMask) == ev.BitMask)
                 {
                     ret.Add(ev);
                 }
-                mask >>= 1;
             }
             return ret;
         }
 
-        static long CurrentMask()
+        static ulong CurrentMask()
         {
-            long currentMask = 0;
+            ulong currentMask = 0;
 
-            int currentBit = 0;
             foreach (var ev in EventWatchList)
             {
                 if (ev.Test())
                 {
-                    currentMask |= 1u << currentBit;
+                    currentMask |= ev.BitMask;
                 }
-                currentBit++;
             }
 
             return currentMask;
         }
 
-        static long NewlySet(long old, long newValue)
+        static ulong NewlySet(ulong old, ulong newValue)
         {
             return newValue & ~old;
         }
