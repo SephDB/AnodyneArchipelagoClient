@@ -20,7 +20,7 @@ namespace AnodyneArchipelago.Entities
 
         public override bool TryUnlock()
         {
-            if (GlobalState.events.GetEvent($"{Util.ToTitleCase(GlobalState.CURRENT_MAP_NAME)}_KeyRing_Obtained") == 1)
+            if (GlobalState.events.GetEvent($"{GlobalState.CURRENT_MAP_NAME}_KeyRing_Obtained") == 1)
             {
                 SoundManager.PlaySoundEffect("unlock");
                 Play("Open");
