@@ -47,7 +47,7 @@ namespace AnodyneArchipelago
         }
 
 
-        public static object ToTitleCase(string s)
+        public static string ToTitleCase(string s)
         {
             TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
 

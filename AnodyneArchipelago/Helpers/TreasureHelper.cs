@@ -52,7 +52,7 @@ namespace AnodyneArchipelago.Helpers
 
         public static int GetSecretNumber(string secretName)
         {
-            return secret_items.IndexOf(secretName);
+            return secret_items.IndexOf(Util.ToTitleCase(secretName));
         }
 
         public static (string, int) GetSpriteWithTraps(string itemName, int player, ItemFlags itemFlags, string location)
@@ -210,7 +210,7 @@ namespace AnodyneArchipelago.Helpers
                 {
                     return ("external_items", 0);
                 }
-                else if (itemName.Contains("piece of heart"))
+                else if (itemName.Contains("piece of heart") || itemName.Contains("heart piece") || itemName.Contains("heartpiece"))
                 {
                     return ("external_items", 1);
                 }
@@ -234,7 +234,7 @@ namespace AnodyneArchipelago.Helpers
                 {
                     return ("external_items", 7);
                 }
-                else if (itemName.Contains("bean") || itemName.Contains("seed") || itemName.Contains("nut"))
+                else if (itemName.Contains("bean") || itemName.Contains("seed") || itemName.Contains("nut") || itemName.Contains("berry"))
                 {
                     return ("external_items", 8);
                 }
@@ -267,7 +267,7 @@ namespace AnodyneArchipelago.Helpers
                     return ("external_items", 2);
                 }
             }
-            if (itemName.Contains("heart") || itemName.Contains("health") || itemName.Contains("heal"))
+            if (itemName.Contains("heart") || itemName.Contains("health") || itemName.Contains("heal") || itemName.Contains("hp") || itemName.Contains("potion"))
             {
                 return ("archipelago_items", 14);
             }
