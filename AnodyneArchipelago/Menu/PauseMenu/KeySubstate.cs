@@ -63,7 +63,7 @@ namespace AnodyneSharp.States.MenuSubstates
                                     _labels[i].Position.Y - 2
                                 ), 
                             "archipelago_items",
-                            GlobalState.events.GetEvent($"{names[i]}_KeyRing_Obtained") == 1 ? 16 : 17, 
+                            GlobalState.events.GetEvent($"{ArchipelagoManager.GetMapNameForDungeon(names[i])}_KeyRing_Obtained") == 1 ? 16 : 17, 
                             16, 
                             16, 
                             Drawing.DrawOrder.EQUIPMENT_ICON))

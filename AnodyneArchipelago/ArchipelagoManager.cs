@@ -509,13 +509,13 @@ namespace AnodyneArchipelago
             yield break;
         }
 
-        private static string GetMapNameForDungeon(string dungeon)
+        public static string GetMapNameForDungeon(string dungeon)
         {
             switch (dungeon)
             {
-                case "Temple of the Seeing One": return "BEDROOM";
+                case "Temple of the Seeing One": case "Temple": return "BEDROOM";
                 case "Apartment": return "APARTMENT";
-                case "Mountain Cavern": return "CROWD";
+                case "Mountain Cavern": case "Cavern": return "CROWD";
                 case "Hotel": return "HOTEL";
                 case "Red Cave": return "REDCAVE";
                 case "Circus": return "CIRCUS";
@@ -590,19 +590,17 @@ namespace AnodyneArchipelago
 
             if (itemName.StartsWith("Small Key"))
             {
-                string dungeonName = itemName[11..];
-                dungeonName = dungeonName[..^1];
+                string dungeonName = itemName[11..^1];
 
                 string mapName = GetMapNameForDungeon(dungeonName);
                 GlobalState.inventory.AddMapKey(mapName, 1);
             }
             else if (itemName.StartsWith("Key Ring"))
             {
-                string dungeonName = itemName[11..];
-                dungeonName = dungeonName[..^1];
+                string dungeonName = itemName[10..^1];
 
                 string mapName = GetMapNameForDungeon(dungeonName);
-                GlobalState.events.SetEvent($"{Util.ToTitleCase(mapName)}_KeyRing_Obtained", 1);
+                GlobalState.events.SetEvent($"{mapName}_KeyRing_Obtained", 1);
             }
             else if (itemName == "Green Key")
             {
