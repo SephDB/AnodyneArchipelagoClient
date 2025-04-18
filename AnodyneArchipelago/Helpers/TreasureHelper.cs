@@ -148,7 +148,7 @@ namespace AnodyneArchipelago.Helpers
             {
                 return ("fields_npcs", 56);
             }
-            else if (itemName == "progressive red cave")
+            else if (itemName == "progressive red cave" || itemName == "tentacle" || itemName == "whip")
             {
                 return ("archipelago_items", 3);
             }
@@ -184,11 +184,32 @@ namespace AnodyneArchipelago.Helpers
             {
                 return ("archipelago_items", 13);
             }
+            else if (itemName == "miao")
+            {
+                return ("archipelago_items", 21);
+            }
+            else if (itemName == "raft")
+            {
+                return ("archipelago_items", 18);
+            }
+            else if (itemName == "dust")
+            {
+                return ("dust", 0);
+            }
+
             if (Plugin.ArchipelagoManager!.MatchDifferentWorldItem == MatchDifferentWorldItem.MatchExtra)
             {
                 if (itemName.Contains("cd") || itemName.Contains("disk") || fullCapsName.Contains("TM") || fullCapsName.Contains("HM"))
                 {
                     return ("external_items", 15);
+                }
+                else if (itemName.Contains("jigsaw") || itemName.Contains("jiggy") || itemName.Contains("puzzle"))
+                {
+                    return ("external_items", 16);
+                }
+                else if (itemName.Contains("emblem") || itemName.Contains("badge") || itemName.Contains("trophy"))
+                {
+                    return ("external_items", 17);
                 }
                 else if (itemName.Contains("mushroom"))
                 {
