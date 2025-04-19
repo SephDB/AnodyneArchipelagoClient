@@ -91,7 +91,7 @@ namespace AnodyneArchipelago.Patches
 
         public void MakeKeyRingGates()
         {
-            var gates = root.Descendants("KeyBlock").Where(k => (int)k.Attribute("frame")! == 0);
+            var gates = root.Descendants("KeyBlock").Where(k => (int)k.Attribute("frame")! == 0 && (string)k.Parent!.Attribute("name")! != "BOSSRUSH");
 
             foreach (var gate in gates)
             {
@@ -107,6 +107,12 @@ namespace AnodyneArchipelago.Patches
         public void RemoveMitraCliff()
         {
             root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "CLIFF").First().Remove();
+        }
+
+        public void ForestChestJoke()
+        {
+            var node = GetByID(new("737247BF-3343-677C-0A6D-0B8C4AF030D9"));
+            node.Name = nameof(JokeTreasureChest);
         }
 
         public IEnumerable<Guid> GetSages()

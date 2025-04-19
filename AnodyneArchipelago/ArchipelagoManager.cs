@@ -601,6 +601,7 @@ namespace AnodyneArchipelago
 
                 string mapName = GetMapNameForDungeon(dungeonName);
                 GlobalState.events.SetEvent($"{mapName}_KeyRing_Obtained", 1);
+                GlobalState.inventory.AddMapKey(mapName, 9);
             }
             else if (itemName == "Green Key")
             {
@@ -890,6 +891,11 @@ namespace AnodyneArchipelago
                 if (_colorRandomized)
                 {
                     _patches.SetColorPuzzle(ColorPuzzle);
+                }
+
+                if (!_forestBunnyChest)
+                {
+                    _patches.ForestChestJoke();
                 }
 
                 foreach (var (id,value) in BigGateTypes)

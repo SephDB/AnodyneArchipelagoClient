@@ -100,7 +100,10 @@ namespace AnodyneArchipelago.Helpers
             EventWatch ret = new(DataName, () => GlobalState.events.BossDefeated.Contains(AreaName), () =>
             {
                 GlobalState.events.BossDefeated.Add(AreaName);
-                EntityManager.GetMapEntities(AreaName).Find(p => p.Type == boss_type)!.Alive = false;
+                if (boss_type != null)
+                {
+                    EntityManager.GetMapEntities(AreaName).Find(p => p.Type == boss_type)!.Alive = false;
+                }
             });
             if (boss_type != null)
             {
@@ -148,7 +151,7 @@ namespace AnodyneArchipelago.Helpers
         {
             _session = session;
 
-            foreach(var ev in EventWatchList)
+            foreach (var ev in EventWatchList)
             {
                 DebugLogger.AddDebug($"{ev.BitMask}");
             }
@@ -173,7 +176,7 @@ namespace AnodyneArchipelago.Helpers
                 ulong mask = NewlySet((ulong)originalValue & requested, (ulong)newValue & requested);
                 DebugLogger.AddDebug($"Received new mask {mask}");
                 var newEvents = MaskToEvents(mask);
-                foreach(var ev in newEvents)
+                foreach (var ev in newEvents)
                 {
                     DebugLogger.AddDebug($"Setting {ev.EventName}");
                 }

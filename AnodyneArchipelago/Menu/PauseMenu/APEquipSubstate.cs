@@ -105,7 +105,7 @@ namespace AnodyneSharp.States.MenuSubstates
                 [
                     new UIEntity(new Vector2(95 + 16, 150), "archipelago_items", GlobalState.events.GetEvent("StatueMoved_Temple") != 0 ? 6 : 9 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
                     new UIEntity(new Vector2(95 + 32, 150), "archipelago_items", GlobalState.events.GetEvent("StatueMoved_Grotto") != 0 ? 7 : 10 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
-                    new UIEntity(new Vector2(95 + 48, 150), "archipelago_items", GlobalState.events.GetEvent("StatueMoved_Mountian") != 0 ? 8 : 11 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)
+                    new UIEntity(new Vector2(95 + 48, 150), "archipelago_items", GlobalState.events.GetEvent("StatueMoved_Mountain") != 0 ? 8 : 11 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)
                     ];
 
             SetEquipped();

@@ -279,7 +279,7 @@ namespace AnodyneArchipelago.Helpers
                 {
                     return ("external_items", 13);
                 }
-                else if (itemName.Contains("ball") || itemName.Contains("orb"))
+                else if (itemName.Contains("ball") || itemName.Contains("orb") || itemName.Contains("pearl"))
                 {
                     return ("external_items", 14);
                 }
@@ -288,6 +288,7 @@ namespace AnodyneArchipelago.Helpers
                     return ("external_items", 2);
                 }
             }
+
             if (itemName.Contains("heart") || itemName.Contains("health") || itemName.Contains("heal") || itemName.Contains("hp") || itemName.Contains("potion"))
             {
                 return ("archipelago_items", 14);
