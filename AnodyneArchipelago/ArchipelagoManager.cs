@@ -75,6 +75,7 @@ namespace AnodyneArchipelago
         private EventTracker _eventTracker;
 
         private EntityPatches _patches;
+        private DustHelper _dustHelper = new();
 
         private string _seedName;
         private ColorPuzzle _colorPuzzle = new();
@@ -231,6 +232,12 @@ namespace AnodyneArchipelago
                 _dustsanityBase = val;
             }
 
+            if((bool)login.SlotData.GetValueOrDefault("split_dust_abilities",false))
+            {
+                _dustHelper.SetRafting(false);
+                _dustHelper.SetPickup(false);
+            }
+
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
 
             _scoutTask = Task.Run(ScoutAllLocations);
@@ -314,6 +321,7 @@ namespace AnodyneArchipelago
                 DialogueManager.GetDialogue("sage", "TERMINAL", "entrance"); //Sage in TERMINAL has its own logic, can be mostly shut up by setting this dialogue to dirty
 
                 GlobalState.events.IncEvent("CheckpointTutorial"); //turn off the checkpoint tutorial
+                GlobalState.events.IncEvent("SweptDust"); //turn off dust tutorial
             }
             // Pretend we're always in a pre-credits state so that swap is an allowlist, not a denylist.
             GlobalState.events.SetEvent("SeenCredits", 0);
@@ -443,11 +451,11 @@ namespace AnodyneArchipelago
                 return;
             }
 
+
             if(screenTracker.Update() && !GlobalState.glitch.active && screenTracker.Tracker.mapName != "")
             {
                 SendTrackerUpdate();
             }
-
 
             if (Plugin.ReadyToReceive())
             {
@@ -475,6 +483,7 @@ namespace AnodyneArchipelago
                 }
             }
 
+            _dustHelper.Update();
             _eventTracker.Update();
         }
 
@@ -686,6 +695,7 @@ namespace AnodyneArchipelago
                 {
                     GlobalState.inventory.EquippedBroom = BroomType.Long;
                 }
+                _dustHelper.SetRafting(true); //TODO: make real item
             }
             else if (itemName == "Widen")
             {
@@ -695,6 +705,7 @@ namespace AnodyneArchipelago
                 {
                     GlobalState.inventory.EquippedBroom = BroomType.Wide;
                 }
+                _dustHelper.SetPickup(true); //TODO: make real item
             }
             else if (itemName == "Temple of the Seeing One Statue")
             {
