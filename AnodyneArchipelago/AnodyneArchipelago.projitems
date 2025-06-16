@@ -41,6 +41,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Menu\PauseMenu\KeySubstate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\PauseMenu\APEquipSubstate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\TextEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShopItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MitraHint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EntityPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\MapPatches.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelper.cs" />

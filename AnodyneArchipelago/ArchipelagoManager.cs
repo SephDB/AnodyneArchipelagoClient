@@ -1,4 +1,7 @@
-﻿using AnodyneArchipelago.Helpers;
+﻿using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using AnodyneArchipelago.Helpers;
 using AnodyneArchipelago.Patches;
 using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
@@ -19,8 +22,9 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Reflection;
-using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using static AnodyneSharp.Registry.GlobalState;
 using static AnodyneSharp.States.CutsceneState;
 
 namespace AnodyneArchipelago
@@ -62,6 +66,13 @@ namespace AnodyneArchipelago
         MatchExtra
     }
 
+    public enum MitraHintType
+    {
+        None = 0,
+        Vague,
+        Precise
+    }
+
     public class ArchipelagoManager
     {
         private ArchipelagoSession _session;
@@ -96,6 +107,10 @@ namespace AnodyneArchipelago
         private bool _colorPuzzleHelp;
         private string _playerSpriteName;
 
+        private MitraHintType _mitraHintType =  MitraHintType.None;
+        private MitraHint[] _mitraHints = [];
+        private ShopItem[] _shopItems = [];
+
         private Texture2D _originalPlayerTexture;
         private Texture2D _originalCellTexture;
         private Texture2D _originalReflectionTexture;
@@ -127,6 +142,11 @@ namespace AnodyneArchipelago
         public bool ColorPuzzleRandomized => _colorRandomized;
 
         public bool ColorPuzzleHelp => _colorPuzzleHelp;
+
+        public MitraHintType MitraHintType => _mitraHintType;
+
+        public MitraHint[] MitraHints => _mitraHints;
+        public ShopItem[] ShopItems => _shopItems;
 
         public bool ReceivedDeath
         {
@@ -166,12 +186,12 @@ namespace AnodyneArchipelago
 
             LoginSuccessful login = (result as LoginSuccessful)!;
 
-            foreach(var (key,(value,id)) in Locations.Gates)
+            foreach (var (key, (value, id)) in Locations.Gates)
             {
                 BigGateTypes[id] = (string)login.SlotData.GetValueOrDefault(key, value);
             }
 
-            if(login.SlotData.ContainsKey("endgame_card_requirement"))
+            if (login.SlotData.ContainsKey("endgame_card_requirement"))
             {
                 BigGateTypes[Locations.Gates["terminal_endgame_gate"].guid] = $"cards_{(long)login.SlotData["endgame_card_requirement"]}";
             }
@@ -224,11 +244,23 @@ namespace AnodyneArchipelago
             else
             {
                 _deathLinkService = null;
-            } 
+            }
 
-            if(login.SlotData.GetValueOrDefault("dust_sanity_base",null) is long val)
+            if (login.SlotData.GetValueOrDefault("dust_sanity_base", null) is long val)
             {
                 _dustsanityBase = val;
+            }
+
+            _mitraHintType = (MitraHintType)(long)login.SlotData.GetValueOrDefault("mitra_hint_type", MitraHintType.None);
+
+            if (_mitraHintType != MitraHintType.None && login.SlotData.ContainsKey("mitra_hints"))
+            {
+                _mitraHints = ((JArray)login.SlotData["mitra_hints"]).ToObject<MitraHint[]>() ?? [];
+            }
+
+            if (login.SlotData.ContainsKey("shop_items"))
+            {
+                _shopItems = ((JArray)login.SlotData["shop_items"]).ToObject<ShopItem[]>() ?? [];
             }
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
@@ -307,7 +339,7 @@ namespace AnodyneArchipelago
                 }
 
                 //Shut up Sage
-                foreach(Guid guid in _patches.GetSages())
+                foreach (Guid guid in _patches.GetSages())
                 {
                     EntityManager.SetActive(guid, true);
                 }
@@ -415,6 +447,11 @@ namespace AnodyneArchipelago
             return GetLocationName(locationId, _session.Players.GetPlayerInfo(player).Game);
         }
 
+        public async void SendHint(long locationId)
+        {
+            await _session.Locations.ScoutLocationsAsync(true, locationId);
+        }
+
         public void SendLocation(string location)
         {
             if (_session == null)
@@ -443,7 +480,7 @@ namespace AnodyneArchipelago
                 return;
             }
 
-            if(screenTracker.Update() && !GlobalState.glitch.active && screenTracker.Tracker.mapName != "")
+            if (screenTracker.Update() && !GlobalState.glitch.active && screenTracker.Tracker.mapName != "")
             {
                 SendTrackerUpdate();
             }
@@ -881,7 +918,7 @@ namespace AnodyneArchipelago
         {
             if (path.EndsWith("Entities.xml"))
             {
-                _patches = new(stream,_dustsanityBase);
+                _patches = new(stream, _dustsanityBase);
 
                 _patches.RemoveNexusBlockers();
                 _patches.RemoveMitraCliff();
@@ -898,7 +935,7 @@ namespace AnodyneArchipelago
                     _patches.ForestChestJoke();
                 }
 
-                foreach (var (id,value) in BigGateTypes)
+                foreach (var (id, value) in BigGateTypes)
                 {
                     _patches.SetBigGateReq(id, value);
                 }
@@ -926,7 +963,7 @@ namespace AnodyneArchipelago
                 {
                     string name = _session.Locations.GetLocationNameFromId(location_id);
 
-                    if(_patches.IsDustID(location_id))
+                    if (_patches.IsDustID(location_id))
                     {
                         _patches.SetDust(location_id, name);
                     }
