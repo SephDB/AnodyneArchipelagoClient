@@ -452,6 +452,11 @@ namespace AnodyneArchipelago
             await _session.Locations.ScoutLocationsAsync(true, locationId);
         }
 
+        public bool IsChecked(long location)
+        {
+            return Checked.Contains(location);
+        }
+
         public void SendLocation(string location)
         {
             if (_session == null)
@@ -1076,7 +1081,7 @@ namespace AnodyneArchipelago
 
             List<string> sprites = [];
 
-            int seed = Plugin.ArchipelagoManager.GetSeed().GetHashCode() + GetCurrentPlayerName().GetHashCode();
+            int seed = Util.StringToIntVal(GetSeed()) + Util.StringToIntVal(GetCurrentPlayerName());
 
             if (seed < 0)
             {

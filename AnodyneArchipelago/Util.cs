@@ -53,5 +53,17 @@ namespace AnodyneArchipelago
 
             return textInfo.ToTitleCase(s.ToLower());
         }
+
+        public static int StringToIntVal(string s)
+        {
+            int val = 0;
+
+            foreach(char b in s)
+            {
+                val += (byte)b;
+            }
+
+            return val;
+        }
     }
 }

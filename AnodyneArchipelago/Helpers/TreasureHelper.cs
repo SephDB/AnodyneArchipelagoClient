@@ -1,20 +1,21 @@
-﻿using AnodyneSharp.Entities.Enemy;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using AnodyneSharp.Entities;
+using AnodyneSharp.Entities.Enemy;
+using AnodyneSharp.Entities.Enemy.Bedroom;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Registry;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AnodyneArchipelago.Helpers
 {
     public static class TreasureHelper
     {
 
-        private static List<string> secret_items = [
+        private static string[] secret_items = [
                 "Golden Poop",
                 "Spam Can",
                 "Glitch",
@@ -31,7 +32,7 @@ namespace AnodyneArchipelago.Helpers
                 "Golden Broom",
             ];
 
-        private static List<string> trap_item_sprites = [
+        private static string[] trap_item_sprites = [
                 "Green key",
                 "Red key",
                 "Blue key",
@@ -52,21 +53,14 @@ namespace AnodyneArchipelago.Helpers
 
         public static int GetSecretNumber(string secretName)
         {
-            return secret_items.IndexOf(Util.ToTitleCase(secretName));
+            return Array.IndexOf(secret_items, Util.ToTitleCase(secretName));
         }
 
         public static (string, int) GetSpriteWithTraps(string itemName, int player, ItemFlags itemFlags, string location)
         {
             if (Plugin.ArchipelagoManager!.HideTrapItems && itemFlags.HasFlag(ItemFlags.Trap))
             {
-                int seed = Plugin.ArchipelagoManager.GetSeed().GetHashCode() + itemName.GetHashCode() + location.GetHashCode();
-
-                if (seed < 0)
-                {
-                    seed *= -1;
-                }
-
-                itemName = trap_item_sprites[seed % trap_item_sprites.Count];
+                itemName = GetTrapName(itemName, location);
                 player = Plugin.ArchipelagoManager.GetPlayer();
                 itemFlags = ItemFlags.None;
             }
@@ -299,6 +293,18 @@ namespace AnodyneArchipelago.Helpers
             }
 
             return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1);
+        }
+
+        public static string GetTrapName(string itemName, string location)
+        {
+            long seed = Util.StringToIntVal(Plugin.ArchipelagoManager.GetSeed()) + Util.StringToIntVal(itemName) + Util.StringToIntVal(location);
+
+            if (seed < 0)
+            {
+                seed *= -1;
+            }
+
+            return trap_item_sprites[seed % trap_item_sprites.Length];
         }
     }
 
