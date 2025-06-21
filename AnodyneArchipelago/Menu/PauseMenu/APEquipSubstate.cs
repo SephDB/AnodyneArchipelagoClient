@@ -28,7 +28,7 @@ namespace AnodyneSharp.States.MenuSubstates
             BikingShoes,
             Key1,
             Key2,
-            Key3,
+            Miao,
             RedCave,
             Statue1,
             Statue2,
@@ -45,8 +45,8 @@ namespace AnodyneSharp.States.MenuSubstates
         private UIEntity _jump;
         private UIEntity _boxItem;
         private UIEntity _shoesItem;
-        private UIEntity[] _keys;
         private UIEntity _redCave;
+        private UIEntity _miao;
         private UIEntity[] _statues;
 
         private UILabel _redCaveLabel;
@@ -54,7 +54,7 @@ namespace AnodyneSharp.States.MenuSubstates
         private EquipState _state;
         private EquipState _lastState;
 
-        List<EquipState> bottom_row_enabled = new() { EquipState.Key1, EquipState.Key2, EquipState.Key3 };
+        List<EquipState> bottom_row_enabled = new() { EquipState.Key1, EquipState.Key2, EquipState.Miao };
         List<EquipState> very_bottom_row_enabled = new() { EquipState.RedCave, EquipState.Statue1, EquipState.Statue2, EquipState.Statue3 };
         int current_bottom_index = 0;
 
@@ -62,6 +62,8 @@ namespace AnodyneSharp.States.MenuSubstates
         {
             float x = 65;
             float y = 25;
+
+            selector.layer = Drawing.DrawOrder.EQUIPPED_ICON;
 
             _broom = new Equipment(new Vector2(x, y), "none_icon", GlobalState.inventory.HasBroom ? DialogueManager.GetDialogue("misc", "any", "items", 1) : "-");
             _broomExtend = new Equipment(new Vector2(x, y + 24), "long_icon", GlobalState.inventory.HasLengthen ? DialogueManager.GetDialogue("misc", "any", "items", 3) : "-");
@@ -99,7 +101,13 @@ namespace AnodyneSharp.States.MenuSubstates
                 _jump.visible = true;
             }
 
-            _keys = Enumerable.Range(0, 3).Select(i => new UIEntity(new Vector2(95 + 16 + 16 * i, 130), "key_green", GlobalState.inventory.BigKeyStatus[i] ? i * 2 : i * 2 + 1, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)).ToArray();
+            _miao = new UIEntity(new Vector2(95 + 16 + 16 * 2, 130), "fields_npcs", 0, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON);
+
+            if (GlobalState.events.GetEvent("ReceivedMiao") != 1)
+            {
+                _miao.sprite.SetTexture("archipelago_items", 16, 16, false, false);
+                _miao.SetFrame(21);
+            }
 
             _statues =
                 [
@@ -152,11 +160,7 @@ namespace AnodyneSharp.States.MenuSubstates
             _boxItem.Draw();
             _shoesItem.Draw();
             _jump.Draw();
-
-            foreach (var key in _keys)
-            {
-                key.Draw();
-            }
+            _miao.Draw();
 
             _redCave.Draw();
             _redCaveLabel.Draw();
@@ -194,7 +198,7 @@ namespace AnodyneSharp.States.MenuSubstates
                     }
                     else if(_state == EquipState.Statue3)
                     {
-                        _state = EquipState.Key3;
+                        _state = EquipState.Miao;
                         current_bottom_index = bottom_row_enabled.IndexOf(_state);
                     }
                     else
@@ -233,7 +237,7 @@ namespace AnodyneSharp.States.MenuSubstates
                         _state = EquipState.Statue2;
                         current_bottom_index = very_bottom_row_enabled.IndexOf(_state);
                     }
-                    else if(_state == EquipState.Key3)
+                    else if(_state == EquipState.Miao)
                     {
                         _state = EquipState.Statue3;
                         current_bottom_index = very_bottom_row_enabled.IndexOf(_state);
@@ -330,21 +334,15 @@ namespace AnodyneSharp.States.MenuSubstates
                     SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 6));
                     break;
                 case EquipState.Key1:
-                    if (GlobalState.inventory.BigKeyStatus[0])
-                    {
-                        SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 8));
-                    }
+
                     break;
                 case EquipState.Key2:
-                    if (GlobalState.inventory.BigKeyStatus[1])
-                    {
-                        SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 9));
-                    }
+
                     break;
-                case EquipState.Key3:
-                    if (GlobalState.inventory.BigKeyStatus[2])
+                case EquipState.Miao:
+                    if (GlobalState.events.GetEvent("ReceivedMiao") == 1)
                     {
-                        SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 10));
+                        SetDialogue("It's Miao! He's waiting for you in Fields.");
                     }
                     break;
                 case EquipState.RedCave:
@@ -409,15 +407,15 @@ namespace AnodyneSharp.States.MenuSubstates
                     break;
                 case EquipState.Key1:
                     ignoreOffset = true;
-                    selector.Position = _keys[0].Position;
+                    selector.Position = _miao.Position - new Vector2(32,0);
                     break;
                 case EquipState.Key2:
                     ignoreOffset = true;
-                    selector.Position = _keys[1].Position;
+                    selector.Position = _miao.Position - new Vector2(16, 0);
                     break;
-                case EquipState.Key3:
+                case EquipState.Miao:
                     ignoreOffset = true;
-                    selector.Position = _keys[2].Position;
+                    selector.Position = _miao.Position;
                     break;
                 case EquipState.RedCave:
                     ignoreOffset = true;

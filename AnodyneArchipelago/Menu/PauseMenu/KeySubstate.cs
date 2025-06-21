@@ -20,6 +20,7 @@ namespace AnodyneSharp.States.MenuSubstates
     {
         private List<UILabel> _labels;
         private UIEntity[] _keys;
+        private UIEntity[] _bigKeys;
 
         public KeySubstate()
         {
@@ -69,6 +70,8 @@ namespace AnodyneSharp.States.MenuSubstates
                             Drawing.DrawOrder.EQUIPMENT_ICON))
                     .ToArray();
             }
+
+            _keys = Enumerable.Range(0, 3).Select(i => new UIEntity(new Vector2(62 + 16 * i, 150), "key_green", GlobalState.inventory.BigKeyStatus[i] ? i * 2 : i * 2 + 1, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)).ToArray();
         }
 
         public override void GetControl()

@@ -180,7 +180,7 @@ namespace AnodyneArchipelago.Helpers
             }
             else if (itemName == "miao")
             {
-                return ("archipelago_items", 21);
+                return ("fields_npcs", 0);
             }
             else if (itemName == "raft")
             {

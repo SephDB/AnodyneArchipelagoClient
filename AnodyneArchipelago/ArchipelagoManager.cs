@@ -78,8 +78,8 @@ namespace AnodyneArchipelago
         private ArchipelagoSession _session;
         private static int ItemIndex
         {
-            get => GlobalState.events.GetEvent("ArchipelagoItemIndex");
-            set => GlobalState.events.SetEvent("ArchipelagoItemIndex", value);
+            get => events.GetEvent("ArchipelagoItemIndex");
+            set => events.SetEvent("ArchipelagoItemIndex", value);
         }
         private HashSet<long> Checked = new();
         private DeathLinkService _deathLinkService;
@@ -307,7 +307,7 @@ namespace AnodyneArchipelago
                 {
                     ["type"] = "MapUpdate",
                     ["mapName"] = GetTrackerMapName(screenTracker.Tracker.mapName),
-                    ["mapIndex"] = screenTracker.Tracker.location.X + GlobalState.MAP_GRID_WIDTH * screenTracker.Tracker.location.Y
+                    ["mapIndex"] = screenTracker.Tracker.location.X + MAP_GRID_WIDTH * screenTracker.Tracker.location.Y
                 }
             });
         }
@@ -330,7 +330,7 @@ namespace AnodyneArchipelago
                     string mapName = GetNexusGateMapName(gate);
                     if (mapName.Length > 0)
                     {
-                        GlobalState.events.ActivatedNexusPortals.Add(mapName);
+                        events.ActivatedNexusPortals.Add(mapName);
                     }
                 }
                 foreach (Guid guid in _checkGates.Values)
@@ -345,14 +345,14 @@ namespace AnodyneArchipelago
                 }
                 DialogueManager.GetDialogue("sage", "TERMINAL", "entrance"); //Sage in TERMINAL has its own logic, can be mostly shut up by setting this dialogue to dirty
 
-                GlobalState.events.IncEvent("CheckpointTutorial"); //turn off the checkpoint tutorial
+                events.IncEvent("CheckpointTutorial"); //turn off the checkpoint tutorial
             }
             // Pretend we're always in a pre-credits state so that swap is an allowlist, not a denylist.
-            GlobalState.events.SetEvent("SeenCredits", 0);
+            events.SetEvent("SeenCredits", 0);
 
             foreach (long location_id in _session.Locations.AllLocations)
             {
-                if (GlobalState.events.GetEvent($"ArchipelagoLoc-{location_id}") != 0)
+                if (events.GetEvent($"ArchipelagoLoc-{location_id}") != 0)
                 {
                     Checked.Add(location_id);
                 }
@@ -466,7 +466,7 @@ namespace AnodyneArchipelago
             }
             long id = _session.Locations.GetLocationIdFromName("Anodyne", location);
 
-            GlobalState.events.IncEvent($"ArchipelagoLoc-{id}");
+            events.IncEvent($"ArchipelagoLoc-{id}");
             if (Checked.Add(id))
             {
                 Task.Run(() => _session.Locations.CompleteLocationChecksAsync(Checked.Except(_session.Locations.AllLocationsChecked).ToArray())).ConfigureAwait(false);
@@ -485,7 +485,7 @@ namespace AnodyneArchipelago
                 return;
             }
 
-            if (screenTracker.Update() && !GlobalState.glitch.active && screenTracker.Tracker.mapName != "")
+            if (screenTracker.Update() && !glitch.active && screenTracker.Tracker.mapName != "")
             {
                 SendTrackerUpdate();
             }
@@ -495,11 +495,11 @@ namespace AnodyneArchipelago
             {
                 if (_session.Items.Index > ItemIndex || _messages.Count > 0)
                 {
-                    GlobalState.SetSubstate(new APItemCutscene(GetItemsAndMessages()));
+                    SetSubstate(new APItemCutscene(GetItemsAndMessages()));
                 }
                 else if (_pendingDeathLink != null)
                 {
-                    GlobalState.CUR_HEALTH = 0;
+                    CUR_HEALTH = 0;
 
                     string message;
                     if (_pendingDeathLink.Cause == null)
@@ -527,7 +527,7 @@ namespace AnodyneArchipelago
             while (ItemIndex < _session.Items.Index)
             {
                 var item = HandleItem(_session.Items.AllItemsReceived[ItemIndex]);
-                GlobalState.events.IncEvent("ArchipelagoItemIndex");
+                events.IncEvent("ArchipelagoItemIndex");
                 item.treasure.GetTreasure();
                 treasures.Enqueue(item.treasure);
                 yield return new EntityEvent(Enumerable.Repeat(item.treasure, 1));
@@ -544,7 +544,7 @@ namespace AnodyneArchipelago
             {
                 if (t.exists)
                 {
-                    GlobalState.SpawnEntity(t);
+                    SpawnEntity(t);
                 }
             }
 
@@ -635,64 +635,64 @@ namespace AnodyneArchipelago
                 string dungeonName = itemName[11..^1];
 
                 string mapName = GetMapNameForDungeon(dungeonName);
-                GlobalState.inventory.AddMapKey(mapName, 1);
+                inventory.AddMapKey(mapName, 1);
             }
             else if (itemName.StartsWith("Key Ring"))
             {
                 string dungeonName = itemName[10..^1];
 
                 string mapName = GetMapNameForDungeon(dungeonName);
-                GlobalState.events.SetEvent($"{mapName}_KeyRing_Obtained", 1);
-                GlobalState.inventory.AddMapKey(mapName, 9);
+                events.SetEvent($"{mapName}_KeyRing_Obtained", 1);
+                inventory.AddMapKey(mapName, 9);
             }
             else if (itemName == "Green Key")
             {
-                GlobalState.inventory.BigKeyStatus[0] = true;
+                inventory.BigKeyStatus[0] = true;
             }
             else if (itemName == "Blue Key")
             {
-                GlobalState.inventory.BigKeyStatus[2] = true;
+                inventory.BigKeyStatus[2] = true;
             }
             else if (itemName == "Red Key")
             {
-                GlobalState.inventory.BigKeyStatus[1] = true;
+                inventory.BigKeyStatus[1] = true;
             }
             else if (itemName == "Jump Shoes")
             {
-                GlobalState.inventory.CanJump = true;
+                inventory.CanJump = true;
             }
             else if (itemName == "Health Cicada")
             {
-                GlobalState.MAX_HEALTH += 1;
-                GlobalState.CUR_HEALTH = GlobalState.MAX_HEALTH;
+                MAX_HEALTH += 1;
+                CUR_HEALTH = MAX_HEALTH;
             }
             else if (itemName == "Heal")
             {
-                GlobalState.CUR_HEALTH += 1;
+                CUR_HEALTH += 1;
             }
             else if (itemName == "Big Heal")
             {
-                GlobalState.CUR_HEALTH += 3;
+                CUR_HEALTH += 3;
             }
             else if (itemName == "Broom")
             {
-                GlobalState.inventory.HasBroom = true;
+                inventory.HasBroom = true;
 
-                if (GlobalState.inventory.EquippedBroom == BroomType.NONE)
+                if (inventory.EquippedBroom == BroomType.NONE)
                 {
-                    GlobalState.inventory.EquippedBroom = BroomType.Normal;
+                    inventory.EquippedBroom = BroomType.Normal;
                 }
             }
             else if (itemName == "Swap")
             {
-                GlobalState.inventory.HasTransformer = true;
+                inventory.HasTransformer = true;
 
-                if (GlobalState.inventory.EquippedBroom == BroomType.NONE)
+                if (inventory.EquippedBroom == BroomType.NONE)
                 {
-                    GlobalState.inventory.EquippedBroom = BroomType.Transformer;
+                    inventory.EquippedBroom = BroomType.Transformer;
                 }
 
-                if ((_postgameMode == PostgameMode.Vanilla && GlobalState.events.GetEvent("DefeatedBriar") > 0) ||
+                if ((_postgameMode == PostgameMode.Vanilla && events.GetEvent("DefeatedBriar") > 0) ||
                     _postgameMode == PostgameMode.Unlocked)
                 {
                     EnableExtendedSwap();
@@ -700,16 +700,16 @@ namespace AnodyneArchipelago
             }
             else if (itemName == "Progressive Swap")
             {
-                GlobalState.inventory.HasTransformer = true;
+                inventory.HasTransformer = true;
 
-                if (GlobalState.inventory.EquippedBroom == BroomType.NONE)
+                if (inventory.EquippedBroom == BroomType.NONE)
                 {
-                    GlobalState.inventory.EquippedBroom = BroomType.Transformer;
+                    inventory.EquippedBroom = BroomType.Transformer;
                 }
 
-                GlobalState.events.IncEvent("SwapStage");
+                events.IncEvent("SwapStage");
 
-                if (GlobalState.events.GetEvent("SwapStage") > 1)
+                if (events.GetEvent("SwapStage") > 1)
                 {
                     EnableExtendedSwap();
 
@@ -722,50 +722,50 @@ namespace AnodyneArchipelago
             }
             else if (itemName == "Extend")
             {
-                GlobalState.inventory.HasLengthen = true;
+                inventory.HasLengthen = true;
 
-                if (GlobalState.inventory.EquippedBroom == BroomType.NONE)
+                if (inventory.EquippedBroom == BroomType.NONE)
                 {
-                    GlobalState.inventory.EquippedBroom = BroomType.Long;
+                    inventory.EquippedBroom = BroomType.Long;
                 }
             }
             else if (itemName == "Widen")
             {
-                GlobalState.inventory.HasWiden = true;
+                inventory.HasWiden = true;
 
-                if (GlobalState.inventory.EquippedBroom == BroomType.NONE)
+                if (inventory.EquippedBroom == BroomType.NONE)
                 {
-                    GlobalState.inventory.EquippedBroom = BroomType.Wide;
+                    inventory.EquippedBroom = BroomType.Wide;
                 }
             }
             else if (itemName == "Temple of the Seeing One Statue")
             {
                 // TODO: This and the other two: move while on the same map.
-                GlobalState.events.SetEvent("StatueMoved_Temple", 1);
+                events.SetEvent("StatueMoved_Temple", 1);
             }
             else if (itemName == "Mountain Cavern Statue")
             {
-                GlobalState.events.SetEvent("StatueMoved_Mountain", 1);
+                events.SetEvent("StatueMoved_Mountain", 1);
             }
             else if (itemName == "Red Cave Statue")
             {
-                GlobalState.events.SetEvent("StatueMoved_Grotto", 1);
+                events.SetEvent("StatueMoved_Grotto", 1);
             }
             else if (itemName == "Progressive Red Cave")
             {
-                GlobalState.events.IncEvent("ProgressiveRedGrotto");
+                events.IncEvent("ProgressiveRedGrotto");
                 if (!VanillaRedCave)
                 {
-                    switch (GlobalState.events.GetEvent("ProgressiveRedGrotto"))
+                    switch (events.GetEvent("ProgressiveRedGrotto"))
                     {
                         case 1:
-                            GlobalState.events.SetEvent("red_cave_l_ss", 1);
+                            events.SetEvent("red_cave_l_ss", 1);
                             break;
                         case 2:
-                            GlobalState.events.SetEvent("red_cave_r_ss", 1);
+                            events.SetEvent("red_cave_r_ss", 1);
                             break;
                         case 3:
-                            GlobalState.events.SetEvent("red_cave_n_ss", 2);
+                            events.SetEvent("red_cave_n_ss", 2);
                             break;
                     }
                 }
@@ -780,11 +780,11 @@ namespace AnodyneArchipelago
             }
             else if (itemName == "Cardboard Box")
             {
-                GlobalState.events.SetEvent("ReceivedCardboardBox", 1);
+                events.SetEvent("ReceivedCardboardBox", 1);
             }
             else if (itemName == "Biking Shoes")
             {
-                GlobalState.events.SetEvent("ReceivedBikingShoes", 1);
+                events.SetEvent("ReceivedBikingShoes", 1);
             }
             else if (itemName == "Person Trap")
             {
@@ -795,13 +795,13 @@ namespace AnodyneArchipelago
 
                 for (int i = 0; i < 6; i++)
                 {
-                    GlobalState.SpawnEntity(
+                    SpawnEntity(
                         new Person(
                             new EntityPreset(
                                 typeof(Person),
-                                Plugin.Player.Position + new Vector2(GlobalState.RNG.Next(min, max), GlobalState.RNG.Next(min, max)),
+                                Plugin.Player.Position + new Vector2(RNG.Next(min, max), RNG.Next(min, max)),
                                 new Guid(),
-                                GlobalState.RNG.Next(0, 5)
+                                RNG.Next(0, 5)
                                 ),
                             Plugin.Player)
                         );
@@ -810,7 +810,11 @@ namespace AnodyneArchipelago
             else if (itemName == "Gas Trap")
             {
                 Plugin.Player.reversed = true;
-                GlobalState.wave.active = true;
+                wave.active = true;
+            }
+            else if (itemName == "Miao")
+            {
+                events.SetEvent("ReceivedMiao", 1);
             }
             else if (itemName.StartsWith("Nexus Gate"))
             {
@@ -818,7 +822,7 @@ namespace AnodyneArchipelago
                 if (_checkGates.TryGetValue(mapname, out var gate))
                 {
                     EntityManager.SetAlive(gate, true);
-                    GlobalState.events.ActivatedNexusPortals.Add(mapname);
+                    events.ActivatedNexusPortals.Add(mapname);
                 }
                 else
                 {
@@ -905,7 +909,7 @@ namespace AnodyneArchipelago
 
         public void EnableExtendedSwap()
         {
-            GlobalState.events.SetEvent("ExtendedSwap", 1);
+            events.SetEvent("ExtendedSwap", 1);
 
             if (GlobalState.Map != null)
             {
@@ -926,9 +930,10 @@ namespace AnodyneArchipelago
                 _patches = new(stream, _dustsanityBase);
 
                 _patches.RemoveNexusBlockers();
-                _patches.RemoveMitraCliff();
+                _patches.RemoveMitraCutscenes();
                 _patches.FixHotelSoftlock();
                 _patches.FixHappyNexusPad();
+                _patches.LockMiao();
 
                 if (_colorRandomized)
                 {
@@ -1021,7 +1026,7 @@ namespace AnodyneArchipelago
             {
                 stream?.Close();
                 string newContents = string.Join("\n",
-                    SwapData.GetRectanglesForMap(path.Split('.')[^3], GlobalState.events.GetEvent("ExtendedSwap") == 1)
+                    SwapData.GetRectanglesForMap(path.Split('.')[^3], events.GetEvent("ExtendedSwap") == 1)
                             .Select(r => $"Allow\t{r.X}\t{r.Y}\t{r.Width}\t{r.Height}"));
                 stream = new MemoryStream(Encoding.Default.GetBytes(newContents));
             }
@@ -1035,7 +1040,7 @@ namespace AnodyneArchipelago
 
         public void OnCredits()
         {
-            GlobalState.events.SetEvent("DefeatedBriar", 1);
+            events.SetEvent("DefeatedBriar", 1);
             if (PostgameMode == PostgameMode.Vanilla)
             {
                 EnableExtendedSwap();

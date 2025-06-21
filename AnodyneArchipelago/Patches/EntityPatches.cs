@@ -104,9 +104,16 @@ namespace AnodyneArchipelago.Patches
             root.Descendants("KeyBlock").Where(k => (int)k.Attribute("frame")! > 0).Remove();
         }
 
-        public void RemoveMitraCliff()
+        public void LockMiao()
+        {
+            var node = root.Descendants("Trade_NPC").Where(k => (int)k.Attribute("frame")! == 0).First();
+            node.Name = "MiaoAP";
+        }
+
+        public void RemoveMitraCutscenes()
         {
             root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "CLIFF").First().Remove();
+            root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "OVERWORLD").First().Remove();
         }
 
         public void ForestChestJoke()
