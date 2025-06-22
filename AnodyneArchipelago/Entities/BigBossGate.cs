@@ -1,12 +1,6 @@
-﻿using AnodyneSharp.Dialogue;
-using AnodyneSharp.Entities.Base.Rendering;
-using AnodyneSharp.GameEvents;
+﻿using AnodyneSharp.Entities.Base.Rendering;
 using AnodyneSharp.Registry;
 using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace AnodyneSharp.Entities.Gadget
 {
@@ -18,7 +12,7 @@ namespace AnodyneSharp.Entities.Gadget
         Entity keyhole;
         Entity[] digits;
 
-        public static Anim[] DigitAnims() => Enumerable.Range(0, 10).Select(i => new Anim(i.ToString(), new int[] { i }, 1)).ToArray();
+        public static Anim[] DigitAnims() => [.. Enumerable.Range(0, 10).Select(i => new Anim(i.ToString(), new int[] { i }, 1))];
 
         public BigBossGate(EntityPreset preset, Player p) : base(preset, p)
         {

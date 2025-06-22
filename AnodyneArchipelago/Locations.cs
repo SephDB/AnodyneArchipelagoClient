@@ -1,9 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using AnodyneSharp.Entities;
-
-namespace AnodyneArchipelago
+﻿namespace AnodyneArchipelago
 {
     internal class Locations
     {
@@ -128,7 +123,7 @@ namespace AnodyneArchipelago
             {"Nexus - Isolated Chest", new Guid("d3498803-d92d-4a88-83b1-b0e5ec6d38a8") },
         };
 
-        public static Dictionary<string, (string val,Guid guid)> Gates = new()
+        public static Dictionary<string, (string val, Guid guid)> Gates = new()
         {
             {"overworld_gauntlet_gate",("cards_4",new("E9730752-B60C-0E95-3197-01529A4A31EB"))},
             {"overworld_fields_gate",("green_key",new("E1941545-20E6-0257-551B-CEB77783F62B"))},

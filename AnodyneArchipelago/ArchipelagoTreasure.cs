@@ -1,8 +1,5 @@
 ﻿using AnodyneArchipelago.Helpers;
-using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget.Treasures;
-using AnodyneSharp.Logging;
-using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;

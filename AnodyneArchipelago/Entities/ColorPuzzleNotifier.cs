@@ -1,16 +1,12 @@
-﻿using AnodyneSharp.Entities.Base.Rendering;
-using AnodyneSharp.Entities.Interactive;
+﻿using AnodyneSharp;
+using AnodyneSharp.Drawing;
 using AnodyneSharp.Entities;
+using AnodyneSharp.Entities.Base.Rendering;
+using AnodyneSharp.GameEvents;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
-using AnodyneSharp;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
-using AnodyneSharp.Drawing;
 using AnodyneSharp.Utilities;
-using AnodyneSharp.GameEvents;
+using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Entities
 {
@@ -22,7 +18,7 @@ namespace AnodyneArchipelago.Entities
         float sparkleTimer = 0f;
         bool active = false;
 
-        public ColorPuzzleNotifier(EntityPreset preset, Player p) : base(preset.Position,16,16) 
+        public ColorPuzzleNotifier(EntityPreset preset, Player p) : base(preset.Position, 16, 16)
         {
             _sparkles = new(10, () => new Sparkle());
 
@@ -38,12 +34,12 @@ namespace AnodyneArchipelago.Entities
         public override void Update()
         {
             base.Update();
-            if(active && sparkleCount > 0 && MathUtilities.MoveTo(ref sparkleTimer,0.1f,1))
+            if (active && sparkleCount > 0 && MathUtilities.MoveTo(ref sparkleTimer, 0.1f, 1))
             {
                 sparkleCount--;
-                _sparkles.Spawn(s => s.Spawn(this,sparkleCount%4 == 0));
+                _sparkles.Spawn(s => s.Spawn(this, sparkleCount % 4 == 0));
                 sparkleTimer = 0;
-                if(sparkleCount == 0)
+                if (sparkleCount == 0)
                 {
                     exists = false;
                 }
@@ -73,7 +69,7 @@ namespace AnodyneArchipelago.Entities
                 if (AnimFinished) exists = false;
             }
 
-            public void Spawn(Entity parent,bool makeSound)
+            public void Spawn(Entity parent, bool makeSound)
             {
                 Play("sparkle");
                 Position = parent.Position - new Vector2(4, 4);

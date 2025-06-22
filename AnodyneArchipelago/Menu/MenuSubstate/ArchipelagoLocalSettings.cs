@@ -56,7 +56,7 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
             var playerSpriteSetting = new TextSelector(
                 new Vector2(menuX, playerSpriteLabel.Position.Y + GameConstants.FONT_LINE_HEIGHT + (GlobalState.CurrentLanguage == Language.ZH_CN ? 5 : 2)),
                 110,
-                Array.FindIndex(sprites, s => s == MenuState.ArchipelagoSettings.PlayerSprite),
+                Array.FindIndex(sprites, s => s == MenuState.ArchipelagoSettings!.PlayerSprite),
                 true,
                 DrawOrder.SUBMENU_SLIDER,
                 sprites)
@@ -69,7 +69,7 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
             var apItemSetting = new TextSelector(
                 new Vector2(x + 60, apItemLabel.Position.Y + (GlobalState.CurrentLanguage == Language.ZH_CN ? 5 : 2) + 3),
                 60,
-                (int)MenuState.ArchipelagoSettings.MatchDifferentWorldItem,
+                (int)MenuState.ArchipelagoSettings!.MatchDifferentWorldItem,
                 true,
                 DrawOrder.SUBMENU_SLIDER,
                 apItemOptions)
@@ -81,7 +81,7 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
 
             var trapItemSetting = new CheckBox(
                 new Vector2(x + 110, trapItemLabel.Position.Y + (GlobalState.CurrentLanguage == Language.ZH_CN ? 3 : 0) + 3),
-                MenuState.ArchipelagoSettings.HideTrapItems, 
+                MenuState.ArchipelagoSettings.HideTrapItems,
                 MenuStyle.SubMenu,
                 DrawOrder.SUBMENU_SLIDER)
             {
@@ -92,7 +92,7 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
 
             var colorPuzzleHelpSetting = new CheckBox(
                 new Vector2(x + 110, colorPuzzleHelpLabel.Position.Y + (GlobalState.CurrentLanguage == Language.ZH_CN ? 3 : 0) + 3),
-                MenuState.ArchipelagoSettings.ColorPuzzleHelp, 
+                MenuState.ArchipelagoSettings.ColorPuzzleHelp,
                 MenuStyle.SubMenu,
                 DrawOrder.SUBMENU_SLIDER)
             {
@@ -129,12 +129,12 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
 
         private void SpriteChanged(string newValue, int index)
         {
-            MenuState.ArchipelagoSettings.PlayerSprite = newValue;
+            MenuState.ArchipelagoSettings!.PlayerSprite = newValue;
         }
 
         private void ApItemLookChanged(string newValue, int index)
         {
-            MenuState.ArchipelagoSettings.MatchDifferentWorldItem = (MatchDifferentWorldItem)index;
+            MenuState.ArchipelagoSettings!.MatchDifferentWorldItem = (MatchDifferentWorldItem)index;
         }
     }
 }

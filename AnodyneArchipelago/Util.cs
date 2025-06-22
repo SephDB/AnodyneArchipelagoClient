@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 
 namespace AnodyneArchipelago
@@ -21,15 +20,15 @@ namespace AnodyneArchipelago
                     curWidth = 0;
                     sb.Append('\n');
                 }
-                
+
                 if (curWidth == 0)
                 {
                     while (word.Length > width)
                     {
-                        sb.Append(word.Substring(0, width - 1));
+                        sb.Append(word[..(width - 1)]);
                         sb.Append('-');
 
-                        word = word.Substring(width - 1);
+                        word = word[(width - 1)..];
                     }
                 }
 
@@ -58,7 +57,7 @@ namespace AnodyneArchipelago
         {
             int val = 0;
 
-            foreach(char b in s)
+            foreach (char b in s)
             {
                 val += (byte)b;
             }

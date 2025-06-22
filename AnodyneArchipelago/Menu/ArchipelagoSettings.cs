@@ -9,25 +9,25 @@ namespace AnodyneArchipelago.Menu
         public readonly string ApSlot = apSlot;
         public readonly string ApPassword = apPassword;
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            return this.Equals(obj as ConnectionDetails);
+            return obj != null && Equals(obj as ConnectionDetails);
         }
 
-        public bool Equals(ConnectionDetails other)
+        public bool Equals(ConnectionDetails? other)
         {
-            return (ApServer == other.ApServer) && (ApSlot == other.ApSlot) && (ApPassword == other.ApPassword);
+            return other != null && (ApServer == other.ApServer) && (ApSlot == other.ApSlot) && (ApPassword == other.ApPassword);
         }
 
         public override int GetHashCode()
         {
-            return (ApServer, ApSlot, ApPassword).GetHashCode();
+            return HashCode.Combine(ApServer, ApSlot, ApPassword);
         }
     }
 
     public class ArchipelagoSettings
     {
-        public static JsonSerializerOptions serializerOptions = new JsonSerializerOptions()
+        public static JsonSerializerOptions serializerOptions = new()
         {
             IncludeFields = true
         };

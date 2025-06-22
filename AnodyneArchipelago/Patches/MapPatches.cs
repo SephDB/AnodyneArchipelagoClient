@@ -14,7 +14,7 @@ namespace AnodyneArchipelago.Patches
                 // Place a rock blocking access to Terminal without the red key.
                 map[47][31] = 11;
             }
-            else if(mapName == "CROWD")
+            else if (mapName == "CROWD")
             {
                 //Fix easy OOL jump past Crowd's statue
                 map[43][92] = 4;
@@ -51,9 +51,9 @@ namespace AnodyneArchipelago.Patches
                     int apartmentTile = map[33][26];
                     int circusTile = map[36][22];
                     map[33][26] = map[35][27] = map[36][22] = 114;
-                    if(Plugin.ArchipelagoManager!.ColorPuzzleHelp)
+                    if (Plugin.ArchipelagoManager!.ColorPuzzleHelp)
                     {
-                        if(GlobalState.events.GetEvent("SeenPuzzleHOTEL") > 0)
+                        if (GlobalState.events.GetEvent("SeenPuzzleHOTEL") > 0)
                         {
                             map[32 + puzzle.HotelPos.Y][22 + puzzle.HotelPos.X] = hotelTile;
                         }

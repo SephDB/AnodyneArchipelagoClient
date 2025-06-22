@@ -1,11 +1,7 @@
-﻿using AnodyneSharp.Entities;
+﻿using System.Collections;
+using AnodyneSharp.Entities;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Utilities;
-using Microsoft.Xna.Framework;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AnodyneArchipelago.Entities
 {
@@ -14,7 +10,8 @@ namespace AnodyneArchipelago.Entities
     {
         IEnumerator _state;
 
-        public BossItemAP(EntityPreset preset, Player p) : base(preset, p) {
+        public BossItemAP(EntityPreset preset, Player p) : base(preset, p)
+        {
             offset.Y = 180 - MapUtilities.GetInGridPosition(Position).Y;
             _state = StateLogic();
         }
@@ -27,7 +24,7 @@ namespace AnodyneArchipelago.Entities
 
         private IEnumerator StateLogic()
         {
-            while(!GlobalState.events.BossDefeated.Contains(GlobalState.CURRENT_MAP_NAME))
+            while (!GlobalState.events.BossDefeated.Contains(GlobalState.CURRENT_MAP_NAME))
             {
                 yield return null;
             }
@@ -36,7 +33,7 @@ namespace AnodyneArchipelago.Entities
 
             Parabola_Thing bounce = new(this, 20, 0.6f);
 
-            while(bounce.Progress() < 1f)
+            while (bounce.Progress() < 1f)
             {
                 bounce.Tick();
                 yield return null;

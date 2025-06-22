@@ -5,18 +5,15 @@ using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
 using AnodyneSharp.States;
 using AnodyneSharp.States.MenuSubstates;
-using AnodyneSharp.States.MenuSubstates.ConfigSubstates;
 using AnodyneSharp.UI;
-using AnodyneSharp.UI.PauseMenu;
 using AnodyneSharp.UI.PauseMenu.Config;
 using Microsoft.Xna.Framework;
-using Newtonsoft.Json.Linq;
 
 namespace AnodyneArchipelago.Menu
 {
     internal partial class MenuState : ListSubstate
     {
-        public static ArchipelagoSettings? ArchipelagoSettings;
+        public static ArchipelagoSettings ArchipelagoSettings = new();
 
         private UILabel? _versionLabel1;
         private UILabel? _versionLabel2;
@@ -47,11 +44,7 @@ namespace AnodyneArchipelago.Menu
                 Plugin.ArchipelagoManager = null;
             }
 
-            ArchipelagoSettings = ArchipelagoSettings.Load();
-            if (ArchipelagoSettings == null)
-            {
-                ArchipelagoSettings = new();
-            }
+            ArchipelagoSettings = ArchipelagoSettings.Load() ?? new();
 
             string[] selectorValues = new string[ArchipelagoSettings.ConnectionDetails.Count + 1];
             for (int i = 0; i < selectorValues.Length; i++)
@@ -59,10 +52,12 @@ namespace AnodyneArchipelago.Menu
                 selectorValues[i] = $"{i + 1}/{selectorValues.Length}";
             }
 
-            _connectionSwitcher = new(new Vector2(60f, 115f), 32f, 0, true, selectorValues);
-            _connectionSwitcher.noConfirm = true;
-            _connectionSwitcher.noLoop = true;
-            _connectionSwitcher.ValueChangedEvent = PageValueChanged;
+            _connectionSwitcher = new(new Vector2(60f, 115f), 32f, 0, true, selectorValues)
+            {
+                noConfirm = true,
+                noLoop = true,
+                ValueChangedEvent = PageValueChanged
+            };
 
             SetLabels();
 
@@ -103,7 +98,7 @@ namespace AnodyneArchipelago.Menu
                         _apPort = url.Port.ToString();
                     }
 
-                    UpdateLabels(); 
+                    UpdateLabels();
                 })),
                 (_portLabel, new TextEntry("Port:", () => _apPort, value => {
                     if(int.TryParse(value, out int port))
@@ -202,7 +197,7 @@ namespace AnodyneArchipelago.Menu
             UpdateLabel(_passwordValue, _apPassword);
         }
 
-        private void UpdateLabel(UILabel? label, string text)
+        private static void UpdateLabel(UILabel? label, string text)
         {
             if (label == null)
             {
@@ -218,7 +213,7 @@ namespace AnodyneArchipelago.Menu
             {
                 if (text.Length > 15)
                 {
-                    label.SetText(text.Substring(0, 13) + "..");
+                    label.SetText(string.Concat(text.AsSpan(0, 13), ".."));
                 }
                 else
                 {
@@ -322,7 +317,8 @@ namespace AnodyneArchipelago.Menu
                 ArchipelagoSettings.HideTrapItems,
                 ArchipelagoSettings.ColorPuzzleHelp);
         }
-        private Uri GetUri(string url)
+
+        private static Uri GetUri(string url)
         {
             if (url.StartsWith("ws://") || url.StartsWith("wss://") || url.StartsWith("http://") || url.StartsWith("https://"))
             {
@@ -330,7 +326,7 @@ namespace AnodyneArchipelago.Menu
             }
             else
             {
-                return new Uri("ws://"+ url);
+                return new Uri("ws://" + url);
             }
         }
 

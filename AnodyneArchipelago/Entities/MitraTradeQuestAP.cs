@@ -8,8 +8,9 @@ namespace AnodyneArchipelago.Entities
     [NamedEntity]
     public class MitraTradeQuestAP(EntityPreset preset, Player p) : MitraFields(preset, p)
     {
-        private int MaxHints = 9;
-        private int AllowedHints => GlobalState.events.BossDefeated.Count + 1;
+        private const int MaxHints = 9;
+        private static int AllowedHints => GlobalState.events.BossDefeated.Count + 1;
+
         protected override string GetInteractionText()
         {
             if (GlobalState.events.GetEvent("ReceivedBikingShoes") == 1 && GlobalState.events.GetEvent("UsedBikingShoes") == 0)

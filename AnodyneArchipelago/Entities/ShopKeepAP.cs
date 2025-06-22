@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using AnodyneArchipelago.Helpers;
-using AnodyneArchipelago.Patches;
-using AnodyneSharp;
+﻿using AnodyneArchipelago.Helpers;
 using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Base.Rendering;
@@ -11,7 +6,6 @@ using AnodyneSharp.Entities.Interactive.Npc.RunningTradeNPCs;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Utilities;
 using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Models;
 using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Entities
@@ -67,7 +61,7 @@ namespace AnodyneArchipelago.Entities
             }
         }
 
-        new public bool PlayerInteraction(Facing player_direction)
+        public new bool PlayerInteraction(Facing player_direction)
         {
             if (GlobalState.events.GetEvent("ReceivedCardboardBox") == 1 && GlobalState.events.GetEvent("UsedCardboardBox") == 0)
             {

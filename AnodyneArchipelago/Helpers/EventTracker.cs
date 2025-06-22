@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Entities;
+﻿using System.Collections.Concurrent;
+using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy.Apartment;
 using AnodyneSharp.Entities.Enemy.Bedroom;
 using AnodyneSharp.Entities.Enemy.Circus;
@@ -6,7 +7,6 @@ using AnodyneSharp.Entities.Enemy.Crowd;
 using AnodyneSharp.Entities.Enemy.Etc;
 using AnodyneSharp.Entities.Enemy.Hotel.Boss;
 using AnodyneSharp.Entities.Enemy.Redcave;
-using AnodyneSharp.Entities.Interactive.Npc.Hotel;
 using AnodyneSharp.Logging;
 using AnodyneSharp.Registry;
 using AnodyneSharp.States;
@@ -15,11 +15,6 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 
 namespace AnodyneArchipelago.Helpers
 {
@@ -55,7 +50,7 @@ namespace AnodyneArchipelago.Helpers
                 GameEvent("Opened_Redcave_R","red_cave_r_ss",1, () => GlobalState.CURRENT_MAP_NAME == "REDSEA" && GlobalState.CurrentMapGrid == new Point(4,4)),
                 GameEvent("Opened_Redcave_L","red_cave_l_ss",1, () => GlobalState.CURRENT_MAP_NAME == "REDSEA" && GlobalState.CurrentMapGrid == new Point(2,4)),
                 GameEvent("Opened_Redcave_N","red_cave_n_ss",2, () => GlobalState.CURRENT_MAP_NAME == "REDSEA" && GlobalState.CurrentMapGrid == new Point(3,3)),
-                new("Extended_Swap",() => GlobalState.events.GetEvent("ExtendedSwap") > 0, () => Plugin.ArchipelagoManager!.EnableExtendedSwap()),
+                new("Extended_Swap",() => GlobalState.events.GetEvent("ExtendedSwap") > 0, () => ArchipelagoManager.EnableExtendedSwap()),
                 BigKey("Green_Key",0),
                 BigKey("Red_Key",1),
                 BigKey("Blue_Key",2),
@@ -180,7 +175,7 @@ namespace AnodyneArchipelago.Helpers
                 {
                     DebugLogger.AddDebug($"Setting {ev.EventName}");
                 }
-                EventArray = EventArray + newEvents.Select(e => e.EventName).ToArray();
+                EventArray += newEvents.Select(e => e.EventName).ToArray();
             }
         }
 

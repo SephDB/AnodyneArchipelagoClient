@@ -11,7 +11,7 @@ namespace AnodyneArchipelago.Menu
         {
             if (_isNewGame)
             {
-                GlobalState.checkpoint = new GlobalState.CheckPoint("NEXUS", new(704,1392));
+                GlobalState.checkpoint = new GlobalState.CheckPoint("NEXUS", new(704, 1392));
                 GlobalState.checkpoint.Warp(Vector2.Zero);
                 GlobalState.events.ActivatedNexusPortals.Add("STREET");
                 GlobalState.NewMapFacing = Facing.UP;

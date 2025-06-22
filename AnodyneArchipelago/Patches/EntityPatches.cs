@@ -1,13 +1,10 @@
-﻿using AnodyneArchipelago.Entities;
-using AnodyneSharp.Entities.Gadget;
-using AnodyneSharp.Entities.Gadget.Doors;
-using AnodyneSharp.Logging;
-using AnodyneSharp.Registry;
-using Microsoft.Xna.Framework;
-using System.Buffers.Binary;
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using System.Xml.Linq;
+using AnodyneArchipelago.Entities;
+using AnodyneSharp.Entities.Gadget;
+using AnodyneSharp.Logging;
+using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Patches
 {
@@ -23,7 +20,7 @@ namespace AnodyneArchipelago.Patches
             Document = XDocument.Load(s);
             root = Document.Root!;
             DustStartID = dustStartID;
-            if(DustStartID != null)
+            if (DustStartID != null)
             {
                 Dusts = [.. root.Descendants("Dust")];
             }
@@ -37,7 +34,7 @@ namespace AnodyneArchipelago.Patches
         private Guid GetID(int location_id, byte gen = 0)
         {
             byte[] bytes = new byte[16];
-            
+
             Encoding.ASCII.GetBytes("Archipelago").CopyTo(bytes, 0);
 
             bytes[11] = gen;
@@ -54,7 +51,7 @@ namespace AnodyneArchipelago.Patches
 
         public bool IsDustID(long location_id)
         {
-            if(DustStartID == null)
+            if (DustStartID == null)
             {
                 return false;
             }
@@ -133,9 +130,9 @@ namespace AnodyneArchipelago.Patches
             mapNode.Add(new XElement(nameof(ColorPuzzleNotifier),
                 new XAttribute("guid", GetID(map[0])),
                 new XAttribute("x", location.X),
-                new XAttribute("y",location.Y),
-                new XAttribute("frame",0),
-                new XAttribute("p",2)
+                new XAttribute("y", location.Y),
+                new XAttribute("frame", 0),
+                new XAttribute("p", 2)
                 )
             );
         }
@@ -147,14 +144,14 @@ namespace AnodyneArchipelago.Patches
             Point apartmentPoint = puzzle.ApartmentPos;
             string typeval = $"{circusPoint.X},{circusPoint.Y};{hotelPoint.X},{hotelPoint.Y};{apartmentPoint.X},{apartmentPoint.Y};1,1";
 
-            GetByID(new("ED2195E9-9798-B9B3-3C15-105C40F7C501")).SetAttributeValue("type",typeval);
+            GetByID(new("ED2195E9-9798-B9B3-3C15-105C40F7C501")).SetAttributeValue("type", typeval);
 
-            SetColorPuzzleNotifier(new Vector2(circusPoint.X+72,circusPoint.Y+11)*16, "CIRCUS");
+            SetColorPuzzleNotifier(new Vector2(circusPoint.X + 72, circusPoint.Y + 11) * 16, "CIRCUS");
             SetColorPuzzleNotifier(new Vector2(hotelPoint.X + 73, hotelPoint.Y + 113) * 16, "HOTEL");
             SetColorPuzzleNotifier(new Vector2(apartmentPoint.X + 82, apartmentPoint.Y + 51) * 16, "APARTMENT");
         }
-        
-        private void LogLocation(XElement element, string location, int id = 0)
+
+        private static void LogLocation(XElement element, string location, int id = 0)
         {
 #if DEBUG
             DebugLogger.AddInfo($"{id} {(int)element.Attribute("x")! + 8,4} {(int)element.Attribute("y")! + 8,4} {location}");
@@ -173,7 +170,7 @@ namespace AnodyneArchipelago.Patches
         public void SetCicada(Guid guid, string location)
         {
             var node = GetByID(guid);
-            if(node.Parent!.Elements("Event").Where(e=>(string)e.Attribute("type")! == "entrance").Any())
+            if (node.Parent!.Elements("Event").Where(e => (string)e.Attribute("type")! == "entrance").Any())
             {
                 node.Name = nameof(BossItemAP);
             }
@@ -216,7 +213,7 @@ namespace AnodyneArchipelago.Patches
             map.Add(
                 node
             );
-            foreach(var n in root.Descendants("Dungeon_Statue"))
+            foreach (var n in root.Descendants("Dungeon_Statue"))
             {
                 n.Name = "DungeonStatueAP";
             }
@@ -245,15 +242,15 @@ namespace AnodyneArchipelago.Patches
 
             nexusPad.AddAfterSelf(
                 new XElement(nameof(FreeStandingAP),
-                        new XAttribute("guid",GetID(id)),
+                        new XAttribute("guid", GetID(id)),
                         new XAttribute("type", locationName),
                         new XAttribute("frame", 0),
-                        new XAttribute("x", (int)nexusPad.Attribute("x")!+8),
-                        new XAttribute("y", (int)nexusPad.Attribute("y")!+8),
+                        new XAttribute("x", (int)nexusPad.Attribute("x")! + 8),
+                        new XAttribute("y", (int)nexusPad.Attribute("y")! + 8),
                         new XAttribute("p", 2)
                     ),
                 new XElement(nameof(InactiveNexusPad),
-                        new XAttribute("guid", GetID(id,1)),
+                        new XAttribute("guid", GetID(id, 1)),
                         new XAttribute("type", locationName),
                         new XAttribute("frame", 0),
                         new XAttribute("x", (int)nexusPad.Attribute("x")!),
@@ -305,23 +302,23 @@ namespace AnodyneArchipelago.Patches
         public void SetBigGateReq(Guid id, string value)
         {
             var node = GetByID(id);
-            if(value.EndsWith("key"))
+            if (value.EndsWith("key"))
             {
                 node.Name = "KeyBlock";
                 List<string> indices = ["blue_key", "green_key", "red_key"];
                 node.SetAttributeValue("frame", indices.IndexOf(value) + 1);
             }
-            else if(value.StartsWith("cards_"))
+            else if (value.StartsWith("cards_"))
             {
                 node.Name = "CardGate";
                 node.SetAttributeValue("frame", value.Split('_')[1]);
             }
-            else if(value.StartsWith("bosses_"))
+            else if (value.StartsWith("bosses_"))
             {
                 node.Name = nameof(BigBossGate);
                 node.SetAttributeValue("frame", value.Split('_')[1]);
             }
-            else if(value == "unlocked")
+            else if (value == "unlocked")
             {
                 node.Remove();
             }

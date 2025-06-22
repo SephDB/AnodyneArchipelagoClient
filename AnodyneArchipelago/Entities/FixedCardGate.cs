@@ -2,14 +2,11 @@
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget;
 using AnodyneSharp.Registry;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AnodyneArchipelago.Entities
 {
-    [NamedEntity("CardGate","")] //Set type to "" to have higher priority than the actual card gate
-    public class FixedCardGate(EntityPreset p, Player player) : BigCardGate(p,player)
+    [NamedEntity("CardGate", "")] //Set type to "" to have higher priority than the actual card gate
+    public class FixedCardGate(EntityPreset p, Player player) : BigCardGate(p, player)
     {
         public override bool TryUnlock()
         {

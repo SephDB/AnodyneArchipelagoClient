@@ -1,6 +1,4 @@
-﻿using AnodyneSharp.Registry;
-using AnodyneSharp.States;
-using TextCopy;
+﻿using TextCopy;
 
 namespace AnodyneArchipelago
 {
@@ -8,7 +6,7 @@ namespace AnodyneArchipelago
     {
         public static string GetClipboard()
         {
-            return ClipboardService.GetText();
+            return ClipboardService.GetText() ?? "";
         }
     }
 }

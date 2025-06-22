@@ -6,12 +6,6 @@ using AnodyneSharp.Sounds;
 using AnodyneSharp.UI;
 using AnodyneSharp.UI.PauseMenu;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace AnodyneSharp.States.MenuSubstates
 {
@@ -70,7 +64,7 @@ namespace AnodyneSharp.States.MenuSubstates
             _broomWiden = new Equipment(new Vector2(x, y + 24 * 2), "wide_icon", GlobalState.inventory.HasWiden ? DialogueManager.GetDialogue("misc", "any", "items", 4) : "-");
             _transformer = new Equipment(new Vector2(x, y + 24 * 3), "transformer_icon", GlobalState.inventory.HasTransformer ? DialogueManager.GetDialogue("misc", "any", "items", 2) : "-");
 
-            _transformerUnlocked = new UIEntity(new Vector2(x-1, y + 24 * 3-1), "swapper_unlocked", 0, 9, 9, Drawing.DrawOrder.EQUIPPED_ICON) { visible = GlobalState.events.GetEvent("ExtendedSwap") == 1 };
+            _transformerUnlocked = new UIEntity(new Vector2(x - 1, y + 24 * 3 - 1), "swapper_unlocked", 0, 9, 9, Drawing.DrawOrder.EQUIPPED_ICON) { visible = GlobalState.events.GetEvent("ExtendedSwap") == 1 };
 
             _jump = new UIEntity(new Vector2(62, 130), "item_jump_shoes", 0, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON) { visible = false };
             _boxItem = new UIEntity(new Vector2(78, 130), "fields_npcs", 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON) { visible = false };
@@ -196,7 +190,7 @@ namespace AnodyneSharp.States.MenuSubstates
                         _state = EquipState.Key2;
                         current_bottom_index = bottom_row_enabled.IndexOf(_state);
                     }
-                    else if(_state == EquipState.Statue3)
+                    else if (_state == EquipState.Statue3)
                     {
                         _state = EquipState.Miao;
                         current_bottom_index = bottom_row_enabled.IndexOf(_state);
@@ -232,12 +226,12 @@ namespace AnodyneSharp.States.MenuSubstates
                         _state = EquipState.Statue1;
                         current_bottom_index = very_bottom_row_enabled.IndexOf(_state);
                     }
-                    else if(_state == EquipState.Key2)
+                    else if (_state == EquipState.Key2)
                     {
                         _state = EquipState.Statue2;
                         current_bottom_index = very_bottom_row_enabled.IndexOf(_state);
                     }
-                    else if(_state == EquipState.Miao)
+                    else if (_state == EquipState.Miao)
                     {
                         _state = EquipState.Statue3;
                         current_bottom_index = very_bottom_row_enabled.IndexOf(_state);
@@ -407,7 +401,7 @@ namespace AnodyneSharp.States.MenuSubstates
                     break;
                 case EquipState.Key1:
                     ignoreOffset = true;
-                    selector.Position = _miao.Position - new Vector2(32,0);
+                    selector.Position = _miao.Position - new Vector2(32, 0);
                     break;
                 case EquipState.Key2:
                     ignoreOffset = true;

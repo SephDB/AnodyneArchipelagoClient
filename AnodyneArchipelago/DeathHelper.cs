@@ -15,9 +15,6 @@ using AnodyneSharp.Entities.Enemy.Suburb;
 using AnodyneSharp.Entities.Interactive.Npc.RedSea;
 using AnodyneSharp.MapData;
 using AnodyneSharp.Registry;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AnodyneArchipelago
 {

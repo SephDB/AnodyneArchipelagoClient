@@ -1,15 +1,13 @@
-﻿using AnodyneSharp.Input;
+﻿using System.Reflection;
+using AnodyneSharp.Input;
 using AnodyneSharp.Resources;
 using AnodyneSharp.Sounds;
 using AnodyneSharp.States;
 using AnodyneSharp.UI;
 using AnodyneSharp.UI.Font;
-using AnodyneSharp.UI.Text;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Microsoft.Xna.Framework;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace AnodyneArchipelago.Menu
 {
@@ -52,7 +50,7 @@ namespace AnodyneArchipelago.Menu
             {
                 if (_connectionTask.IsFaulted)
                 {
-                    _text = _connectionTask.Exception.ToString();
+                    _text = _connectionTask.Exception!.ToString();
                     _connectionTask = null;
 
                     UpdateDisplay();
@@ -85,7 +83,7 @@ namespace AnodyneArchipelago.Menu
 
                     if (errorMessage.Length > 0)
                     {
-                        errorMessage = errorMessage.Substring(0, errorMessage.Length - 1);
+                        errorMessage = errorMessage[..^1];
                     }
                     else
                     {

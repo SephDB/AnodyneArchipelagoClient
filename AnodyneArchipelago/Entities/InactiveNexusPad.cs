@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using AnodyneSharp;
-using AnodyneSharp.Entities;
-using AnodyneSharp.Entities.Base.Rendering;
+﻿using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget.Doors;
 using AnodyneSharp.Registry;
 using Microsoft.Xna.Framework;

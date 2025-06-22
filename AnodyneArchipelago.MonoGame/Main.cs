@@ -17,7 +17,7 @@ namespace AnodyneArchipelago.MonoGame
             menuEntries.Insert(0, ("AP", () => new MenuState()));
         }
 
-        public void ChangePauseMenu(ref List<(string name, Func<Substate> create)> menuEntries) 
+        public void ChangePauseMenu(ref List<(string name, Func<Substate> create)> menuEntries)
         {
             if (Plugin.ArchipelagoManager != null)
             {

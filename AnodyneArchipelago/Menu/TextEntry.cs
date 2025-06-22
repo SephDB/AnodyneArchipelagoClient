@@ -1,11 +1,9 @@
 ﻿using AnodyneSharp.Input;
 using AnodyneSharp.Sounds;
-using AnodyneSharp.States;
 using AnodyneSharp.UI;
 using AnodyneSharp.UI.PauseMenu.Config;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Newtonsoft.Json.Linq;
 
 namespace AnodyneArchipelago.Menu
 {
@@ -62,7 +60,7 @@ namespace AnodyneArchipelago.Menu
             {
                 if (_value.Length > 0)
                 {
-                    _value = _value.Substring(0, _value.Length - 1);
+                    _value = _value[..^1];
                     UpdateDisplay();
 
                     SoundManager.PlaySoundEffect("menu_move");
@@ -134,9 +132,9 @@ namespace AnodyneArchipelago.Menu
 
                 while (tempText.Length > 18)
                 {
-                    finalText += tempText.Substring(0, 18);
+                    finalText += tempText[..18];
                     finalText += "\n";
-                    tempText = tempText.Substring(18);
+                    tempText = tempText[18..];
                 }
 
                 finalText += tempText;

@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using AnodyneSharp.Entities;
-using AnodyneSharp.Entities.Enemy;
-using AnodyneSharp.Entities.Enemy.Bedroom;
-using AnodyneSharp.Entities.Gadget.Treasures;
-using AnodyneSharp.Registry;
+﻿using AnodyneSharp.Entities.Gadget.Treasures;
 using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Models;
 using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Helpers

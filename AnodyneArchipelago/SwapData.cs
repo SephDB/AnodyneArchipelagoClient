@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 
 namespace AnodyneArchipelago
 {
@@ -12,17 +11,20 @@ namespace AnodyneArchipelago
                 switch (mapName)
                 {
                     case "APARTMENT": return [new Rectangle(1280, 1120, 161, 161)];
-                    case "BEACH": return [
+                    case "BEACH":
+                        return [
                         new Rectangle(336, 160, 48, 48),     // Secret glen
                         new Rectangle(0, 736, 160, 160),     // Left edge, to get out of bounds
                         new Rectangle(688, 1072, 48, 64),    // Bottom edge, to get to secret chest
                     ];
                     case "BEDROOM": return [new Rectangle(832, 368, 256, 416)];
-                    case "BLANK": return [
+                    case "BLANK":
+                        return [
                         new Rectangle(0, 0, 480, 960),       // Left half
                         new Rectangle(640, 0, 320, 1120),    // Right half
                     ];
-                    case "CELL": return [
+                    case "CELL":
+                        return [
                         // This is basically all of the map except for the outer walls, the 24 Card Gate area, and the gauntlet
                         new Rectangle(16,16,1248,304-16),
                         new Rectangle(16,352,768,912),
@@ -30,7 +32,8 @@ namespace AnodyneArchipelago
                     ];
                     case "CIRCUS": return [new Rectangle(1120, 0, 161, 161)];
                     case "DRAWER": return [new Rectangle(0, 0, 960, 1440)];
-                    case "FIELDS": return [
+                    case "FIELDS":
+                        return [
                         new Rectangle(208, 192, 176, 112),   // Near terminal secret chest
                         new Rectangle(736, 336, 208, 144),   // Near overworld secret chest
                         new Rectangle(1488, 1120, 256, 160), // Secret glen
@@ -38,11 +41,13 @@ namespace AnodyneArchipelago
                         new Rectangle(1648, 1488, 112, 96),  // Blocked river 2
                     ];
                     case "FOREST": return [new Rectangle(0, 0, 800, 1440)];
-                    case "GO": return [
+                    case "GO":
+                        return [
                         new Rectangle(352, 496, 96, 112),    // Color puzzle
                         new Rectangle(32, 656, 208, 128),    // Secret color puzzle
                     ];
-                    case "HOTEL": return [
+                    case "HOTEL":
+                        return [
                         new Rectangle(1280, 1760, 161, 161), // Post-boss room
                         new Rectangle(480, 72, 320, 72),     // Roof secret
                     ];

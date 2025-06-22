@@ -1,20 +1,19 @@
-﻿using AnodyneSharp;
+﻿using System.Reflection;
+using AnodyneSharp;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Registry;
 using AnodyneSharp.States;
-using Microsoft.Xna.Framework;
-using System.Reflection;
 
 namespace AnodyneArchipelago
 {
     public class Plugin : IStateSetter
     {
-        public static Plugin Instance = null;
+        public static Plugin? Instance = null;
 
         static FieldInfo playerField = typeof(PlayState).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-        public static AnodyneGame Game;
-        public static Player Player => (Player)playerField.GetValue(Game.CurrentState as PlayState)!;
+        public static AnodyneGame? Game;
+        public static Player Player => (Player)playerField.GetValue(Game?.CurrentState as PlayState)!;
         public static ArchipelagoManager? ArchipelagoManager = null;
 
         public const string Version = "0.3.5";
@@ -29,7 +28,7 @@ namespace AnodyneArchipelago
 
         public static bool ReadyToReceive()
         {
-            if(Game.CurrentState is PlayState p)
+            if (Game?.CurrentState is PlayState p)
             {
                 bool hasStates = (typeof(PlayState).GetField("_childStates", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p) as List<State>)!.Count != 0;
                 PlayStateState s = (PlayStateState)typeof(PlayState).GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p)!;
@@ -41,22 +40,22 @@ namespace AnodyneArchipelago
 
         public void SetState<T>() where T : State, new()
         {
-            Game.SetState<T>();
-            if(Game.CurrentState is CreditsState)
+            Game!.SetState<T>();
+            if (Game.CurrentState is CreditsState)
             {
                 ArchipelagoManager?.OnCredits();
             }
-            else if(Game.CurrentState is PlayState)
+            else if (Game.CurrentState is PlayState)
             {
                 var s = GlobalState.SetSubstate;
-                GlobalState.SetSubstate = state => SubState(s,state);
+                GlobalState.SetSubstate = state => SubState(s, state);
             }
         }
 
-        public void SubState(Action<State> subaction, State next)
+        public static void SubState(Action<State> subaction, State next)
         {
             subaction(next);
-            if(next is DeathState s)
+            if (next is DeathState s)
             {
                 ArchipelagoManager?.OnDeath(s);
             }

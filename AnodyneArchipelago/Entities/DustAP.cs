@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using AnodyneArchipelago.Helpers;
-using AnodyneSharp.Entities;
-using AnodyneSharp.Entities.Gadget.Treasures;
-using AnodyneSharp.Entities.Gadget;
-using AnodyneSharp.Registry;
+﻿using AnodyneSharp.Entities;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
-using Microsoft.Xna.Framework;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace AnodyneArchipelago.Entities

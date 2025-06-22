@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using AnodyneArchipelago.Helpers;
 using AnodyneArchipelago.Patches;
 using AnodyneSharp.Dialogue;
@@ -22,7 +21,6 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static AnodyneSharp.Registry.GlobalState;
 using static AnodyneSharp.States.CutsceneState;
@@ -83,82 +81,53 @@ namespace AnodyneArchipelago
         }
         private HashSet<long> Checked = [];
         private DeathLinkService? _deathLinkService;
-        private EventTracker _eventTracker;
+        private EventTracker? _eventTracker;
 
-        private EntityPatches _patches;
+        private EntityPatches? _patches;
 
-        private string _seedName;
-        private ColorPuzzle _colorPuzzle = new();
-        private bool _colorRandomized = true;
-        private SmallKeyMode _keyMode = SmallKeyMode.SmallKeys;
-        private BigKeyShuffle _bigKeyShuffle;
-        private bool _vanillaHealthCicadas = false;
-        private bool _vanillaRedCave = false;
-        private bool _splitWindmill = false;
-        private bool _forestBunnyChest = false;
+        private string _seedName = "NULL";
         private long? _dustsanityBase = null;
         private Dictionary<Guid, string> BigGateTypes = [];
-        private VictoryCondition _victoryCondition;
         private List<string> _unlockedGates = [];
         private Dictionary<string, Guid> _checkGates = [];
-        private PostgameMode _postgameMode;
-        private MatchDifferentWorldItem _matchDifferentWorldItem;
-        private bool _hideTrapItems;
-        private bool _colorPuzzleHelp;
         private string? _playerSpriteName;
-
-        private MitraHintType _mitraHintType =  MitraHintType.None;
-        private MitraHint[] _mitraHints = [];
-        private ShopItem[] _shopItems = [];
-
         private Texture2D? _originalPlayerTexture;
         private Texture2D? _originalCellTexture;
         private Texture2D? _originalReflectionTexture;
 
         private readonly Queue<string> _messages = new();
         private DeathLink? _pendingDeathLink = null;
-        private string? _deathLinkReason = null;
-        private bool _receiveDeath = false;
-
         private Task<Dictionary<string, ScoutedItemInfo>>? _scoutTask;
 
         private ScreenChangeTracker screenTracker = new();
 
-        public ColorPuzzle ColorPuzzle => _colorPuzzle;
-        public bool UnlockSmallKeyGates => _keyMode == SmallKeyMode.Unlocked;
-        public SmallKeyMode SmallkeyMode => _keyMode;
-        public BigKeyShuffle BigKeyShuffle => _bigKeyShuffle;
-        public bool VanillaHealthCicadas => _vanillaHealthCicadas;
-        public bool VanillaRedCave => _vanillaRedCave;
-        public bool SplitWindmill => _splitWindmill;
-        public bool ForestBunnyChest => _forestBunnyChest;
-        public MatchDifferentWorldItem MatchDifferentWorldItem => _matchDifferentWorldItem;
-        public bool HideTrapItems => _hideTrapItems;
-        public VictoryCondition VictoryCondition => _victoryCondition;
-        public PostgameMode PostgameMode => _postgameMode;
+        public ColorPuzzle ColorPuzzle { get; } = new();
+        public bool UnlockSmallKeyGates => SmallkeyMode == SmallKeyMode.Unlocked;
+        public SmallKeyMode SmallkeyMode { get; private set; } = SmallKeyMode.SmallKeys;
+        public BigKeyShuffle BigKeyShuffle { get; private set; }
+        public bool VanillaHealthCicadas { get; private set; } = false;
+        public bool VanillaRedCave { get; private set; } = false;
+        public bool SplitWindmill { get; private set; } = false;
+        public bool ForestBunnyChest { get; private set; } = false;
+        public MatchDifferentWorldItem MatchDifferentWorldItem { get; private set; }
+        public bool HideTrapItems { get; private set; }
+        public VictoryCondition VictoryCondition { get; private set; }
+        public PostgameMode PostgameMode { get; private set; }
 
         public bool DeathLinkEnabled => _deathLinkService != null;
 
-        public bool ColorPuzzleRandomized => _colorRandomized;
+        public bool ColorPuzzleRandomized { get; private set; } = true;
 
-        public bool ColorPuzzleHelp => _colorPuzzleHelp;
+        public bool ColorPuzzleHelp { get; private set; }
 
-        public MitraHintType MitraHintType => _mitraHintType;
+        public MitraHintType MitraHintType { get; private set; } = MitraHintType.None;
 
-        public MitraHint[] MitraHints => _mitraHints;
-        public ShopItem[] ShopItems => _shopItems;
+        public MitraHint[] MitraHints { get; private set; } = [];
+        public ShopItem[] ShopItems { get; private set; } = [];
 
-        public bool ReceivedDeath
-        {
-            get { return _receiveDeath; }
-            set { _receiveDeath = value; }
-        }
+        public bool ReceivedDeath { get; set; } = false;
 
-        public string? DeathLinkReason
-        {
-            get { return _deathLinkReason; }
-            set { _deathLinkReason = value; }
-        }
+        public string? DeathLinkReason { get; set; } = null;
 
         public async Task<LoginResult> Connect(string url, string slotName, string password)
         {
@@ -199,27 +168,27 @@ namespace AnodyneArchipelago
 
             if (login.SlotData.ContainsKey("seed"))
             {
-                Random? rand = new Random((int)(long)login.SlotData["seed"]);
-                _colorPuzzle.Initialize(rand);
+                Random? rand = new((int)(long)login.SlotData["seed"]);
+                ColorPuzzle.Initialize(rand);
             }
 
-            _colorRandomized = (bool)login.SlotData.GetValueOrDefault("randomize_color_puzzle", true);
+            ColorPuzzleRandomized = (bool)login.SlotData.GetValueOrDefault("randomize_color_puzzle", true);
 
             bool smallKeyGateUnlocked = (bool)login.SlotData.GetValueOrDefault("unlock_gates", false);
 
-            _keyMode = (SmallKeyMode)(long)login.SlotData.GetValueOrDefault("small_key_mode", (long)(smallKeyGateUnlocked ? SmallKeyMode.Unlocked : SmallKeyMode.SmallKeys));
+            SmallkeyMode = (SmallKeyMode)(long)login.SlotData.GetValueOrDefault("small_key_mode", (long)(smallKeyGateUnlocked ? SmallKeyMode.Unlocked : SmallKeyMode.SmallKeys));
 
-            _bigKeyShuffle = (BigKeyShuffle)(long)login.SlotData.GetValueOrDefault("shuffle_big_gates", (long)BigKeyShuffle.AnyWorld);
+            BigKeyShuffle = (BigKeyShuffle)(long)login.SlotData.GetValueOrDefault("shuffle_big_gates", (long)BigKeyShuffle.AnyWorld);
 
-            _vanillaHealthCicadas = (bool)login.SlotData.GetValueOrDefault("vanilla_health_cicadas", false);
+            VanillaHealthCicadas = (bool)login.SlotData.GetValueOrDefault("vanilla_health_cicadas", false);
 
-            _vanillaRedCave = (bool)login.SlotData.GetValueOrDefault("vanilla_red_cave", false);
+            VanillaRedCave = (bool)login.SlotData.GetValueOrDefault("vanilla_red_cave", false);
 
-            _splitWindmill = (bool)login.SlotData.GetValueOrDefault("split_windmill", false);
+            SplitWindmill = (bool)login.SlotData.GetValueOrDefault("split_windmill", false);
 
-            _forestBunnyChest = (bool)login.SlotData.GetValueOrDefault("forest_bunny_chest", false);
+            ForestBunnyChest = (bool)login.SlotData.GetValueOrDefault("forest_bunny_chest", false);
 
-            _victoryCondition = (VictoryCondition)(long)login.SlotData.GetValueOrDefault("victory_condition", (long)VictoryCondition.DefeatBriar);
+            VictoryCondition = (VictoryCondition)(long)login.SlotData.GetValueOrDefault("victory_condition", (long)VictoryCondition.DefeatBriar);
 
             if (login.SlotData.ContainsKey("nexus_gates_unlocked"))
             {
@@ -230,12 +199,12 @@ namespace AnodyneArchipelago
                 _unlockedGates = [];
             }
 
-            _postgameMode = (PostgameMode)(long)login.SlotData.GetValueOrDefault("postgame_mode", (long)PostgameMode.Disabled);
+            PostgameMode = (PostgameMode)(long)login.SlotData.GetValueOrDefault("postgame_mode", (long)PostgameMode.Disabled);
 
             if (login.SlotData.ContainsKey("death_link") && (bool)login.SlotData["death_link"])
             {
-                _deathLinkReason = null;
-                _receiveDeath = false;
+                DeathLinkReason = null;
+                ReceivedDeath = false;
 
                 _deathLinkService = _session.CreateDeathLinkService();
                 _deathLinkService.OnDeathLinkReceived += OnDeathLinkReceived;
@@ -251,16 +220,16 @@ namespace AnodyneArchipelago
                 _dustsanityBase = val;
             }
 
-            _mitraHintType = (MitraHintType)(long)login.SlotData.GetValueOrDefault("mitra_hint_type", MitraHintType.None);
+            MitraHintType = (MitraHintType)(long)login.SlotData.GetValueOrDefault("mitra_hint_type", MitraHintType.None);
 
-            if (_mitraHintType != MitraHintType.None && login.SlotData.ContainsKey("mitra_hints"))
+            if (MitraHintType != MitraHintType.None && login.SlotData.ContainsKey("mitra_hints"))
             {
-                _mitraHints = ((JArray)login.SlotData["mitra_hints"]).ToObject<MitraHint[]>() ?? [];
+                MitraHints = ((JArray)login.SlotData["mitra_hints"]).ToObject<MitraHint[]>() ?? [];
             }
 
             if (login.SlotData.ContainsKey("shop_items"))
             {
-                _shopItems = ((JArray)login.SlotData["shop_items"]).ToObject<ShopItem[]>() ?? [];
+                ShopItems = ((JArray)login.SlotData["shop_items"]).ToObject<ShopItem[]>() ?? [];
             }
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
@@ -314,12 +283,12 @@ namespace AnodyneArchipelago
 
         public void PostSaveloadInit(bool newGame, string playerSprite, MatchDifferentWorldItem matchDifferentWorldItem, bool hideTrapItems, bool colorPuzzleHelp)
         {
-            Checked.UnionWith(_session.Locations.AllLocationsChecked);
+            Checked.UnionWith(_session!.Locations.AllLocationsChecked);
 
             _playerSpriteName = playerSprite == "Random" ? RandomizeSprite() : playerSprite;
-            _matchDifferentWorldItem = matchDifferentWorldItem;
-            _hideTrapItems = hideTrapItems;
-            _colorPuzzleHelp = colorPuzzleHelp;
+            MatchDifferentWorldItem = matchDifferentWorldItem;
+            HideTrapItems = hideTrapItems;
+            ColorPuzzleHelp = colorPuzzleHelp;
 
             PatchPlayerTextures(_playerSpriteName);
 
@@ -339,7 +308,7 @@ namespace AnodyneArchipelago
                 }
 
                 //Shut up Sage
-                foreach (Guid guid in _patches.GetSages())
+                foreach (Guid guid in _patches!.GetSages())
                 {
                     EntityManager.SetActive(guid, true);
                 }
@@ -359,7 +328,7 @@ namespace AnodyneArchipelago
             }
 
             //Send locations that were missed last time we saved
-            _session.Locations.CompleteLocationChecks(Checked.Except(_session.Locations.AllLocationsChecked).ToArray());
+            _session.Locations.CompleteLocationChecks([.. Checked.Except(_session.Locations.AllLocationsChecked)]);
         }
 
         private void NewCheckedLocations(System.Collections.ObjectModel.ReadOnlyCollection<long> newCheckedLocations)
@@ -387,7 +356,7 @@ namespace AnodyneArchipelago
 
         private async Task<Dictionary<string, ScoutedItemInfo>> ScoutAllLocations()
         {
-            Dictionary<long, ScoutedItemInfo>? locationInfo = await _session.Locations.ScoutLocationsAsync([.. _session.Locations.AllLocations]);
+            Dictionary<long, ScoutedItemInfo>? locationInfo = await _session!.Locations.ScoutLocationsAsync([.. _session.Locations.AllLocations]);
 
             Dictionary<string, ScoutedItemInfo>? result = [];
             foreach (ScoutedItemInfo networkItem in locationInfo.Values)
@@ -414,7 +383,7 @@ namespace AnodyneArchipelago
 
         public string GetItemName(long id)
         {
-            return _session.Items.GetItemName(id);
+            return _session!.Items.GetItemName(id);
         }
 
         public string GetSeed()
@@ -424,12 +393,12 @@ namespace AnodyneArchipelago
 
         public int GetPlayer()
         {
-            return _session.ConnectionInfo.Slot;
+            return _session!.ConnectionInfo.Slot;
         }
 
         public string GetPlayerName(int slot)
         {
-            return _session.Players.GetPlayerName(slot);
+            return _session!.Players.GetPlayerName(slot);
         }
 
         public string GetCurrentPlayerName()
@@ -439,17 +408,17 @@ namespace AnodyneArchipelago
 
         public string GetLocationName(long locationId, string game)
         {
-            return _session.Locations.GetLocationNameFromId(locationId, game);
+            return _session!.Locations.GetLocationNameFromId(locationId, game);
         }
 
         public string GetPlayerLocationName(long locationId, int player)
         {
-            return GetLocationName(locationId, _session.Players.GetPlayerInfo(player).Game);
+            return GetLocationName(locationId, _session!.Players.GetPlayerInfo(player).Game);
         }
 
         public async void SendHint(long locationId)
         {
-            await _session.Locations.ScoutLocationsAsync(true, locationId);
+            await _session!.Locations.ScoutLocationsAsync(true, locationId);
         }
 
         public bool IsChecked(long location)
@@ -469,7 +438,7 @@ namespace AnodyneArchipelago
             events.IncEvent($"ArchipelagoLoc-{id}");
             if (Checked.Add(id))
             {
-                Task.Run(() => _session.Locations.CompleteLocationChecksAsync(Checked.Except(_session.Locations.AllLocationsChecked).ToArray())).ConfigureAwait(false);
+                Task.Run(() => _session.Locations.CompleteLocationChecksAsync([.. Checked.Except(_session.Locations.AllLocationsChecked)])).ConfigureAwait(false);
             }
             else
             {
@@ -512,26 +481,26 @@ namespace AnodyneArchipelago
                     }
 
                     _pendingDeathLink = null;
-                    _deathLinkReason = message;
-                    _receiveDeath = true;
+                    DeathLinkReason = message;
+                    ReceivedDeath = true;
                 }
             }
 
-            _eventTracker.Update();
+            _eventTracker?.Update();
         }
 
         private IEnumerator<CutsceneEvent> GetItemsAndMessages()
         {
             Queue<BaseTreasure>? treasures = new();
 
-            while (ItemIndex < _session.Items.Index)
+            while (ItemIndex < _session!.Items.Index)
             {
-                var item = HandleItem(_session.Items.AllItemsReceived[ItemIndex]);
+                var (treasure, diag) = HandleItem(_session.Items.AllItemsReceived[ItemIndex]);
                 events.IncEvent("ArchipelagoItemIndex");
-                item.treasure.GetTreasure();
-                treasures.Enqueue(item.treasure);
-                yield return new EntityEvent(Enumerable.Repeat(item.treasure, 1));
-                yield return new DialogueEvent(item.diag); //This pauses until dialogue is finished
+                treasure.GetTreasure();
+                treasures.Enqueue(treasure);
+                yield return new EntityEvent(Enumerable.Repeat(treasure, 1));
+                yield return new DialogueEvent(diag); //This pauses until dialogue is finished
             }
 
             while (_messages.TryDequeue(out string? message))
@@ -553,73 +522,73 @@ namespace AnodyneArchipelago
 
         public static string GetMapNameForDungeon(string dungeon)
         {
-            switch (dungeon)
+            return dungeon switch
             {
-                case "Temple of the Seeing One": case "Temple": return "BEDROOM";
-                case "Apartment": return "APARTMENT";
-                case "Mountain Cavern": case "Cavern": return "CROWD";
-                case "Hotel": return "HOTEL";
-                case "Red Cave": return "REDCAVE";
-                case "Circus": return "CIRCUS";
-                default: return "STREET";
-            }
+                "Temple of the Seeing One" or "Temple" => "BEDROOM",
+                "Apartment" => "APARTMENT",
+                "Mountain Cavern" or "Cavern" => "CROWD",
+                "Hotel" => "HOTEL",
+                "Red Cave" => "REDCAVE",
+                "Circus" => "CIRCUS",
+                _ => "STREET",
+            };
         }
 
         private static int GetCardNumberForName(string name)
         {
-            switch (name)
+            return name switch
             {
-                case "Edward": return 0;
-                case "Annoyer": return 1;
-                case "Seer": return 2;
-                case "Shieldy": return 3;
-                case "Slime": return 4;
-                case "PewLaser": return 5;
-                case "Suburbian": return 6;
-                case "Watcher": return 7;
-                case "Silverfish": return 8;
-                case "Gas Guy": return 9;
-                case "Mitra": return 10;
-                case "Miao": return 11;
-                case "Windmill": return 12;
-                case "Mushroom": return 13;
-                case "Dog": return 14;
-                case "Rock": return 15;
-                case "Fisherman": return 16;
-                case "Walker": return 17;
-                case "Mover": return 18;
-                case "Slasher": return 19;
-                case "Rogue": return 20;
-                case "Chaser": return 21;
-                case "Fire Pillar": return 22;
-                case "Contorts": return 23;
-                case "Lion": return 24;
-                case "Arthur and Javiera": return 25;
-                case "Frog": return 26;
-                case "Person": return 27;
-                case "Wall": return 28;
-                case "Blue Cube King": return 29;
-                case "Orange Cube King": return 30;
-                case "Dust Maid": return 31;
-                case "Dasher": return 32;
-                case "Burst Plant": return 33;
-                case "Manager": return 34;
-                case "Sage": return 35;
-                case "Young": return 36;
-                case "Carved Rock": return 37;
-                case "City Man": return 38;
-                case "Intra": return 39;
-                case "Torch": return 40;
-                case "Triangle NPC": return 41;
-                case "Killer": return 42;
-                case "Goldman": return 43;
-                case "Broom": return 44;
-                case "Rank": return 45;
-                case "Follower": return 46;
-                case "Rock Creature": return 47;
-                case "Null": return 48;
-                default: return 0;
-            }
+                "Edward" => 0,
+                "Annoyer" => 1,
+                "Seer" => 2,
+                "Shieldy" => 3,
+                "Slime" => 4,
+                "PewLaser" => 5,
+                "Suburbian" => 6,
+                "Watcher" => 7,
+                "Silverfish" => 8,
+                "Gas Guy" => 9,
+                "Mitra" => 10,
+                "Miao" => 11,
+                "Windmill" => 12,
+                "Mushroom" => 13,
+                "Dog" => 14,
+                "Rock" => 15,
+                "Fisherman" => 16,
+                "Walker" => 17,
+                "Mover" => 18,
+                "Slasher" => 19,
+                "Rogue" => 20,
+                "Chaser" => 21,
+                "Fire Pillar" => 22,
+                "Contorts" => 23,
+                "Lion" => 24,
+                "Arthur and Javiera" => 25,
+                "Frog" => 26,
+                "Person" => 27,
+                "Wall" => 28,
+                "Blue Cube King" => 29,
+                "Orange Cube King" => 30,
+                "Dust Maid" => 31,
+                "Dasher" => 32,
+                "Burst Plant" => 33,
+                "Manager" => 34,
+                "Sage" => 35,
+                "Young" => 36,
+                "Carved Rock" => 37,
+                "City Man" => 38,
+                "Intra" => 39,
+                "Torch" => 40,
+                "Triangle NPC" => 41,
+                "Killer" => 42,
+                "Goldman" => 43,
+                "Broom" => 44,
+                "Rank" => 45,
+                "Follower" => 46,
+                "Rock Creature" => 47,
+                "Null" => 48,
+                _ => 0,
+            };
         }
 
         private (BaseTreasure treasure, string diag) HandleItem(ItemInfo item)
@@ -692,8 +661,8 @@ namespace AnodyneArchipelago
                     inventory.EquippedBroom = BroomType.Transformer;
                 }
 
-                if ((_postgameMode == PostgameMode.Vanilla && events.GetEvent("DefeatedBriar") > 0) ||
-                    _postgameMode == PostgameMode.Unlocked)
+                if ((PostgameMode == PostgameMode.Vanilla && events.GetEvent("DefeatedBriar") > 0) ||
+                    PostgameMode == PostgameMode.Unlocked)
                 {
                     EnableExtendedSwap();
                 }
@@ -841,7 +810,7 @@ namespace AnodyneArchipelago
 
             string? message;
 
-            if (item.Player == _session.ConnectionInfo.Slot)
+            if (item.Player == _session!.ConnectionInfo.Slot)
             {
                 message = $"Found {itemName}!";
             }
@@ -863,7 +832,7 @@ namespace AnodyneArchipelago
 
         public void ActivateGoal()
         {
-            _session.SetGoalAchieved();
+            _session!.SetGoalAchieved();
         }
 
         private void OnMessageReceived(LogMessage message)
@@ -876,7 +845,7 @@ namespace AnodyneArchipelago
                         string? itemName = itemSendLogMessage.Item.ItemName;
 
                         string? messageText;
-                        string? otherPlayer = _session.Players.GetPlayerAlias(itemSendLogMessage.Receiver.Slot);
+                        string? otherPlayer = _session!.Players.GetPlayerAlias(itemSendLogMessage.Receiver.Slot);
                         messageText = $"Sent {itemName} to {otherPlayer}.";
 
                         SoundManager.PlaySoundEffect("gettreasure");
@@ -890,12 +859,12 @@ namespace AnodyneArchipelago
         {
             if (_deathLinkService != null)
             {
-                string? player = _session.Players.GetPlayerName(_session.ConnectionInfo.Slot);
+                string? player = _session!.Players.GetPlayerName(_session.ConnectionInfo.Slot);
                 string? reason = $"{player} {DeathHelper.GetDeathReason()}";
 
-                if (_deathLinkReason != null)
+                if (DeathLinkReason != null)
                 {
-                    reason = $"{player} {_deathLinkReason}";
+                    reason = $"{player} {DeathLinkReason}";
                 }
 
                 _deathLinkService.SendDeathLink(new DeathLink(player, reason));
@@ -907,7 +876,7 @@ namespace AnodyneArchipelago
             _pendingDeathLink = deathLink;
         }
 
-        public void EnableExtendedSwap()
+        public static void EnableExtendedSwap()
         {
             events.SetEvent("ExtendedSwap", 1);
 
@@ -915,11 +884,11 @@ namespace AnodyneArchipelago
             {
                 // Refresh current map swap data.
                 FieldInfo? nameField = typeof(Map).GetField("mapName", BindingFlags.NonPublic | BindingFlags.Instance);
-                string? mapName = (string)nameField.GetValue(GlobalState.Map);
+                string mapName = (string)nameField!.GetValue(GlobalState.Map)!;
 
                 FieldInfo? swapperField = typeof(Map).GetField("swapper", BindingFlags.NonPublic | BindingFlags.Instance);
                 SwapperControl? swapper = new(mapName);
-                swapperField.SetValue(GlobalState.Map, swapper);
+                swapperField!.SetValue(GlobalState.Map, swapper);
             }
         }
 
@@ -935,12 +904,12 @@ namespace AnodyneArchipelago
                 _patches.FixHappyNexusPad();
                 _patches.LockMiao();
 
-                if (_colorRandomized)
+                if (ColorPuzzleRandomized)
                 {
                     _patches.SetColorPuzzle(ColorPuzzle);
                 }
 
-                if (!_forestBunnyChest)
+                if (!ForestBunnyChest)
                 {
                     _patches.ForestChestJoke();
                 }
@@ -954,7 +923,7 @@ namespace AnodyneArchipelago
                 {
                     _patches.OpenSmallKeyGates();
                 }
-                else if (_keyMode == SmallKeyMode.KeyRings)
+                else if (SmallkeyMode == SmallKeyMode.KeyRings)
                 {
                     _patches.MakeKeyRingGates();
                 }
@@ -969,7 +938,7 @@ namespace AnodyneArchipelago
                     _patches.SetAllCardsVictory();
                 }
 
-                foreach (long location_id in _session.Locations.AllLocations)
+                foreach (long location_id in _session!.Locations.AllLocations)
                 {
                     string? name = _session.Locations.GetLocationNameFromId(location_id);
 
@@ -1066,7 +1035,7 @@ namespace AnodyneArchipelago
                     message = Util.WordWrap(message, 20);
 
                     FieldInfo? labelInfo = typeof(DeathState).GetField("_continueLabel", BindingFlags.NonPublic | BindingFlags.Instance);
-                    UILabel? label = (UILabel)labelInfo.GetValue(deathState);
+                    UILabel label = (UILabel)labelInfo!.GetValue(deathState)!;
                     label.SetText(message);
                     label.Position = new Vector2(8, 8);
 
