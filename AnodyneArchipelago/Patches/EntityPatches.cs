@@ -16,7 +16,7 @@ namespace AnodyneArchipelago.Patches
         private XDocument Document;
         private XElement root;
         private long? DustStartID;
-        private List<XElement> Dusts = new();
+        private List<XElement> Dusts = [];
 
         public EntityPatches(Stream s, long? dustStartID = null)
         {

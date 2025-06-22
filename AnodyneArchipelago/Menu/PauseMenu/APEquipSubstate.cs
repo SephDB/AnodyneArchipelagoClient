@@ -54,8 +54,8 @@ namespace AnodyneSharp.States.MenuSubstates
         private EquipState _state;
         private EquipState _lastState;
 
-        List<EquipState> bottom_row_enabled = new() { EquipState.Key1, EquipState.Key2, EquipState.Miao };
-        List<EquipState> very_bottom_row_enabled = new() { EquipState.RedCave, EquipState.Statue1, EquipState.Statue2, EquipState.Statue3 };
+        List<EquipState> bottom_row_enabled = [EquipState.Key1, EquipState.Key2, EquipState.Miao];
+        List<EquipState> very_bottom_row_enabled = [EquipState.RedCave, EquipState.Statue1, EquipState.Statue2, EquipState.Statue3];
         int current_bottom_index = 0;
 
         public APEquipSubstate()

@@ -75,14 +75,14 @@ namespace AnodyneArchipelago
 
     public class ArchipelagoManager
     {
-        private ArchipelagoSession _session;
+        private ArchipelagoSession? _session;
         private static int ItemIndex
         {
             get => events.GetEvent("ArchipelagoItemIndex");
             set => events.SetEvent("ArchipelagoItemIndex", value);
         }
-        private HashSet<long> Checked = new();
-        private DeathLinkService _deathLinkService;
+        private HashSet<long> Checked = [];
+        private DeathLinkService? _deathLinkService;
         private EventTracker _eventTracker;
 
         private EntityPatches _patches;
@@ -97,30 +97,30 @@ namespace AnodyneArchipelago
         private bool _splitWindmill = false;
         private bool _forestBunnyChest = false;
         private long? _dustsanityBase = null;
-        private Dictionary<Guid, string> BigGateTypes = new();
+        private Dictionary<Guid, string> BigGateTypes = [];
         private VictoryCondition _victoryCondition;
-        private List<string> _unlockedGates = new();
-        private Dictionary<string, Guid> _checkGates = new();
+        private List<string> _unlockedGates = [];
+        private Dictionary<string, Guid> _checkGates = [];
         private PostgameMode _postgameMode;
         private MatchDifferentWorldItem _matchDifferentWorldItem;
         private bool _hideTrapItems;
         private bool _colorPuzzleHelp;
-        private string _playerSpriteName;
+        private string? _playerSpriteName;
 
         private MitraHintType _mitraHintType =  MitraHintType.None;
         private MitraHint[] _mitraHints = [];
         private ShopItem[] _shopItems = [];
 
-        private Texture2D _originalPlayerTexture;
-        private Texture2D _originalCellTexture;
-        private Texture2D _originalReflectionTexture;
+        private Texture2D? _originalPlayerTexture;
+        private Texture2D? _originalCellTexture;
+        private Texture2D? _originalReflectionTexture;
 
         private readonly Queue<string> _messages = new();
         private DeathLink? _pendingDeathLink = null;
         private string? _deathLinkReason = null;
         private bool _receiveDeath = false;
 
-        private Task<Dictionary<string, ScoutedItemInfo>> _scoutTask;
+        private Task<Dictionary<string, ScoutedItemInfo>>? _scoutTask;
 
         private ScreenChangeTracker screenTracker = new();
 
@@ -162,14 +162,14 @@ namespace AnodyneArchipelago
 
         public async Task<LoginResult> Connect(string url, string slotName, string password)
         {
-            LoginResult result;
+            LoginResult? result;
             try
             {
                 _session = ArchipelagoSessionFactory.CreateSession(url);
                 _session.MessageLog.OnMessageReceived += OnMessageReceived;
                 _session.Locations.CheckedLocationsUpdated += NewCheckedLocations;
 
-                RoomInfoPacket roomInfoPacket = await _session.ConnectAsync();
+                RoomInfoPacket? roomInfoPacket = await _session.ConnectAsync();
                 _seedName = roomInfoPacket.SeedName;
 
                 result = await _session.LoginAsync("Anodyne", slotName, ItemsHandlingFlags.AllItems, null, null, null, password == "" ? null : password);
@@ -184,7 +184,7 @@ namespace AnodyneArchipelago
                 return failure;
             }
 
-            LoginSuccessful login = (result as LoginSuccessful)!;
+            LoginSuccessful? login = (result as LoginSuccessful)!;
 
             foreach (var (key, (value, id)) in Locations.Gates)
             {
@@ -199,7 +199,7 @@ namespace AnodyneArchipelago
 
             if (login.SlotData.ContainsKey("seed"))
             {
-                Random rand = new Random((int)(long)login.SlotData["seed"]);
+                Random? rand = new Random((int)(long)login.SlotData["seed"]);
                 _colorPuzzle.Initialize(rand);
             }
 
@@ -223,11 +223,11 @@ namespace AnodyneArchipelago
 
             if (login.SlotData.ContainsKey("nexus_gates_unlocked"))
             {
-                _unlockedGates = new(((Newtonsoft.Json.Linq.JArray)login.SlotData["nexus_gates_unlocked"]).Values<string>());
+                _unlockedGates = [.. ((JArray)login.SlotData["nexus_gates_unlocked"]).Values<string>()];
             }
             else
             {
-                _unlockedGates = new();
+                _unlockedGates = [];
             }
 
             _postgameMode = (PostgameMode)(long)login.SlotData.GetValueOrDefault("postgame_mode", (long)PostgameMode.Disabled);
@@ -300,7 +300,7 @@ namespace AnodyneArchipelago
 
         private void SendTrackerUpdate()
         {
-            _session.Socket.SendPacketAsync(new BouncePacket()
+            _session!.Socket.SendPacketAsync(new BouncePacket()
             {
                 Slots = [_session.ConnectionInfo.Slot],
                 Data = new()
@@ -327,7 +327,7 @@ namespace AnodyneArchipelago
             {
                 foreach (string gate in _unlockedGates)
                 {
-                    string mapName = GetNexusGateMapName(gate);
+                    string? mapName = GetNexusGateMapName(gate);
                     if (mapName.Length > 0)
                     {
                         events.ActivatedNexusPortals.Add(mapName);
@@ -387,12 +387,12 @@ namespace AnodyneArchipelago
 
         private async Task<Dictionary<string, ScoutedItemInfo>> ScoutAllLocations()
         {
-            Dictionary<long, ScoutedItemInfo> locationInfo = await _session.Locations.ScoutLocationsAsync([.. _session.Locations.AllLocations]);
+            Dictionary<long, ScoutedItemInfo>? locationInfo = await _session.Locations.ScoutLocationsAsync([.. _session.Locations.AllLocations]);
 
-            Dictionary<string, ScoutedItemInfo> result = new();
+            Dictionary<string, ScoutedItemInfo>? result = [];
             foreach (ScoutedItemInfo networkItem in locationInfo.Values)
             {
-                string name = _session.Locations.GetLocationNameFromId(networkItem.LocationId, networkItem.LocationGame);
+                string? name = _session.Locations.GetLocationNameFromId(networkItem.LocationId, networkItem.LocationGame);
                 if (name != null)
                 {
                     result[name] = networkItem;
@@ -501,7 +501,7 @@ namespace AnodyneArchipelago
                 {
                     CUR_HEALTH = 0;
 
-                    string message;
+                    string? message;
                     if (_pendingDeathLink.Cause == null)
                     {
                         message = $"Received death from {_pendingDeathLink.Source}.";
@@ -522,7 +522,7 @@ namespace AnodyneArchipelago
 
         private IEnumerator<CutsceneEvent> GetItemsAndMessages()
         {
-            Queue<BaseTreasure> treasures = new();
+            Queue<BaseTreasure>? treasures = new();
 
             while (ItemIndex < _session.Items.Index)
             {
@@ -626,22 +626,22 @@ namespace AnodyneArchipelago
         {
             BaseTreasure? treasure = null;
 
-            string itemName = item.ItemName;
+            string? itemName = item.ItemName;
 
             bool handled = true;
 
             if (itemName.StartsWith("Small Key"))
             {
-                string dungeonName = itemName[11..^1];
+                string? dungeonName = itemName[11..^1];
 
-                string mapName = GetMapNameForDungeon(dungeonName);
+                string? mapName = GetMapNameForDungeon(dungeonName);
                 inventory.AddMapKey(mapName, 1);
             }
             else if (itemName.StartsWith("Key Ring"))
             {
-                string dungeonName = itemName[10..^1];
+                string? dungeonName = itemName[10..^1];
 
-                string mapName = GetMapNameForDungeon(dungeonName);
+                string? mapName = GetMapNameForDungeon(dungeonName);
                 events.SetEvent($"{mapName}_KeyRing_Obtained", 1);
                 inventory.AddMapKey(mapName, 9);
             }
@@ -772,7 +772,7 @@ namespace AnodyneArchipelago
             }
             else if (itemName.StartsWith("Card ("))
             {
-                string cardName = itemName[6..];
+                string? cardName = itemName[6..];
                 cardName = cardName[..^1];
 
                 int cardIndex = GetCardNumberForName(cardName);
@@ -793,7 +793,7 @@ namespace AnodyneArchipelago
                 int min = -offset;
                 int max = offset + 1;
 
-                for (int i = 0; i < 6; i++)
+                for (int? i = 0; i < 6; i++)
                 {
                     SpawnEntity(
                         new Person(
@@ -818,7 +818,7 @@ namespace AnodyneArchipelago
             }
             else if (itemName.StartsWith("Nexus Gate"))
             {
-                string mapname = GetNexusGateMapName(itemName[12..^1]);
+                string? mapname = GetNexusGateMapName(itemName[12..^1]);
                 if (_checkGates.TryGetValue(mapname, out var gate))
                 {
                     EntityManager.SetAlive(gate, true);
@@ -839,7 +839,7 @@ namespace AnodyneArchipelago
                 DebugLogger.AddError($"Missing item handling: {itemName}!", false);
             }
 
-            string message;
+            string? message;
 
             if (item.Player == _session.ConnectionInfo.Slot)
             {
@@ -847,7 +847,7 @@ namespace AnodyneArchipelago
             }
             else
             {
-                string playerName = _session.Players.GetPlayerAlias(item.Player);
+                string? playerName = _session.Players.GetPlayerAlias(item.Player);
                 message = $"Received {itemName} from {playerName}.";
             }
 
@@ -873,10 +873,10 @@ namespace AnodyneArchipelago
                 case ItemSendLogMessage itemSendLogMessage:
                     if (itemSendLogMessage is not HintItemSendLogMessage && itemSendLogMessage.IsSenderTheActivePlayer && !itemSendLogMessage.IsReceiverTheActivePlayer)
                     {
-                        string itemName = itemSendLogMessage.Item.ItemName;
+                        string? itemName = itemSendLogMessage.Item.ItemName;
 
-                        string messageText;
-                        string otherPlayer = _session.Players.GetPlayerAlias(itemSendLogMessage.Receiver.Slot);
+                        string? messageText;
+                        string? otherPlayer = _session.Players.GetPlayerAlias(itemSendLogMessage.Receiver.Slot);
                         messageText = $"Sent {itemName} to {otherPlayer}.";
 
                         SoundManager.PlaySoundEffect("gettreasure");
@@ -890,8 +890,8 @@ namespace AnodyneArchipelago
         {
             if (_deathLinkService != null)
             {
-                string player = _session.Players.GetPlayerName(_session.ConnectionInfo.Slot);
-                string reason = $"{player} {DeathHelper.GetDeathReason()}";
+                string? player = _session.Players.GetPlayerName(_session.ConnectionInfo.Slot);
+                string? reason = $"{player} {DeathHelper.GetDeathReason()}";
 
                 if (_deathLinkReason != null)
                 {
@@ -914,11 +914,11 @@ namespace AnodyneArchipelago
             if (GlobalState.Map != null)
             {
                 // Refresh current map swap data.
-                FieldInfo nameField = typeof(Map).GetField("mapName", BindingFlags.NonPublic | BindingFlags.Instance);
-                string mapName = (string)nameField.GetValue(GlobalState.Map);
+                FieldInfo? nameField = typeof(Map).GetField("mapName", BindingFlags.NonPublic | BindingFlags.Instance);
+                string? mapName = (string)nameField.GetValue(GlobalState.Map);
 
-                FieldInfo swapperField = typeof(Map).GetField("swapper", BindingFlags.NonPublic | BindingFlags.Instance);
-                SwapperControl swapper = new(mapName);
+                FieldInfo? swapperField = typeof(Map).GetField("swapper", BindingFlags.NonPublic | BindingFlags.Instance);
+                SwapperControl? swapper = new(mapName);
                 swapperField.SetValue(GlobalState.Map, swapper);
             }
         }
@@ -971,7 +971,7 @@ namespace AnodyneArchipelago
 
                 foreach (long location_id in _session.Locations.AllLocations)
                 {
-                    string name = _session.Locations.GetLocationNameFromId(location_id);
+                    string? name = _session.Locations.GetLocationNameFromId(location_id);
 
                     if (_patches.IsDustID(location_id))
                     {
@@ -1025,14 +1025,14 @@ namespace AnodyneArchipelago
             else if (path.EndsWith("Swapper.dat"))
             {
                 stream?.Close();
-                string newContents = string.Join("\n",
+                string? newContents = string.Join("\n",
                     SwapData.GetRectanglesForMap(path.Split('.')[^3], events.GetEvent("ExtendedSwap") == 1)
                             .Select(r => $"Allow\t{r.X}\t{r.Y}\t{r.Width}\t{r.Height}"));
                 stream = new MemoryStream(Encoding.Default.GetBytes(newContents));
             }
             else if (path.EndsWith("BG.csv"))
             {
-                using StreamReader reader = new(stream);
+                using StreamReader? reader = new(stream);
                 stream = new MemoryStream(Encoding.Default.GetBytes(MapPatches.ChangeMap(path.Split('.')[^3], reader.ReadToEnd())));
             }
             return stream;
@@ -1062,11 +1062,11 @@ namespace AnodyneArchipelago
             {
                 if (ReceivedDeath)
                 {
-                    string message = DeathLinkReason ?? "Received unknown death.";
+                    string? message = DeathLinkReason ?? "Received unknown death.";
                     message = Util.WordWrap(message, 20);
 
-                    FieldInfo labelInfo = typeof(DeathState).GetField("_continueLabel", BindingFlags.NonPublic | BindingFlags.Instance);
-                    UILabel label = (UILabel)labelInfo.GetValue(deathState);
+                    FieldInfo? labelInfo = typeof(DeathState).GetField("_continueLabel", BindingFlags.NonPublic | BindingFlags.Instance);
+                    UILabel? label = (UILabel)labelInfo.GetValue(deathState);
                     label.SetText(message);
                     label.Position = new Vector2(8, 8);
 
@@ -1082,9 +1082,9 @@ namespace AnodyneArchipelago
 
         private string RandomizeSprite()
         {
-            Dictionary<string, Texture2D> textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+            Dictionary<string, Texture2D>? textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
 
-            List<string> sprites = [];
+            List<string>? sprites = [];
 
             int seed = Util.StringToIntVal(GetSeed()) + Util.StringToIntVal(GetCurrentPlayerName());
 
@@ -1111,7 +1111,7 @@ namespace AnodyneArchipelago
 
         private static void PatchPlayerTextures(Texture2D? texture, Texture2D? textureCell, Texture2D? textureReflection)
         {
-            Dictionary<string, Texture2D> textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+            Dictionary<string, Texture2D>? textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
             textures["young_player"] = texture ?? textures["young_player"];
             textures["young_player_cell"] = textureCell ?? textures["young_player_cell"];
             textures["young_player_reflection"] = textureReflection ?? textures["young_player_reflection"];
@@ -1119,7 +1119,7 @@ namespace AnodyneArchipelago
 
         private static (Texture2D texture, Texture2D textureCell, Texture2D textureReflection) GetPlayerTextures()
         {
-            Dictionary<string, Texture2D> textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+            Dictionary<string, Texture2D>? textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
             return (textures["young_player"], textures["young_player_cell"], textures["young_player_reflection"]);
         }
     }

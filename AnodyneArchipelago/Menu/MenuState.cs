@@ -10,24 +10,27 @@ using AnodyneSharp.UI;
 using AnodyneSharp.UI.PauseMenu;
 using AnodyneSharp.UI.PauseMenu.Config;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json.Linq;
 
 namespace AnodyneArchipelago.Menu
 {
     internal partial class MenuState : ListSubstate
     {
-        public static ArchipelagoSettings ArchipelagoSettings;
+        public static ArchipelagoSettings? ArchipelagoSettings;
 
-        private UILabel _versionLabel1;
-        private UILabel _versionLabel2;
-        private UILabel _serverValue;
-        private UILabel _slotValue;
-        private UILabel _passwordValue;
-        private TextSelector _connectionSwitcher;
+        private UILabel? _versionLabel1;
+        private UILabel? _versionLabel2;
+        private UILabel? _serverValue;
+        private UILabel? _portValue;
+        private UILabel? _slotValue;
+        private UILabel? _passwordValue;
+        private TextSelector? _connectionSwitcher;
 
-        private State _substate = null;
+        private State? _substate = null;
         private bool _hide = false;
 
         private string _apServer = "";
+        private string _apPort = "";
         private string _apSlot = "";
         private string _apPassword = "";
 
@@ -56,7 +59,7 @@ namespace AnodyneArchipelago.Menu
                 selectorValues[i] = $"{i + 1}/{selectorValues.Length}";
             }
 
-            _connectionSwitcher = new(new Vector2(60f, 95f), 32f, 0, true, selectorValues);
+            _connectionSwitcher = new(new Vector2(60f, 115f), 32f, 0, true, selectorValues);
             _connectionSwitcher.noConfirm = true;
             _connectionSwitcher.noLoop = true;
             _connectionSwitcher.ValueChangedEvent = PageValueChanged;
@@ -68,28 +71,52 @@ namespace AnodyneArchipelago.Menu
 
         protected override void SetLabels()
         {
-            float x = 45;
+            float x = 45 + 8;
 
             _versionLabel1 = new(new Vector2(10f, 7f), false, "AnodyneArchipelago", new Color(116, 140, 144));
             _versionLabel2 = new(new Vector2(10f, 15f), false, $"v{Plugin.Version}", new Color(116, 140, 144));
+
             UILabel _serverLabel = new(new Vector2(x, 31f), false, $"Server:", new Color(226, 226, 226));
             _serverValue = new(new Vector2(x + 8, 40f), false, "", new Color());
-            UILabel _slotLabel = new(new Vector2(x, 51f), false, $"Slot:", new Color(226, 226, 226));
-            _slotValue = new(new Vector2(x + 8, 60f), false, "", new Color());
-            UILabel _passwordLabel = new(new Vector2(x, 71f), false, $"Password:", new Color(226, 226, 226));
-            _passwordValue = new(new Vector2(x + 8, 80f), false, "", new Color());
-            UILabel _settingsLabel = new(new Vector2(60f, 115f), false, $"Settings", new Color(116, 140, 144));
-            UILabel _connectLabel = new(new Vector2(60f, 128f), false, $"Connect", new Color(116, 140, 144));
-            UILabel _pageLabel = new(new Vector2(60f, 95f), false, "");
+
+            UILabel _portLabel = new(new Vector2(x, 51f), false, $"Port:", new Color(226, 226, 226));
+            _portValue = new(new Vector2(x + 8, 60f), false, "", new Color());
+
+            UILabel _slotLabel = new(new Vector2(x, 71f), false, $"Slot:", new Color(226, 226, 226));
+            _slotValue = new(new Vector2(x + 8, 80f), false, "", new Color());
+
+            UILabel _passwordLabel = new(new Vector2(x, 91f), false, $"Password:", new Color(226, 226, 226));
+            _passwordValue = new(new Vector2(x + 8, 100f), false, "", new Color());
+
+            UILabel _settingsLabel = new(new Vector2(60f, 135f), false, $"Settings", new Color(116, 140, 144));
+            UILabel _connectLabel = new(new Vector2(60f, 148f), false, $"Connect", new Color(116, 140, 144));
+            UILabel _pageLabel = new(new Vector2(60f, 115f), false, "");
 
             options =
             [
-                (_serverLabel, new TextEntry("Server:", () => _apServer, (string value) => { _apServer = value; UpdateLabels(); })),
-                (_slotLabel, new TextEntry("Slot:", () => _apSlot, (string value) => { _apSlot = value; UpdateLabels(); })),
-                (_passwordLabel, new TextEntry("Password:", () => _apPassword, (string value) => {_apPassword = value; UpdateLabels(); })),
+                (_serverLabel, new TextEntry("Server:", () => _apServer, value => {
+                    Uri url = GetUri(value.Trim());
+
+                    _apServer = url.Host;
+
+                    if(!url.IsDefaultPort) {
+                        _apPort = url.Port.ToString();
+                    }
+
+                    UpdateLabels(); 
+                })),
+                (_portLabel, new TextEntry("Port:", () => _apPort, value => {
+                    if(int.TryParse(value, out int port))
+                    {
+                        _apPort = value.Trim();
+                        UpdateLabels();
+                    }
+                })),
+                (_slotLabel, new TextEntry("Slot:", () => _apSlot, value => { _apSlot = value.Trim();; UpdateLabels(); })),
+                (_passwordLabel, new TextEntry("Password:", () => _apPassword, value => {_apPassword = value.Trim(); UpdateLabels(); })),
                 (_pageLabel, new ActionOption(()=>{ })),
                 (_settingsLabel, new SubstateOption<ArchipelagoLocalSettings>()),
-                (_connectLabel, new ActionOption(()=>{ _substate = new ConnectionState(_apServer,_apSlot,_apPassword,OnConnected); }))
+                (_connectLabel, new ActionOption(()=>{ _substate = new ConnectionState(GetHost(),_apSlot,_apPassword,OnConnected); }))
             ];
         }
 
@@ -134,17 +161,17 @@ namespace AnodyneArchipelago.Menu
 
             base.HandleInput();
 
-            if (state == 3)
+            if (state == 4)
             {
                 selector.visible = false;
-                _connectionSwitcher.GetControl();
-                _connectionSwitcher.Update();
+                _connectionSwitcher?.GetControl();
+                _connectionSwitcher?.Update();
             }
             else
             {
-                if (_oldstate == 3)
+                if (_oldstate == 4)
                     selector.visible = true;
-                _connectionSwitcher.LoseControl();
+                _connectionSwitcher?.LoseControl();
             }
 
             BrowseInput();
@@ -155,12 +182,13 @@ namespace AnodyneArchipelago.Menu
             base.DrawUI();
             if (!_hide)
             {
-                _versionLabel1.Draw();
-                _versionLabel2.Draw();
-                _serverValue.Draw();
-                _slotValue.Draw();
-                _passwordValue.Draw();
-                _connectionSwitcher.Draw();
+                _versionLabel1?.Draw();
+                _versionLabel2?.Draw();
+                _serverValue?.Draw();
+                _portValue?.Draw();
+                _slotValue?.Draw();
+                _passwordValue?.Draw();
+                _connectionSwitcher?.Draw();
             }
 
             _substate?.DrawUI();
@@ -169,12 +197,18 @@ namespace AnodyneArchipelago.Menu
         private void UpdateLabels()
         {
             UpdateLabel(_serverValue, _apServer);
+            UpdateLabel(_portValue, _apPort);
             UpdateLabel(_slotValue, _apSlot);
             UpdateLabel(_passwordValue, _apPassword);
         }
 
-        private void UpdateLabel(UILabel label, string text)
+        private void UpdateLabel(UILabel? label, string text)
         {
+            if (label == null)
+            {
+                return;
+            }
+
             if (text.Length == 0)
             {
                 label.SetText("[empty]");
@@ -197,7 +231,7 @@ namespace AnodyneArchipelago.Menu
 
         private void BrowseInput()
         {
-            if(state < 3 && ((TextEntry)options[state].option).Active)
+            if (state < 3 && ((TextEntry)options[state].option).Active)
             {
                 return;
             }
@@ -213,7 +247,7 @@ namespace AnodyneArchipelago.Menu
             }
             else if (KeyInput.JustPressedRebindableKey(KeyFunctions.Right))
             {
-                if (state < 3 && _curPage < ArchipelagoSettings.ConnectionDetails.Count)
+                if (state < 3 && _curPage < ArchipelagoSettings!.ConnectionDetails.Count)
                 {
                     SoundManager.PlaySoundEffect("menu_move");
 
@@ -229,18 +263,23 @@ namespace AnodyneArchipelago.Menu
             if (index == 0)
             {
                 _apServer = "";
+                _apPort = "";
                 _apSlot = "";
                 _apPassword = "";
             }
             else
             {
-                ConnectionDetails details = ArchipelagoSettings.ConnectionDetails[index - 1];
-                _apServer = details.ApServer;
-                _apSlot = details.ApSlot;
-                _apPassword = details.ApPassword;
+                ConnectionDetails details = ArchipelagoSettings!.ConnectionDetails[index - 1];
+
+                Uri url = GetUri(details.ApServer);
+
+                _apServer = url.Host.Trim();
+                _apPort = url.Port.ToString();
+                _apSlot = details.ApSlot.Trim();
+                _apPassword = details.ApPassword.Trim();
             }
 
-            _connectionSwitcher.SetValue(index);
+            _connectionSwitcher?.SetValue(index);
             UpdateLabels();
         }
 
@@ -251,12 +290,7 @@ namespace AnodyneArchipelago.Menu
 
         private void OnConnected(ArchipelagoManager archipelagoManager)
         {
-            ArchipelagoSettings.AddConnection(new()
-            {
-                ApServer = _apServer,
-                ApSlot = _apSlot,
-                ApPassword = _apPassword
-            });
+            ArchipelagoSettings!.AddConnection(new(GetHost(), _apSlot, _apPassword));
             ArchipelagoSettings.Save();
 
             Plugin.ArchipelagoManager = archipelagoManager;
@@ -282,11 +316,33 @@ namespace AnodyneArchipelago.Menu
             _fadingOut = true;
 
             archipelagoManager.PostSaveloadInit(
-                _isNewGame, 
-                ArchipelagoSettings.PlayerSprite, 
+                _isNewGame,
+                ArchipelagoSettings.PlayerSprite,
                 ArchipelagoSettings.MatchDifferentWorldItem,
                 ArchipelagoSettings.HideTrapItems,
                 ArchipelagoSettings.ColorPuzzleHelp);
+        }
+        private Uri GetUri(string url)
+        {
+            if (url.StartsWith("ws://") || url.StartsWith("wss://") || url.StartsWith("http://") || url.StartsWith("https://"))
+            {
+                return new Uri(url);
+            }
+            else
+            {
+                return new Uri("ws://"+ url);
+            }
+        }
+
+
+        private string GetHost()
+        {
+            UriBuilder b = new(_apServer)
+            {
+                Port = int.TryParse(_apPort, out int port) ? port : -1
+            };
+
+            return b.Uri.Authority;
         }
     }
 }

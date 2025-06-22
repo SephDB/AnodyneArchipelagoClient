@@ -217,7 +217,7 @@ namespace AnodyneArchipelago.Helpers
                 {
                     return ("fields_npcs", 55);
                 }
-                else if (itemName.Contains("vacuum"))
+                else if (itemName.Contains("vacuum") || itemName.Contains("poltergust"))
                 {
                     return ("fields_npcs", 56);
                 }
@@ -297,7 +297,7 @@ namespace AnodyneArchipelago.Helpers
 
         public static string GetTrapName(string itemName, string location)
         {
-            long seed = Util.StringToIntVal(Plugin.ArchipelagoManager.GetSeed()) + Util.StringToIntVal(itemName) + Util.StringToIntVal(location);
+            long seed = Util.StringToIntVal(Plugin.ArchipelagoManager!.GetSeed()) + Util.StringToIntVal(itemName) + Util.StringToIntVal(location);
 
             if (seed < 0)
             {

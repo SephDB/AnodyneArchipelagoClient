@@ -16,7 +16,7 @@ namespace AnodyneArchipelago
 
         public void Initialize(Random rng)
         {
-            HashSet<Point> alreadyChosen = new() { new Point(1, 1) };
+            HashSet<Point> alreadyChosen = [new Point(1, 1)];
 
             _apartmentPos = GetNextPoint(rng, ref alreadyChosen);
             _circusPos = GetNextPoint(rng, ref alreadyChosen);

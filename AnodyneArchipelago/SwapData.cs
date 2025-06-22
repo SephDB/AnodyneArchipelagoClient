@@ -65,7 +65,7 @@ namespace AnodyneArchipelago
                 }
             }
 
-            return new();
+            return [];
         }
     }
 }

@@ -19,7 +19,7 @@ namespace AnodyneArchipelago.Menu
 
         private readonly SuccessEvent _successFunc;
 
-        private Task<LoginResult> _connectionTask;
+        private Task<LoginResult>? _connectionTask;
         private ArchipelagoManager _archipelago = new();
 
         private AnodyneSharp.UI.Text.TextWriter _textWriter;
@@ -70,9 +70,9 @@ namespace AnodyneArchipelago.Menu
                 }
                 else
                 {
-                    LoginFailure failure = result as LoginFailure;
+                    LoginFailure? failure = result as LoginFailure;
                     string errorMessage = "";
-                    foreach (string error in failure.Errors)
+                    foreach (string error in failure!.Errors)
                     {
                         errorMessage += error;
                         errorMessage += "\n";
@@ -117,8 +117,8 @@ namespace AnodyneArchipelago.Menu
             _textWriter.Text = _text;
             _textWriter.ProgressTextToEnd();
 
-            FieldInfo linesField = typeof(AnodyneSharp.UI.Text.TextWriter).GetField("_line", BindingFlags.NonPublic | BindingFlags.Instance);
-            int lineValue = (int)linesField.GetValue(_textWriter);
+            FieldInfo linesField = typeof(AnodyneSharp.UI.Text.TextWriter).GetField("_line", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            int lineValue = (int)linesField!.GetValue(_textWriter)!;
 
             int innerHeight = (lineValue + 1) * _font.lineSeparation;
 

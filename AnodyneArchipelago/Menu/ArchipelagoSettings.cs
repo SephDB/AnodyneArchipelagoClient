@@ -3,11 +3,11 @@ using AnodyneSharp.Registry;
 
 namespace AnodyneArchipelago.Menu
 {
-    public class ConnectionDetails : IEquatable<ConnectionDetails>
+    public class ConnectionDetails(string apServer, string apSlot, string apPassword) : IEquatable<ConnectionDetails>
     {
-        public string ApServer;
-        public string ApSlot;
-        public string ApPassword;
+        public readonly string ApServer = apServer;
+        public readonly string ApSlot = apSlot;
+        public readonly string ApPassword = apPassword;
 
         public override bool Equals(object obj)
         {
@@ -32,7 +32,7 @@ namespace AnodyneArchipelago.Menu
             IncludeFields = true
         };
 
-        public List<ConnectionDetails> ConnectionDetails = new();
+        public List<ConnectionDetails> ConnectionDetails = [];
 
         public string PlayerSprite = "young_player";
         public MatchDifferentWorldItem MatchDifferentWorldItem = MatchDifferentWorldItem.MatchExtra;
@@ -41,7 +41,7 @@ namespace AnodyneArchipelago.Menu
 
         public static string GetFilePath() => string.Format("{0}Saves/ap_settings.dat", GameConstants.SavePath);
 
-        public static ArchipelagoSettings Load()
+        public static ArchipelagoSettings? Load()
         {
             try
             {

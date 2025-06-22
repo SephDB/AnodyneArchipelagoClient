@@ -71,7 +71,7 @@ namespace AnodyneSharp.States.MenuSubstates
                     .ToArray();
             }
 
-            _keys = Enumerable.Range(0, 3).Select(i => new UIEntity(new Vector2(62 + 16 * i, 150), "key_green", GlobalState.inventory.BigKeyStatus[i] ? i * 2 : i * 2 + 1, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)).ToArray();
+            _bigKeys = Enumerable.Range(0, 3).Select(i => new UIEntity(new Vector2(62 + 16 * i, 150), "key_green", GlobalState.inventory.BigKeyStatus[i] ? i * 2 : i * 2 + 1, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)).ToArray();
         }
 
         public override void GetControl()
@@ -89,6 +89,11 @@ namespace AnodyneSharp.States.MenuSubstates
             }
 
             foreach (var key in _keys)
+            {
+                key.Draw();
+            }
+
+            foreach(var key in _bigKeys)
             {
                 key.Draw();
             }
