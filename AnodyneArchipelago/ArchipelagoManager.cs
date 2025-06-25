@@ -129,6 +129,8 @@ namespace AnodyneArchipelago
 
         public string? DeathLinkReason { get; set; } = null;
 
+        public Version ApVersion { get; private set; }
+
         public async Task<LoginResult> Connect(string url, string slotName, string password)
         {
             LoginResult? result;
@@ -231,6 +233,8 @@ namespace AnodyneArchipelago
             {
                 ShopItems = ((JArray)login.SlotData["shop_items"]).ToObject<ShopItem[]>() ?? [];
             }
+
+            ApVersion = new(login.SlotData.GetValueOrDefault("version", "0.0.0").ToString());
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
 
@@ -902,7 +906,12 @@ namespace AnodyneArchipelago
                 _patches.RemoveMitraCutscenes();
                 _patches.FixHotelSoftlock();
                 _patches.FixHappyNexusPad();
-                _patches.LockMiao();
+
+                //0.3.0 is the earliest version with version checks
+                if (ApVersion.IsNewer(0, 3, 0))
+                {
+                    _patches.LockMiao();
+                }
 
                 if (ColorPuzzleRandomized)
                 {
