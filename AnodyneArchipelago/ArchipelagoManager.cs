@@ -1,10 +1,13 @@
-﻿using System.Reflection;
+﻿using System;
+using System.ComponentModel;
+using System.Reflection;
 using System.Text;
 using AnodyneArchipelago.Helpers;
 using AnodyneArchipelago.Patches;
 using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy;
+using AnodyneSharp.Entities.Enemy.Circus;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Logging;
 using AnodyneSharp.MapData;
@@ -88,7 +91,7 @@ namespace AnodyneArchipelago
         private string _seedName = "NULL";
         private long? _dustsanityBase = null;
         private Dictionary<Guid, string> BigGateTypes = [];
-        private List<string> _unlockedGates = [];
+        private string[] _unlockedGates = [];
         private Dictionary<string, Guid> _checkGates = [];
         private string? _playerSpriteName;
         private Texture2D? _originalPlayerTexture;
@@ -174,36 +177,29 @@ namespace AnodyneArchipelago
                 ColorPuzzle.Initialize(rand);
             }
 
-            ColorPuzzleRandomized = (bool)login.SlotData.GetValueOrDefault("randomize_color_puzzle", true);
+            ColorPuzzleRandomized = GetSlotData("randomize_color_puzzle", false, login);
 
-            bool smallKeyGateUnlocked = (bool)login.SlotData.GetValueOrDefault("unlock_gates", false);
+            bool smallKeyGateUnlocked = GetSlotData("unlock_gates", false, login);
 
-            SmallkeyMode = (SmallKeyMode)(long)login.SlotData.GetValueOrDefault("small_key_mode", (long)(smallKeyGateUnlocked ? SmallKeyMode.Unlocked : SmallKeyMode.SmallKeys));
+            SmallkeyMode = GetSlotData("small_key_mode", smallKeyGateUnlocked ? SmallKeyMode.Unlocked : SmallKeyMode.SmallKeys, login);
 
-            BigKeyShuffle = (BigKeyShuffle)(long)login.SlotData.GetValueOrDefault("shuffle_big_gates", (long)BigKeyShuffle.AnyWorld);
+            BigKeyShuffle = GetSlotData("shuffle_big_gates", BigKeyShuffle.AnyWorld, login);
 
-            VanillaHealthCicadas = (bool)login.SlotData.GetValueOrDefault("vanilla_health_cicadas", false);
+            VanillaHealthCicadas = GetSlotData("vanilla_health_cicadas", false, login);
 
-            VanillaRedCave = (bool)login.SlotData.GetValueOrDefault("vanilla_red_cave", false);
+            VanillaRedCave = GetSlotData("vanilla_red_cave", false, login);
 
-            SplitWindmill = (bool)login.SlotData.GetValueOrDefault("split_windmill", false);
+            SplitWindmill = GetSlotData("split_windmill", false, login);
 
-            ForestBunnyChest = (bool)login.SlotData.GetValueOrDefault("forest_bunny_chest", false);
+            ForestBunnyChest = GetSlotData("forest_bunny_chest", false, login);
 
-            VictoryCondition = (VictoryCondition)(long)login.SlotData.GetValueOrDefault("victory_condition", (long)VictoryCondition.DefeatBriar);
+            VictoryCondition = GetSlotData("victory_condition", VictoryCondition.DefeatBriar, login);
 
-            if (login.SlotData.ContainsKey("nexus_gates_unlocked"))
-            {
-                _unlockedGates = [.. ((JArray)login.SlotData["nexus_gates_unlocked"]).Values<string>()];
-            }
-            else
-            {
-                _unlockedGates = [];
-            }
+            _unlockedGates = GetSlotDataArray<string>("nexus_gates_unlocked", login);
 
-            PostgameMode = (PostgameMode)(long)login.SlotData.GetValueOrDefault("postgame_mode", (long)PostgameMode.Disabled);
+            PostgameMode = GetSlotData("postgame_mode", PostgameMode.Disabled, login);
 
-            if (login.SlotData.ContainsKey("death_link") && (bool)login.SlotData["death_link"])
+            if (GetSlotData("death_link", false, login))
             {
                 DeathLinkReason = null;
                 ReceivedDeath = false;
@@ -217,24 +213,30 @@ namespace AnodyneArchipelago
                 _deathLinkService = null;
             }
 
-            if (login.SlotData.GetValueOrDefault("dust_sanity_base", null) is long val)
+            if (GetSlotData<long?>("dust_sanity_base", null, login) is long val)
             {
                 _dustsanityBase = val;
             }
 
-            MitraHintType = (MitraHintType)(long)login.SlotData.GetValueOrDefault("mitra_hint_type", MitraHintType.None);
+            MitraHintType = GetSlotData("mitra_hint_type", MitraHintType.None, login);
 
-            if (MitraHintType != MitraHintType.None && login.SlotData.ContainsKey("mitra_hints"))
+            if (MitraHintType != MitraHintType.None)
             {
-                MitraHints = ((JArray)login.SlotData["mitra_hints"]).ToObject<MitraHint[]>() ?? [];
+                MitraHints = GetSlotDataArray<MitraHint>("mitra_hints", login);
+
+                if(MitraHints.Length == 0)
+                {
+                    DebugLogger.AddWarning("Mitra hints are turned on, but no hints are found!");
+                    MitraHintType = MitraHintType.None;
+                }
             }
 
             if (login.SlotData.ContainsKey("shop_items"))
             {
-                ShopItems = ((JArray)login.SlotData["shop_items"]).ToObject<ShopItem[]>() ?? [];
+                ShopItems = GetSlotDataArray<ShopItem>("shop_items", login);
             }
 
-            ApVersion = new(login.SlotData.GetValueOrDefault("version", "0.0.0").ToString());
+            ApVersion = new(GetSlotData("version", "0.0.0", login).ToString());
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
 
@@ -1099,6 +1101,35 @@ namespace AnodyneArchipelago
         {
             Dictionary<string, Texture2D>? textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
             return (textures["young_player"], textures["young_player_cell"], textures["young_player_reflection"]);
+        }
+
+        private static T GetSlotData<T>(string valueName, T nullResult, LoginSuccessful login)
+        {
+            if (!login.SlotData.ContainsKey(valueName))
+            {
+                DebugLogger.AddWarning($"SlotData is missing '{valueName}'. Defaulting to '{nullResult}'.");
+                return nullResult;
+            }
+
+            if (typeof(T).IsEnum)
+            {
+                var converter = TypeDescriptor.GetConverter(typeof(T));
+
+                return (T)converter.ConvertFromString(login.SlotData.GetValueOrDefault(valueName, (int)(object)nullResult!)!.ToString()!)!;
+            }
+
+            return (T)login.SlotData.GetValueOrDefault(valueName, nullResult);
+        }
+
+        private static T[] GetSlotDataArray<T>(string valueName, LoginSuccessful login)
+        {
+            if (!login.SlotData.ContainsKey(valueName))
+            {
+                DebugLogger.AddWarning($"SlotData is missing '{valueName}'. Defaulting to empty list.");
+                return [];
+            }
+
+            return ((JArray)login.SlotData[valueName]).ToObject<T[]>()!;
         }
     }
 }
