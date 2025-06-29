@@ -179,7 +179,7 @@ namespace AnodyneArchipelago
 
             ColorPuzzleRandomized = GetSlotData("randomize_color_puzzle", false, login);
 
-            bool smallKeyGateUnlocked = GetSlotData("unlock_gates", false, login);
+            bool smallKeyGateUnlocked = (bool)login.SlotData.GetValueOrDefault("unlock_gates", false);
 
             SmallkeyMode = GetSlotData("small_key_mode", smallKeyGateUnlocked ? SmallKeyMode.Unlocked : SmallKeyMode.SmallKeys, login);
 
