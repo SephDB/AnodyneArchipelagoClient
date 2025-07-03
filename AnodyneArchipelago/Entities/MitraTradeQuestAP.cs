@@ -9,7 +9,13 @@ namespace AnodyneArchipelago.Entities
     public class MitraTradeQuestAP(EntityPreset preset, Player p) : MitraFields(preset, p)
     {
         private const int MaxHints = 9;
-        private static int AllowedHints => GlobalState.events.BossDefeated.Count + 1;
+        private int AllowedHints
+        {
+            get
+            {
+                return GlobalState.FUCK_IT_MODE_ON ? MaxHints : GlobalState.events.BossDefeated.Count + 1;
+            }
+        }
 
         protected override string GetInteractionText()
         {
@@ -29,7 +35,7 @@ namespace AnodyneArchipelago.Entities
             else
             {
                 //No hints, default behavior
-                return base.GetInteractionText();
+                return "Good luck with whatever you're doing, Young!";
             }
         }
 
@@ -57,11 +63,15 @@ namespace AnodyneArchipelago.Entities
             string player = manager.GetPlayerName(hint.playerSlot);
             string location = manager.GetPlayerLocationName(hint.locationID, hint.playerSlot);
 
-            if (manager.MitraHintType == MitraHintType.Precise)
+            if (manager.MitraHintType != MitraHintType.Vague)
             {
                 if (manager.GetPlayer() == hint.playerSlot)
                 {
-                    manager.SendHint(hint.locationID);
+                    if (manager.MitraHintType == MitraHintType.PreciseHint)
+                    {
+                        manager.SendHint(hint.locationID);
+                    }
+
                     return $"I heard your {item} is at {location}! You should go get it!";
                 }
                 else

@@ -71,7 +71,8 @@ namespace AnodyneArchipelago
     {
         None = 0,
         Vague,
-        Precise
+        Precise,
+        PreciseHint
     }
 
     public class ArchipelagoManager
