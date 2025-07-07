@@ -151,6 +151,8 @@ namespace AnodyneArchipelago
             }
             catch (Exception e)
             {
+                DebugLogger.AddException(e);
+
                 return new LoginFailure(e.GetBaseException().Message);
             }
 
