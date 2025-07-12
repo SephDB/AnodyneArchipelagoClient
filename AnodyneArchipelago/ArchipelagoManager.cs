@@ -1114,14 +1114,23 @@ namespace AnodyneArchipelago
                 return nullResult;
             }
 
-            if (typeof(T).IsEnum)
+            try
             {
-                var converter = TypeDescriptor.GetConverter(typeof(T));
+                if (typeof(T).IsEnum)
+                {
+                    var converter = TypeDescriptor.GetConverter(typeof(T));
 
-                return (T)converter.ConvertFromString(login.SlotData.GetValueOrDefault(valueName, (int)(object)nullResult!)!.ToString()!)!;
+                    return (T)converter.ConvertFromString(login.SlotData.GetValueOrDefault(valueName, (int)(object)nullResult!)!.ToString()!)!;
+                }
+
+                return (T)login.SlotData.GetValueOrDefault(valueName, nullResult);
             }
-
-            return (T)login.SlotData.GetValueOrDefault(valueName, nullResult);
+            catch (Exception ex)
+            {
+                DebugLogger.AddError($"SlotData: found unexpected type for {valueName}", showStack: false);
+                DebugLogger.AddException(ex);
+                return nullResult;
+            }
         }
 
         private static T[] GetSlotDataArray<T>(string valueName, LoginSuccessful login)
