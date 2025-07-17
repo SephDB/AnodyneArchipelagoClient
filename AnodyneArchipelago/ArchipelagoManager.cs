@@ -8,6 +8,7 @@ using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy;
 using AnodyneSharp.Entities.Enemy.Circus;
+using AnodyneSharp.Entities.Gadget;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Logging;
 using AnodyneSharp.MapData;
@@ -390,10 +391,16 @@ namespace AnodyneArchipelago
             return _scoutTask.Result[locationName];
         }
 
-        public string GetItemName(long id)
+        public string GetItemName(long id, int player)
         {
-            return _session!.Items.GetItemName(id);
+            return _session!.Items.GetItemName(id, GetGameName(player)) ?? "Something";
         }
+
+        public string GetGameName(int player)
+        {
+            return _session!.Players.GetPlayerInfo(player).Game;
+        }
+
 
         public string GetSeed()
         {

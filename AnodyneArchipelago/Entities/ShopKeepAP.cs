@@ -187,7 +187,7 @@ namespace AnodyneArchipelago.Entities
             {
                 var manager = Plugin.ArchipelagoManager!;
 
-                _itemName = manager.GetItemName(_item.itemID);
+                _itemName = manager.GetItemName(_item.itemID, _item.playerSlot);
                 var boxItem = manager.GetScoutedLocation("Fields - Shopkeeper Trade")!;
                 bool isBox = _otherItem != null;
 
