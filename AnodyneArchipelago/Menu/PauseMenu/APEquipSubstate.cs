@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Dialogue;
+﻿using AnodyneArchipelago;
+using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Input;
 using AnodyneSharp.Registry;
@@ -20,9 +21,9 @@ namespace AnodyneSharp.States.MenuSubstates
             Shoes,
             Box,
             BikingShoes,
-            Key1,
-            Key2,
             Miao,
+            Happy,
+            Blue,
             RedCave,
             Statue1,
             Statue2,
@@ -41,6 +42,7 @@ namespace AnodyneSharp.States.MenuSubstates
         private UIEntity _shoesItem;
         private UIEntity _redCave;
         private UIEntity _miao;
+        private UIEntity[] _fountains;
         private UIEntity[] _statues;
 
         private UILabel _redCaveLabel;
@@ -48,7 +50,7 @@ namespace AnodyneSharp.States.MenuSubstates
         private EquipState _state;
         private EquipState _lastState;
 
-        List<EquipState> bottom_row_enabled = [EquipState.Key1, EquipState.Key2, EquipState.Miao];
+        List<EquipState> bottom_row_enabled = [EquipState.Shoes, EquipState.Box, EquipState.BikingShoes, EquipState.Miao, EquipState.Happy, EquipState.Blue];
         List<EquipState> very_bottom_row_enabled = [EquipState.RedCave, EquipState.Statue1, EquipState.Statue2, EquipState.Statue3];
         int current_bottom_index = 0;
 
@@ -66,9 +68,9 @@ namespace AnodyneSharp.States.MenuSubstates
 
             _transformerUnlocked = new UIEntity(new Vector2(x - 1, y + 24 * 3 - 1), "swapper_unlocked", 0, 9, 9, Drawing.DrawOrder.EQUIPPED_ICON) { visible = GlobalState.events.GetEvent("ExtendedSwap") == 1 };
 
-            _jump = new UIEntity(new Vector2(62, 130), "item_jump_shoes", 0, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON) { visible = false };
-            _boxItem = new UIEntity(new Vector2(78, 130), "fields_npcs", 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON) { visible = false };
-            _shoesItem = new UIEntity(new Vector2(78 + 16, 130), "fields_npcs", 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON) { visible = false };
+            _jump = new UIEntity(new Vector2(62, 130), "archipelago_items", 28, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON);
+            _boxItem = new UIEntity(new Vector2(78, 130), "archipelago_items", 26, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON);
+            _shoesItem = new UIEntity(new Vector2(78 + 16, 130), "archipelago_items", 27, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON);
 
             _redCave = new UIEntity(new Vector2(62, 150), "archipelago_items", 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON);
             _redCave.SetFrame(3);
@@ -77,31 +79,36 @@ namespace AnodyneSharp.States.MenuSubstates
 
             if (GlobalState.events.GetEvent("ReceivedCardboardBox") != 0)
             {
-                bottom_row_enabled.Insert(0, EquipState.Box);
+                _boxItem.sprite.SetTexture("fields_npcs", 16, 16, false, false);
                 _boxItem.SetFrame(31);
-                _boxItem.visible = true;
             }
 
             if (GlobalState.events.GetEvent("ReceivedBikingShoes") != 0)
             {
-                bottom_row_enabled.Insert(1, EquipState.BikingShoes);
+                _shoesItem.sprite.SetTexture("fields_npcs", 16, 16, false, false);
                 _shoesItem.SetFrame(56);
-                _shoesItem.visible = true;
             }
 
             if (GlobalState.inventory.CanJump)
             {
-                bottom_row_enabled.Insert(0, EquipState.Shoes);
-                _jump.visible = true;
+                _jump.sprite.SetTexture("item_jump_shoes", 16, 16, false, false);
+                _jump.SetFrame(0);
             }
 
-            _miao = new UIEntity(new Vector2(95 + 16 + 16 * 2, 130), "fields_npcs", 0, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON);
+            _miao = new UIEntity(new Vector2(95 + 16, 130), "fields_npcs", 0, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON);
 
             if (GlobalState.events.GetEvent("ReceivedMiao") != 1)
             {
                 _miao.sprite.SetTexture("archipelago_items", 16, 16, false, false);
                 _miao.SetFrame(21);
             }
+
+            _fountains =
+                [
+                    new UIEntity(new Vector2(95 + 16 + 16 , 130), "archipelago_items", GlobalState.events.GetEvent("HappyDone") != 0 ? 23 : 25 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
+                    new UIEntity(new Vector2(95 + 16 + 16 * 2, 130), "archipelago_items", GlobalState.events.GetEvent("BlueDone") != 0 ? 22 : 24 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
+
+                ];
 
             _statues =
                 [
@@ -115,12 +122,6 @@ namespace AnodyneSharp.States.MenuSubstates
 
         public override void GetControl()
         {
-            if (!GlobalState.inventory.HasAnyBroom)
-            {
-                Exit = true;
-                return;
-            }
-
             base.GetControl();
             _state = EquipState.Broom;
             _lastState = _state;
@@ -164,6 +165,11 @@ namespace AnodyneSharp.States.MenuSubstates
                 statue.Draw();
             }
 
+            foreach (var fountain in _fountains)
+            {
+                fountain.Draw();
+            }
+
             selector.Draw();
         }
 
@@ -182,17 +188,17 @@ namespace AnodyneSharp.States.MenuSubstates
                 {
                     if (_state == EquipState.Statue1)
                     {
-                        _state = EquipState.Key1;
+                        _state = EquipState.Miao;
                         current_bottom_index = bottom_row_enabled.IndexOf(_state);
                     }
                     else if (_state == EquipState.Statue2)
                     {
-                        _state = EquipState.Key2;
+                        _state = EquipState.Happy;
                         current_bottom_index = bottom_row_enabled.IndexOf(_state);
                     }
                     else if (_state == EquipState.Statue3)
                     {
-                        _state = EquipState.Miao;
+                        _state = EquipState.Blue;
                         current_bottom_index = bottom_row_enabled.IndexOf(_state);
                     }
                     else
@@ -221,19 +227,19 @@ namespace AnodyneSharp.States.MenuSubstates
 
                 if (_state >= EquipState.Box)
                 {
-                    if (_state == EquipState.Key1)
-                    {
-                        _state = EquipState.Statue1;
-                        current_bottom_index = very_bottom_row_enabled.IndexOf(_state);
-                    }
-                    else if (_state == EquipState.Key2)
+                    if (_state == EquipState.Happy)
                     {
                         _state = EquipState.Statue2;
                         current_bottom_index = very_bottom_row_enabled.IndexOf(_state);
                     }
-                    else if (_state == EquipState.Miao)
+                    else if (_state == EquipState.Blue)
                     {
                         _state = EquipState.Statue3;
+                        current_bottom_index = very_bottom_row_enabled.IndexOf(_state);
+                    }
+                    else if (_state == EquipState.Miao)
+                    {
+                        _state = EquipState.Statue1;
                         current_bottom_index = very_bottom_row_enabled.IndexOf(_state);
                     }
                     else
@@ -249,12 +255,17 @@ namespace AnodyneSharp.States.MenuSubstates
                     _state = bottom_row_enabled[0];
                     current_bottom_index = 0;
                 }
+                else if (_state == EquipState.Shoes)
+                {
+                    _state = very_bottom_row_enabled[0];
+                    current_bottom_index = 0;
+                }
                 else if (_state < EquipState.Transformer)
                 {
                     _state++;
                 }
             }
-            else if (_state >= EquipState.Shoes && KeyInput.JustPressedRebindableKey(KeyFunctions.Right))
+            else if (current_bottom_index >= 0 && KeyInput.JustPressedRebindableKey(KeyFunctions.Right))
             {
                 if (_state >= EquipState.RedCave)
                 {
@@ -275,7 +286,7 @@ namespace AnodyneSharp.States.MenuSubstates
                     _state = bottom_row_enabled[++current_bottom_index];
                 }
             }
-            else if (_state > EquipState.Shoes && KeyInput.JustPressedRebindableKey(KeyFunctions.Left))
+            else if (current_bottom_index > 0 && KeyInput.JustPressedRebindableKey(KeyFunctions.Left))
             {
                 if (current_bottom_index <= 0)
                 {
@@ -319,33 +330,76 @@ namespace AnodyneSharp.States.MenuSubstates
                     EquipBroom(BroomType.Transformer);
                     break;
                 case EquipState.Shoes:
-                    SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 5));
+                    if (GlobalState.inventory.CanJump)
+                    {
+                        SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 5));
+                    }
+                    else
+                    {
+                        SetDialogue("You have not figured out how to jump yet.");
+                    }
                     break;
                 case EquipState.Box:
-                    SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 7));
+                    if (GlobalState.events.GetEvent("ReceivedCardboardBox") != 0)
+                    {
+                        SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 7));
+                    }
+                    else
+                    {
+                        SetDialogue("This is where you'd put a box. If you had one!");
+                    }
                     break;
                 case EquipState.BikingShoes:
-                    SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 6));
+                    if (GlobalState.events.GetEvent("ReceivedBikingShoes") != 0)
+                    {
+                        SetDialogue(DialogueManager.GetDialogue("misc", "any", "items", 6));
+                    }
+                    else
+                    {
+                        SetDialogue("No biking shoes yet!");
+                    }
                     break;
-                case EquipState.Key1:
-
+                case EquipState.Happy:
+                    if (GlobalState.events.GetEvent("HappyDone") != 0)
+                    {
+                        SetDialogue("The Happy Fountain is active!");
+                    }
+                    else
+                    {
+                        SetDialogue("The Happy Fountain is not active.");
+                    }
                     break;
-                case EquipState.Key2:
-
+                case EquipState.Blue:
+                    if (GlobalState.events.GetEvent("BlueDone") != 0)
+                    {
+                        SetDialogue("The Blue Fountain is active!");
+                    }
+                    else
+                    {
+                        SetDialogue("The Blue Fountain is not active.");
+                    }
                     break;
                 case EquipState.Miao:
                     if (GlobalState.events.GetEvent("ReceivedMiao") == 1)
                     {
                         SetDialogue("It's Miao! He's waiting for you in Fields.");
                     }
+                    else
+                    {
+                        SetDialogue("You are sadly still cat-less...");
+                    }
                     break;
                 case EquipState.RedCave:
-                    SetDialogue("This number shows how much of Red Cave is unlocked.");
+                    SetDialogue($"You currently have {GlobalState.events.GetEvent("ProgressiveRedGrotto")} progressive Red Cave Items.");
                     break;
                 case EquipState.Statue1:
                     if (GlobalState.events.GetEvent("StatueMoved_Temple") != 0)
                     {
                         SetDialogue("The statue in the Temple of the Seeing One has moved.");
+                    }
+                    else
+                    {
+                        SetDialogue("The statue in the Temple of the Seeing One has not yet moved.");
                     }
                     break;
                 case EquipState.Statue2:
@@ -353,11 +407,19 @@ namespace AnodyneSharp.States.MenuSubstates
                     {
                         SetDialogue("The statue in the Red Cave has moved.");
                     }
+                    else
+                    {
+                        SetDialogue("The statue in the Red Cave has not yet moved.");
+                    }
                     break;
                 case EquipState.Statue3:
                     if (GlobalState.events.GetEvent("StatueMoved_Mountain") != 0)
                     {
                         SetDialogue("The statue in the Mountain Cavern has moved.");
+                    }
+                    else
+                    {
+                        SetDialogue("The statue in the Mountain Cavern has not yet moved.");
                     }
                     break;
             }
@@ -399,13 +461,13 @@ namespace AnodyneSharp.States.MenuSubstates
                     ignoreOffset = true;
                     selector.Position = _shoesItem.Position;
                     break;
-                case EquipState.Key1:
+                case EquipState.Happy:
                     ignoreOffset = true;
-                    selector.Position = _miao.Position - new Vector2(32, 0);
+                    selector.Position = _fountains[0].Position;
                     break;
-                case EquipState.Key2:
+                case EquipState.Blue:
                     ignoreOffset = true;
-                    selector.Position = _miao.Position - new Vector2(16, 0);
+                    selector.Position = _fountains[1].Position;
                     break;
                 case EquipState.Miao:
                     ignoreOffset = true;

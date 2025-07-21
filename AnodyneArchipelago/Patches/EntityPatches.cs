@@ -323,5 +323,24 @@ namespace AnodyneArchipelago.Patches
                 node.Remove();
             }
         }
+
+        internal void PatchHappyAndBlue()
+        {
+            //Go Happy blocker
+            root.Descendants("NPC").Where(e => (int)e.Attribute("frame")! == 11 && (string)e.Attribute("type")! == "generic").First().Remove();
+
+            root.Descendants("Shadow_Briar").Where(m => (string)m.Parent!.Attribute("name")! == "BLUE").First().Remove();
+            root.Descendants("Shadow_Briar").Where(m => (string)m.Parent!.Attribute("name")! == "HAPPY").First().Remove();
+
+            //Blue gate
+            GetByID(new("FCADDA8E-CF50-3724-2724-C845AE08CEE2")).SetAttributeValue("frame", 5);
+
+            //Blue switches
+            GetByID(new("796D6CE8-0913-6746-4380-A3A983BA8ECA")).Remove();
+            GetByID(new("2CC68767-D79C-7E4B-2941-BCE76BAA8198")).Remove();
+
+            //Go cutscenes
+            GetByID(new("EB109441-3637-BFA7-0E9A-92B1EBD0A20C")).Remove();
+        }
     }
 }
