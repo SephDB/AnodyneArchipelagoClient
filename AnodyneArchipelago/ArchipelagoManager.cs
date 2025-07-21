@@ -126,6 +126,8 @@ namespace AnodyneArchipelago
         public MitraHint[] MitraHints { get; private set; } = [];
         public ShopItem[] ShopItems { get; private set; } = [];
 
+        public bool IncludeBlueHappy { get; private set; } = false;
+
         public bool ReceivedDeath { get; set; } = false;
 
         public string? DeathLinkReason { get; set; } = null;
@@ -219,7 +221,7 @@ namespace AnodyneArchipelago
             {
                 MitraHints = GetSlotDataArray<MitraHint>("mitra_hints", login);
 
-                if(MitraHints.Length == 0)
+                if (MitraHints.Length == 0)
                 {
                     DebugLogger.AddWarning("Mitra hints are turned on, but no hints are found!");
                     MitraHintType = MitraHintType.None;
@@ -230,6 +232,8 @@ namespace AnodyneArchipelago
             {
                 ShopItems = GetSlotDataArray<ShopItem>("shop_items", login);
             }
+
+            IncludeBlueHappy = GetSlotData("include_blue_happy", false, login);
 
             ApVersion = new(GetSlotData("version", "0.0.0", login).ToString());
 
@@ -779,6 +783,11 @@ namespace AnodyneArchipelago
                 if (VictoryCondition == VictoryCondition.AllCards)
                 {
                     _patches.SetAllCardsVictory();
+                }
+
+                if (IncludeBlueHappy)
+                {
+                    _patches.PatchHappyAndBlue();
                 }
 
                 foreach (long location_id in _session!.Locations.AllLocations)
