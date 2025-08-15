@@ -9,9 +9,9 @@ namespace AnodyneArchipelago
 {
     internal class ArchipelagoTreasure : Treasure
     {
-        private string _location;
+        private long _location;
 
-        public static ArchipelagoTreasure Create(string location, Vector2 pos)
+        public static ArchipelagoTreasure Create(long location, Vector2 pos)
         {
             ItemInfo? item = Plugin.ArchipelagoManager!.GetScoutedLocation(location);
             if (item?.Player == Plugin.ArchipelagoManager.GetPlayer())
@@ -24,7 +24,7 @@ namespace AnodyneArchipelago
             return new(location, pos, tex, frame);
         }
 
-        private ArchipelagoTreasure(string location, Vector2 pos, string textureName, int frame) : base(textureName, pos, frame, -1)
+        private ArchipelagoTreasure(long location, Vector2 pos, string textureName, int frame) : base(textureName, pos, frame, -1)
         {
             _location = location;
         }

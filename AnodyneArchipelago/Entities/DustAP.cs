@@ -34,13 +34,13 @@ namespace AnodyneArchipelago.Entities
                 sprite.Color = Color.White;
                 _preset.Activated = true;
 
-                Plugin.ArchipelagoManager!.SendLocation(_preset.TypeValue);
+                Plugin.ArchipelagoManager!.SendLocation(long.Parse(_preset.TypeValue));
             }
         }
 
         private Color GetDustColor()
         {
-            ItemInfo? info = Plugin.ArchipelagoManager!.GetScoutedLocation(_preset.TypeValue);
+            ItemInfo? info = Plugin.ArchipelagoManager!.GetScoutedLocation(long.Parse(_preset.TypeValue));
 
             if (info == null)
             {

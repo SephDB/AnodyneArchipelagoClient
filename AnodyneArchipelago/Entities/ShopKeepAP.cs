@@ -190,7 +190,7 @@ namespace AnodyneArchipelago.Entities
                 var manager = Plugin.ArchipelagoManager!;
 
                 _itemName = manager.GetItemName(_item.itemID, _item.playerSlot);
-                var boxItem = manager.GetScoutedLocation("Fields - Shopkeeper Trade")!;
+                var boxItem = manager.GetScoutedLocation(ShopkeepLoc.ID)!;
                 bool isBox = _otherItem != null;
 
                 (string sprite, int frame) = isBox ? TreasureHelper.GetSpriteWithTraps(_itemName, _item.playerSlot, boxItem.Flags, ShopkeepLoc.ID) : TreasureHelper.GetSprite(_itemName, _item.playerSlot, boxItem.Flags);

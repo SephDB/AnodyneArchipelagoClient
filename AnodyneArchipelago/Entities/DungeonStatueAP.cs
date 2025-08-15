@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Entities;
+﻿using AnodyneArchipelago.Helpers;
+using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Interactive;
 using AnodyneSharp.Registry;
 
@@ -9,7 +10,7 @@ namespace AnodyneArchipelago.Entities
     {
         public DungeonStatueAP(EntityPreset preset, Player p) : base(preset.Position, preset.Frame)
         {
-            string[] names = ["Temple", "Grotto", "Mountain"];
+            RegionID[] names = [RegionID.BEDROOM, RegionID.CROWD, RegionID.REDCAVE];
             if (GlobalState.events.GetEvent($"StatueMoved_{names[preset.Frame]}") > 0)
             {
                 Position += FacingDirection(MoveDir(Frame)) * 32;

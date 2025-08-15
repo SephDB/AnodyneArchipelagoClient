@@ -353,16 +353,6 @@ namespace AnodyneArchipelago
             return _scoutTask.Result[location_id];
         }
 
-        public ItemInfo? GetScoutedLocation(string locationName)
-        {
-            if (_scoutTask == null || !_scoutTask.IsCompleted || !_scoutTask.Result.ContainsKey(_session!.Locations.GetLocationIdFromName("Anodyne",locationName)))
-            {
-                return null;
-            }
-
-            return _scoutTask.Result[_session!.Locations.GetLocationIdFromName("Anodyne", locationName)];
-        }
-
         public string GetItemName(long id, int player)
         {
             return _session!.Items.GetItemName(id, GetGameName(player)) ?? "Something";
@@ -372,7 +362,6 @@ namespace AnodyneArchipelago
         {
             return _session!.Players.GetPlayerInfo(player).Game;
         }
-
 
         public string GetSeed()
         {
@@ -430,26 +419,6 @@ namespace AnodyneArchipelago
             else
             {
                 _messages.Enqueue($"{_session.Locations.GetLocationNameFromId(id) ?? "This location"} was already checked.");
-            }
-        }
-
-        public void SendLocation(string location)
-        {
-            if (_session == null)
-            {
-                //Plugin.Instance.Log.LogError("Attempted to send location while disconnected");
-                return;
-            }
-            long id = _session.Locations.GetLocationIdFromName("Anodyne", location);
-
-            events.IncEvent($"ArchipelagoLoc-{id}");
-            if (Checked.Add(id))
-            {
-                Task.Run(() => _session.Locations.CompleteLocationChecksAsync([.. Checked.Except(_session.Locations.AllLocationsChecked)])).ConfigureAwait(false);
-            }
-            else
-            {
-                _messages.Enqueue($"{location} was already checked.");
             }
         }
 

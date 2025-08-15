@@ -16,7 +16,7 @@ namespace AnodyneArchipelago.Entities
         {
             TreasureChest treasureChest = (TreasureChest)other;
 
-            BaseTreasure treasure = ArchipelagoTreasure.Create(preset.TypeValue, treasureChest.Position);
+            BaseTreasure treasure = ArchipelagoTreasure.Create(long.Parse(preset.TypeValue), treasureChest.Position);
 
             treasureField.SetValue(treasureChest, treasure);
 
