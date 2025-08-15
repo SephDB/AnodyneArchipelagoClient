@@ -1,4 +1,5 @@
 ﻿using AnodyneArchipelago;
+using AnodyneArchipelago.Helpers;
 using AnodyneSharp.Registry;
 using AnodyneSharp.UI;
 using Microsoft.Xna.Framework;
@@ -19,47 +20,49 @@ namespace AnodyneSharp.States.MenuSubstates
             string[] names = [
                     "Street",
                     "Temple",
-                    "Red Cave",
+                    "Red Grotto",
                     "Cavern",
                     "Apartment",
                     "Circus",
                     "Hotel",
                 ];
 
-            string[] counts = [
-                    $"x{GlobalState.inventory.GetMapKeys("STREET")}",
-                    $"x{GlobalState.inventory.GetMapKeys("BEDROOM")}",
-                    $"x{GlobalState.inventory.GetMapKeys("REDCAVE")}",
-                    $"x{GlobalState.inventory.GetMapKeys("CROWD")}",
-                    $"x{GlobalState.inventory.GetMapKeys("APARTMENT")}",
-                    $"x{GlobalState.inventory.GetMapKeys("CIRCUS")}",
-                    $"x{GlobalState.inventory.GetMapKeys("HOTEL")}",
+            RegionID[] regions = [
+                    RegionID.STREET,
+                    RegionID.BEDROOM,
+                    RegionID.REDCAVE,
+                    RegionID.CROWD,
+                    RegionID.APARTMENT,
+                    RegionID.CIRCUS,
+                    RegionID.HOTEL,
                 ];
 
-            _labels = [.. Enumerable.Range(0, 7).Select(i => new UILabel(new(x, y + 18 * i), true, names[i]))];
+            string[] counts = [.. regions.Select(r => $"x{GlobalState.inventory.GetMapKeys(r.ToString())}")];
+
+            _labels = [.. names.Select((name,i) => new UILabel(new(x, y + 18 * i), true, name))];
 
             if (Plugin.ArchipelagoManager!.SmallkeyMode == SmallKeyMode.SmallKeys)
             {
-                _keys = [.. Enumerable.Range(0, 7).Select(i => new UIEntity(new Vector2(_labels[i].Position.X + 64, _labels[i].Position.Y - 2), "key", 0, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON))];
+                _keys = [.. _labels.Select(label => new UIEntity(new Vector2(label.Position.X + 64, label.Position.Y - 2), "key", 0, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON))];
 
                 _labels.AddRange([.. Enumerable.Range(0, 7).Select(i => new UILabel(new(x + 64 + 12, y + 18 * i), true, counts[i]))]);
             }
             else
             {
-                _keys = [.. Enumerable.Range(0, 7).Select(i =>
+                _keys = [.. _labels.Select((label,i) =>
                     new UIEntity(
                             new Vector2(
-                                    _labels[i].Position.X + 64 + 14,
-                                    _labels[i].Position.Y - 2
+                                    label.Position.X + 64 + 14,
+                                    label.Position.Y - 2
                                 ),
                             "archipelago_items",
-                            GlobalState.events.GetEvent($"{ArchipelagoManager.GetMapNameForDungeon(names[i])}_KeyRing_Obtained") == 1 ? 16 : 17,
+                            GlobalState.events.GetEvent($"{regions[i]}_KeyRing_Obtained") == 1 ? 16 : 17,
                             16,
                             16,
                             Drawing.DrawOrder.EQUIPMENT_ICON))];
             }
 
-            _bigKeys = [.. Enumerable.Range(0, 3).Select(i => new UIEntity(new Vector2(62 + 16 * i, 150), "key_green", GlobalState.inventory.BigKeyStatus[i] ? i * 2 : i * 2 + 1, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON))];
+            _bigKeys = [.. GlobalState.inventory.BigKeyStatus.Select((key,i) => new UIEntity(new Vector2(62 + 16 * i, 150), "key_green", key ? i * 2 : i * 2 + 1, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON))];
         }
 
         public override void GetControl()

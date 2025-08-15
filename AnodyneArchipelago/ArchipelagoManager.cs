@@ -1,7 +1,4 @@
-﻿using System.ComponentModel;
-using System.Reflection;
-using System.Text;
-using AnodyneArchipelago.Helpers;
+﻿using AnodyneArchipelago.Helpers;
 using AnodyneArchipelago.Patches;
 using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
@@ -23,6 +20,9 @@ using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
+using System.ComponentModel;
+using System.Reflection;
+using System.Text;
 using static AnodyneSharp.Registry.GlobalState;
 using static AnodyneSharp.States.CutsceneState;
 
@@ -496,292 +496,131 @@ namespace AnodyneArchipelago
             yield break;
         }
 
-        public static string GetMapNameForDungeon(string dungeon)
-        {
-            return dungeon switch
-            {
-                "Temple of the Seeing One" or "Temple" => "BEDROOM",
-                "Apartment" => "APARTMENT",
-                "Mountain Cavern" or "Cavern" => "CROWD",
-                "Hotel" => "HOTEL",
-                "Red Cave" => "REDCAVE",
-                "Circus" => "CIRCUS",
-                _ => "STREET",
-            };
-        }
-
-        private static int GetCardNumberForName(string name)
-        {
-            return name switch
-            {
-                "Edward" => 0,
-                "Annoyer" => 1,
-                "Seer" => 2,
-                "Shieldy" => 3,
-                "Slime" => 4,
-                "PewLaser" => 5,
-                "Suburbian" => 6,
-                "Watcher" => 7,
-                "Silverfish" => 8,
-                "Gas Guy" => 9,
-                "Mitra" => 10,
-                "Miao" => 11,
-                "Windmill" => 12,
-                "Mushroom" => 13,
-                "Dog" => 14,
-                "Rock" => 15,
-                "Fisherman" => 16,
-                "Walker" => 17,
-                "Mover" => 18,
-                "Slasher" => 19,
-                "Rogue" => 20,
-                "Chaser" => 21,
-                "Fire Pillar" => 22,
-                "Contorts" => 23,
-                "Lion" => 24,
-                "Arthur and Javiera" => 25,
-                "Frog" => 26,
-                "Person" => 27,
-                "Wall" => 28,
-                "Blue Cube King" => 29,
-                "Orange Cube King" => 30,
-                "Dust Maid" => 31,
-                "Dasher" => 32,
-                "Burst Plant" => 33,
-                "Manager" => 34,
-                "Sage" => 35,
-                "Young" => 36,
-                "Carved Rock" => 37,
-                "City Man" => 38,
-                "Intra" => 39,
-                "Torch" => 40,
-                "Triangle NPC" => 41,
-                "Killer" => 42,
-                "Goldman" => 43,
-                "Broom" => 44,
-                "Rank" => 45,
-                "Follower" => 46,
-                "Rock Creature" => 47,
-                "Null" => 48,
-                _ => 0,
-            };
-        }
-
         private (BaseTreasure treasure, string diag) HandleItem(ItemInfo item)
         {
             BaseTreasure? treasure = null;
 
-            string? itemName = item.ItemName;
+            string itemName = GetItemName(item.ItemId,GetPlayer());
             Item itemInfo = Item.Create(item.ItemId);
 
             bool handled = true;
 
-            if (itemName.StartsWith("Small Key"))
+            switch(itemInfo.Type)
             {
-                string? dungeonName = itemName[11..^1];
+                case ItemType.Keys when itemInfo.SubType == 0 && SmallkeyMode == SmallKeyMode.SmallKeys:
+                    inventory.AddMapKey(itemInfo.Region.ToString(), 1);
+                    break;
+                case ItemType.Keys when itemInfo.SubType == 1 && SmallkeyMode == SmallKeyMode.KeyRings:
+                    events.SetEvent($"{itemInfo.Region}_KeyRing_Obtained",1);
+                    inventory.AddMapKey(itemInfo.Region.ToString(), 9);
+                    break;
+                case ItemType.BigKey when (int)BigKeyShuffle >= 3:
+                    inventory.BigKeyStatus[itemInfo.SubType] = true;
+                    break;
+                case ItemType.Cicada when !VanillaHealthCicadas:
+                    MAX_HEALTH += 1;
+                    CUR_HEALTH = MAX_HEALTH;
+                    break;
+                case ItemType.Heal:
+                    CUR_HEALTH += itemInfo.SubType == 0 ? 1 : 3;
+                    break;
+                case ItemType.StatueUnlocks when SplitWindmill:
+                    events.SetEvent($"StatueMoved_{itemInfo.Region}", 1);
+                    break;
+                case ItemType.RedCaveUnlock when !VanillaRedCave:
+                    events.IncEvent("ProgressiveRedGrotto");
 
-                string? mapName = GetMapNameForDungeon(dungeonName);
-                inventory.AddMapKey(mapName, 1);
-            }
-            else if (itemName.StartsWith("Key Ring"))
-            {
-                string? dungeonName = itemName[10..^1];
-
-                string? mapName = GetMapNameForDungeon(dungeonName);
-                events.SetEvent($"{mapName}_KeyRing_Obtained", 1);
-                inventory.AddMapKey(mapName, 9);
-            }
-            else if (itemName == "Green Key")
-            {
-                inventory.BigKeyStatus[0] = true;
-            }
-            else if (itemName == "Blue Key")
-            {
-                inventory.BigKeyStatus[2] = true;
-            }
-            else if (itemName == "Red Key")
-            {
-                inventory.BigKeyStatus[1] = true;
-            }
-            else if (itemName == "Jump Shoes")
-            {
-                inventory.CanJump = true;
-            }
-            else if (itemName == "Health Cicada")
-            {
-                MAX_HEALTH += 1;
-                CUR_HEALTH = MAX_HEALTH;
-            }
-            else if (itemName == "Heal")
-            {
-                CUR_HEALTH += 1;
-            }
-            else if (itemName == "Big Heal")
-            {
-                CUR_HEALTH += 3;
-            }
-            else if (itemName == "Broom")
-            {
-                inventory.HasBroom = true;
-
-                if (inventory.EquippedBroom == BroomType.NONE)
-                {
-                    inventory.EquippedBroom = BroomType.Normal;
-                }
-            }
-            else if (itemName == "Swap")
-            {
-                inventory.HasTransformer = true;
-
-                if (inventory.EquippedBroom == BroomType.NONE)
-                {
-                    inventory.EquippedBroom = BroomType.Transformer;
-                }
-
-                if ((PostgameMode == PostgameMode.Vanilla && events.GetEvent("DefeatedBriar") > 0) ||
-                    PostgameMode == PostgameMode.Unlocked)
-                {
-                    EnableExtendedSwap();
-                }
-            }
-            else if (itemName == "Progressive Swap")
-            {
-                inventory.HasTransformer = true;
-
-                if (inventory.EquippedBroom == BroomType.NONE)
-                {
-                    inventory.EquippedBroom = BroomType.Transformer;
-                }
-
-                events.IncEvent("SwapStage");
-
-                if (events.GetEvent("SwapStage") > 1)
-                {
-                    EnableExtendedSwap();
-
-                    itemName = "Progressive Swap (Extended)";
-                }
-                else
-                {
-                    itemName = "Progressive Swap (Limited)";
-                }
-            }
-            else if (itemName == "Extend")
-            {
-                inventory.HasLengthen = true;
-
-                if (inventory.EquippedBroom == BroomType.NONE)
-                {
-                    inventory.EquippedBroom = BroomType.Long;
-                }
-            }
-            else if (itemName == "Widen")
-            {
-                inventory.HasWiden = true;
-
-                if (inventory.EquippedBroom == BroomType.NONE)
-                {
-                    inventory.EquippedBroom = BroomType.Wide;
-                }
-            }
-            else if (itemName == "Temple of the Seeing One Statue")
-            {
-                // TODO: This and the other two: move while on the same map.
-                events.SetEvent("StatueMoved_Temple", 1);
-            }
-            else if (itemName == "Mountain Cavern Statue")
-            {
-                events.SetEvent("StatueMoved_Mountain", 1);
-            }
-            else if (itemName == "Red Cave Statue")
-            {
-                events.SetEvent("StatueMoved_Grotto", 1);
-            }
-            else if (itemName == "Progressive Red Cave")
-            {
-                events.IncEvent("ProgressiveRedGrotto");
-                if (!VanillaRedCave)
-                {
-                    switch (events.GetEvent("ProgressiveRedGrotto"))
+                    (char r, int amount) = events.GetEvent("ProgressiveRedGrotto") switch
                     {
-                        case 1:
-                            events.SetEvent("red_cave_l_ss", 1);
-                            break;
-                        case 2:
-                            events.SetEvent("red_cave_r_ss", 1);
-                            break;
-                        case 3:
-                            events.SetEvent("red_cave_n_ss", 2);
-                            break;
-                    }
-                }
-            }
-            else if (itemName.StartsWith("Card ("))
-            {
-                string? cardName = itemName[6..];
-                cardName = cardName[..^1];
+                        1 => ('l', 1),
+                        2 => ('r', 1),
+                        _ => ('n', 2)
+                    };
 
-                int cardIndex = GetCardNumberForName(cardName);
-                treasure = new CardTreasure(Plugin.Player.Position, cardIndex);
-            }
-            else if (itemName == "Cardboard Box")
-            {
-                events.SetEvent("ReceivedCardboardBox", 1);
-            }
-            else if (itemName == "Biking Shoes")
-            {
-                events.SetEvent("ReceivedBikingShoes", 1);
-            }
-            else if (itemName == "Person Trap")
-            {
-                int offset = 16;
-
-                int min = -offset;
-                int max = offset + 1;
-
-                for (int? i = 0; i < 6; i++)
-                {
-                    SpawnEntity(
-                        new Person(
-                            new EntityPreset(
-                                typeof(Person),
-                                Plugin.Player.Position + new Vector2(RNG.Next(min, max), RNG.Next(min, max)),
-                                new Guid(),
-                                RNG.Next(0, 5)
-                                ),
-                            Plugin.Player)
-                        );
-                }
-            }
-            else if (itemName == "Gas Trap")
-            {
-                Plugin.Player.reversed = true;
-                wave.active = true;
-            }
-            else if (itemName == "Miao")
-            {
-                events.SetEvent("ReceivedMiao", 1);
-            }
-            else if (itemName.StartsWith("Nexus Gate"))
-            {
-                if (_checkGates.TryGetValue(itemInfo.Region, out var gate))
-                {
+                    events.SetEvent($"red_cave_{r}_ss", amount);
+                    break;
+                case ItemType.Card:
+                    treasure = new CardTreasure(Plugin.Player.Position, (int)itemInfo.SubType);
+                    break;
+                case ItemType.Nexus when _checkGates.ContainsKey(itemInfo.Region):
+                    var gate = _checkGates[itemInfo.Region];
                     EntityManager.SetAlive(gate, true);
                     events.ActivatedNexusPortals.Add(itemInfo.Region.ToString());
-                }
-                else
-                {
-                    DebugLogger.AddError($"Couldn't find nexus gate to unlock at {itemInfo.Region}.", false);
-                }
-            }
-            else if (TreasureHelper.GetSecretNumber(itemName) != -1)
-            {
-                treasure = new SecretTreasure(Plugin.Player.Position, TreasureHelper.GetSecretNumber(itemName), -1);
-            }
-            else
-            {
-                handled = false;
-                DebugLogger.AddError($"Missing item handling: {itemName}!", false);
+                    break;
+                case ItemType.Trap when itemInfo.SubType == 0:
+                    int offset = 16;
+
+                    int min = -offset;
+                    int max = offset + 1;
+
+                    for (int? i = 0; i < 6; i++)
+                    {
+                        SpawnEntity(
+                            new Person(
+                                new EntityPreset(
+                                    typeof(Person),
+                                    Plugin.Player.Position + new Vector2(RNG.Next(min, max), RNG.Next(min, max)),
+                                    new Guid(),
+                                    RNG.Next(0, 5)
+                                    ),
+                                Plugin.Player)
+                            );
+                    }
+                    break;
+                case ItemType.Trap when itemInfo.SubType == 1:
+                    Plugin.Player.reversed = true;
+                    wave.active = true;
+                    break;
+                case ItemType.Secret:
+                    treasure = new SecretTreasure(Plugin.Player.Position, (int)itemInfo.SubType, -1);
+                    break;
+                case ItemType.TradingQuest when itemInfo.SubType <= 2:
+                    string name = itemInfo.SubType switch
+                    {
+                        0 => "Miao",
+                        1 => "CardboardBox",
+                        _ => "BikingShoes"
+                    };
+                    events.SetEvent($"Received{name}", 1);
+                    break;
+                case ItemType.Inventory when itemInfo.SubType <= 2:
+                    EquipBroomIfEmpty(itemInfo.SubType switch
+                    {
+                        0 => BroomType.Normal,
+                        1 => BroomType.Wide,
+                        _ => BroomType.Long
+                    });
+                    break;
+                case ItemType.Inventory when itemInfo.SubType == 3:
+                    inventory.CanJump = true;
+                    break;
+                case ItemType.Inventory when itemInfo.SubType == 4 && (PostgameMode == PostgameMode.Vanilla || PostgameMode == PostgameMode.Unlocked):
+                    EquipBroomIfEmpty(BroomType.Transformer);
+                    if(events.GetEvent("DefeatedBriar") > 0 || PostgameMode == PostgameMode.Unlocked)
+                    {
+                        EnableExtendedSwap();
+                    }
+                    break;
+                case ItemType.Inventory when itemInfo.SubType == 4 && PostgameMode == PostgameMode.Progression:
+                    EquipBroomIfEmpty(BroomType.Transformer);
+
+                    events.IncEvent("SwapStage");
+
+                    if (events.GetEvent("SwapStage") > 1)
+                    {
+                        EnableExtendedSwap();
+
+                        itemName = "Progressive Swap (Extended)";
+                    }
+                    else
+                    {
+                        itemName = "Progressive Swap (Limited)";
+                    }
+                    break;
+                //TODO: add Fountain handling
+                default:
+                    handled = false;
+                    break;
             }
 
             string? message;
@@ -804,6 +643,29 @@ namespace AnodyneArchipelago
             treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemName, GetPlayer());
 
             return (treasure, message);
+        }
+
+        private static void EquipBroomIfEmpty(BroomType type)
+        {
+            switch(type)
+            {
+                case BroomType.Transformer:
+                    inventory.HasTransformer = true;
+                    break;
+                case BroomType.Normal:
+                    inventory.HasBroom = true;
+                    break;
+                case BroomType.Long:
+                    inventory.HasLengthen = true;
+                    break;
+                case BroomType.Wide:
+                    inventory.HasWiden = true;
+                    break;
+            }
+            if(inventory.EquippedBroom == BroomType.NONE)
+            {
+                inventory.EquippedBroom = type;
+            }
         }
 
         public void ActivateGoal()

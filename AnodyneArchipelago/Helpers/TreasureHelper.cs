@@ -62,6 +62,7 @@ namespace AnodyneArchipelago.Helpers
 
         public static (string, int) GetSprite(string itemName, int player, ItemFlags itemFlags)
         {
+            //TODO: Make this handle anodyne items explicitly with ItemType
             if (Plugin.ArchipelagoManager!.MatchDifferentWorldItem == MatchDifferentWorldItem.Disabled && player != Plugin.ArchipelagoManager.GetPlayer())
             {
                 return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1);
