@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Dialogue;
+﻿using AnodyneArchipelago.Helpers;
+using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Interactive.Npc;
 using AnodyneSharp.Registry;
@@ -23,7 +24,7 @@ namespace AnodyneArchipelago.Entities
             {
                 GlobalState.events.SetEvent("UsedBikingShoes", 1);
 
-                Plugin.ArchipelagoManager!.SendLocation("Fields - Mitra Trade");
+                Plugin.ArchipelagoManager!.SendLocation(new Location(RegionID.FIELDS, LocationType.AreaEvent, 2).ID);
 
                 return DialogueManager.GetDialogue("misc", "any", "mitra", 1);
             }

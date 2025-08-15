@@ -18,6 +18,8 @@ namespace AnodyneArchipelago.Entities
 
         private EntityPreset _preset;
 
+        public static readonly Location ShopkeepLoc = new(RegionID.FIELDS, LocationType.AreaEvent, 1);
+
         public ShopKeepAP(EntityPreset preset, Player p) : base(preset, p)
         {
             _preset = preset;
@@ -70,7 +72,7 @@ namespace AnodyneArchipelago.Entities
 
                 _preset.Activated = true;
 
-                Plugin.ArchipelagoManager!.SendLocation("Fields - Shopkeeper Trade");
+                Plugin.ArchipelagoManager!.SendLocation(ShopkeepLoc.ID);
                 _items.Last().ActivateAnim();
 
                 return true;
@@ -117,7 +119,7 @@ namespace AnodyneArchipelago.Entities
                 }
                 else
                 {
-                    var boxItem = Plugin.ArchipelagoManager!.GetScoutedLocation("Fields - Shopkeeper Trade")!;
+                    var boxItem = Plugin.ArchipelagoManager!.GetScoutedLocation(ShopkeepLoc.ID)!;
                     _item = new ShopItem(boxItem.ItemId, boxItem.Player.Slot);
                     _otherItem = item;
                 }
@@ -191,7 +193,7 @@ namespace AnodyneArchipelago.Entities
                 var boxItem = manager.GetScoutedLocation("Fields - Shopkeeper Trade")!;
                 bool isBox = _otherItem != null;
 
-                (string sprite, int frame) = isBox ? TreasureHelper.GetSpriteWithTraps(_itemName, _item.playerSlot, boxItem.Flags, "Fields - Shopkeeper Trade") : TreasureHelper.GetSprite(_itemName, _item.playerSlot, boxItem.Flags);
+                (string sprite, int frame) = isBox ? TreasureHelper.GetSpriteWithTraps(_itemName, _item.playerSlot, boxItem.Flags, ShopkeepLoc.ID) : TreasureHelper.GetSprite(_itemName, _item.playerSlot, boxItem.Flags);
 
 
                 SetTexture(sprite, 16, 16);
@@ -206,8 +208,7 @@ namespace AnodyneArchipelago.Entities
 
                 if (isBox && Plugin.ArchipelagoManager!.HideTrapItems && boxItem.Flags.HasFlag(ItemFlags.Trap))
                 {
-                    _itemName = TreasureHelper.GetTrapName(_itemName, "Fields - Shopkeeper Trade");
-
+                    _itemName = TreasureHelper.GetTrapName(_itemName, ShopkeepLoc.ID);
                 }
 
                 _currency = Currencies[seed % Currencies.Length];

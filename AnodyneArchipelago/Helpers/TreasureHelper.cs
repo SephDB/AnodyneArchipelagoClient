@@ -48,7 +48,7 @@ namespace AnodyneArchipelago.Helpers
             return Array.IndexOf(secret_items, Util.ToTitleCase(secretName));
         }
 
-        public static (string, int) GetSpriteWithTraps(string itemName, int player, ItemFlags itemFlags, string location)
+        public static (string, int) GetSpriteWithTraps(string itemName, int player, ItemFlags itemFlags, long location)
         {
             if (Plugin.ArchipelagoManager!.HideTrapItems && itemFlags.HasFlag(ItemFlags.Trap))
             {
@@ -70,10 +70,6 @@ namespace AnodyneArchipelago.Helpers
             string fullCapsName = itemName;
             itemName = itemName.ToLower();
 
-            if (itemName.StartsWith("small key"))
-            {
-                return ("key", 0);
-            }
             if (itemName.StartsWith("key ring") || itemName.StartsWith("master key") || itemName.StartsWith("skeleton key"))
             {
                 return ("archipelago_items", 16);
@@ -287,9 +283,9 @@ namespace AnodyneArchipelago.Helpers
             return ("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1);
         }
 
-        public static string GetTrapName(string itemName, string location)
+        public static string GetTrapName(string itemName, long location)
         {
-            long seed = Util.StringToIntVal(Plugin.ArchipelagoManager!.GetSeed()) + Util.StringToIntVal(itemName) + Util.StringToIntVal(location);
+            long seed = Util.StringToIntVal(Plugin.ArchipelagoManager!.GetSeed()) + Util.StringToIntVal(itemName) + location;
 
             if (seed < 0)
             {

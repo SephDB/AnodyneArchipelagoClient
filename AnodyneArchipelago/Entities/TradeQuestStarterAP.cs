@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Entities;
+﻿using AnodyneArchipelago.Helpers;
+using AnodyneSharp.Entities;
 using AnodyneSharp.Registry;
 
 namespace AnodyneArchipelago.Entities
@@ -12,7 +13,7 @@ namespace AnodyneArchipelago.Entities
             if (GlobalState.inventory.tradeState == InventoryManager.TradeState.BOX)
             {
                 GlobalState.inventory.tradeState = InventoryManager.TradeState.NONE;
-                Plugin.ArchipelagoManager!.SendLocation("Fields - Cardboard Box");
+                Plugin.ArchipelagoManager!.SendLocation(new Location(RegionID.FIELDS,LocationType.AreaEvent,0).ID);
                 preset.Alive = exists = false;
             }
         }

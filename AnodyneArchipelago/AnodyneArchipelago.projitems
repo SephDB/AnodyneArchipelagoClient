@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entities\WindmillCheckAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\APItemCutscene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\EventTracker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IDManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ScreenChangeTracker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\TreasureHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Locations.cs" />

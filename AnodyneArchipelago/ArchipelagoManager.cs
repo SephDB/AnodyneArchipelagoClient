@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 using AnodyneArchipelago.Helpers;
@@ -7,8 +6,6 @@ using AnodyneArchipelago.Patches;
 using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy;
-using AnodyneSharp.Entities.Enemy.Circus;
-using AnodyneSharp.Entities.Gadget;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Logging;
 using AnodyneSharp.MapData;
@@ -91,10 +88,9 @@ namespace AnodyneArchipelago
         private EntityPatches? _patches;
 
         private string _seedName = "NULL";
-        private long? _dustsanityBase = null;
         private Dictionary<Guid, string> BigGateTypes = [];
         private string[] _unlockedGates = [];
-        private Dictionary<string, Guid> _checkGates = [];
+        private Dictionary<RegionID, Guid> _checkGates = [];
         private string? _playerSpriteName;
         private Texture2D? _originalPlayerTexture;
         private Texture2D? _originalCellTexture;
@@ -102,7 +98,7 @@ namespace AnodyneArchipelago
 
         private readonly Queue<string> _messages = new();
         private DeathLink? _pendingDeathLink = null;
-        private Task<Dictionary<string, ScoutedItemInfo>>? _scoutTask;
+        private Task<Dictionary<long, ScoutedItemInfo>>? _scoutTask;
 
         private ScreenChangeTracker screenTracker = new();
 
@@ -215,11 +211,6 @@ namespace AnodyneArchipelago
             else
             {
                 _deathLinkService = null;
-            }
-
-            if (GetSlotData<long?>("dust_sanity_base", null, login) is long val)
-            {
-                _dustsanityBase = val;
             }
 
             MitraHintType = GetSlotData("mitra_hint_type", MitraHintType.None, login);
@@ -364,31 +355,31 @@ namespace AnodyneArchipelago
             PatchPlayerTextures(_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture);
         }
 
-        private async Task<Dictionary<string, ScoutedItemInfo>> ScoutAllLocations()
+        private async Task<Dictionary<long, ScoutedItemInfo>> ScoutAllLocations()
         {
             Dictionary<long, ScoutedItemInfo>? locationInfo = await _session!.Locations.ScoutLocationsAsync([.. _session.Locations.AllLocations]);
 
-            Dictionary<string, ScoutedItemInfo>? result = [];
-            foreach (ScoutedItemInfo networkItem in locationInfo.Values)
-            {
-                string? name = _session.Locations.GetLocationNameFromId(networkItem.LocationId, networkItem.LocationGame);
-                if (name != null)
-                {
-                    result[name] = networkItem;
-                }
-            }
-
-            return result;
+            return locationInfo;
         }
 
-        public ItemInfo? GetScoutedLocation(string locationName)
+        public ItemInfo? GetScoutedLocation(long location_id)
         {
-            if (_scoutTask == null || !_scoutTask.IsCompleted || !_scoutTask.Result.ContainsKey(locationName))
+            if (_scoutTask == null || !_scoutTask.IsCompleted || !_scoutTask.Result.ContainsKey(location_id))
             {
                 return null;
             }
 
-            return _scoutTask.Result[locationName];
+            return _scoutTask.Result[location_id];
+        }
+
+        public ItemInfo? GetScoutedLocation(string locationName)
+        {
+            if (_scoutTask == null || !_scoutTask.IsCompleted || !_scoutTask.Result.ContainsKey(_session!.Locations.GetLocationIdFromName("Anodyne",locationName)))
+            {
+                return null;
+            }
+
+            return _scoutTask.Result[_session!.Locations.GetLocationIdFromName("Anodyne", locationName)];
         }
 
         public string GetItemName(long id, int player)
@@ -440,6 +431,25 @@ namespace AnodyneArchipelago
         public bool IsChecked(long location)
         {
             return Checked.Contains(location);
+        }
+
+        public void SendLocation(long id)
+        {
+            if (_session == null)
+            {
+                //Plugin.Instance.Log.LogError("Attempted to send location while disconnected");
+                return;
+            }
+
+            events.IncEvent($"ArchipelagoLoc-{id}");
+            if (Checked.Add(id))
+            {
+                Task.Run(() => _session.Locations.CompleteLocationChecksAsync([.. Checked.Except(_session.Locations.AllLocationsChecked)])).ConfigureAwait(false);
+            }
+            else
+            {
+                _messages.Enqueue($"{_session.Locations.GetLocationNameFromId(id) ?? "This location"} was already checked.");
+            }
         }
 
         public void SendLocation(string location)
@@ -612,6 +622,7 @@ namespace AnodyneArchipelago
             BaseTreasure? treasure = null;
 
             string? itemName = item.ItemName;
+            Item itemInfo = Item.Create(item.ItemId);
 
             bool handled = true;
 
@@ -803,15 +814,14 @@ namespace AnodyneArchipelago
             }
             else if (itemName.StartsWith("Nexus Gate"))
             {
-                string? mapname = GetNexusGateMapName(itemName[12..^1]);
-                if (_checkGates.TryGetValue(mapname, out var gate))
+                if (_checkGates.TryGetValue(itemInfo.Region, out var gate))
                 {
                     EntityManager.SetAlive(gate, true);
-                    events.ActivatedNexusPortals.Add(mapname);
+                    events.ActivatedNexusPortals.Add(itemInfo.Region.ToString());
                 }
                 else
                 {
-                    DebugLogger.AddError($"Couldn't find nexus gate to unlock at {mapname}.", false);
+                    DebugLogger.AddError($"Couldn't find nexus gate to unlock at {itemInfo.Region}.", false);
                 }
             }
             else if (TreasureHelper.GetSecretNumber(itemName) != -1)
@@ -912,7 +922,7 @@ namespace AnodyneArchipelago
         {
             if (path.EndsWith("Entities.xml"))
             {
-                _patches = new(stream, _dustsanityBase);
+                _patches = new(stream);
 
                 _patches.RemoveNexusBlockers();
                 _patches.RemoveMitraCutscenes();
@@ -961,52 +971,56 @@ namespace AnodyneArchipelago
 
                 foreach (long location_id in _session!.Locations.AllLocations)
                 {
-                    string? name = _session.Locations.GetLocationNameFromId(location_id);
+                    Location location = Location.Create(location_id);
 
-                    if (_patches.IsDustID(location_id))
+                    switch (location.Type)
                     {
-                        _patches.SetDust(location_id, name);
-                    }
-                    else if (name.EndsWith("Key") || name.EndsWith("Tentacle"))
-                    {
-                        _patches.SetFreeStanding(Locations.LocationsGuids[name], name, (int)location_id);
-                    }
-                    else if (name.EndsWith("Cicada"))
-                    {
-                        _patches.SetCicada(Locations.LocationsGuids[name], name);
-                    }
-                    else if (name.EndsWith("Chest"))
-                    {
-                        _patches.SetTreasureChest(Locations.LocationsGuids[name], name, (int)location_id);
-                    }
-                    else if (name == "Windmill - Activation")
-                    {
-                        _patches.SetWindmillCheck((int)location_id);
-                    }
-                    else if (name.EndsWith("Warp Pad"))
-                    {
-                        Guid guid = _patches.SetNexusPad(name, (int)location_id);
-                        _checkGates.Add(GetNexusGateMapName(name), guid); //Need to set them not alive when loading save for the first time
-                    }
-                    else if (name.EndsWith("Cardboard Box"))
-                    {
-                        _patches.SetBoxTradeCheck((int)location_id);
-                    }
-                    else if (name.EndsWith("Shopkeeper Trade"))
-                    {
-                        _patches.SetShopkeepTradeCheck();
-                    }
-                    else if (name.EndsWith("Mitra Trade"))
-                    {
-                        _patches.SetMitraTradeCheck();
-                    }
-                    else if (name.EndsWith("Defeat Briar"))
-                    {
-                        //no-op since this is done at credits checking
-                    }
-                    else
-                    {
-                        DebugLogger.AddError($"Missing location patch: {name}", false);
+                        case LocationType.Dust:
+                            _patches.SetDust(location);
+                            break;
+                        case LocationType.BigKey:
+                            _patches.SetBigKey(location);
+                            break;
+                        case LocationType.Tentacle:
+                            _patches.SetTentacle(location);
+                            break;
+                        case LocationType.Cicada:
+                            _patches.SetCicada(location);
+                            break;
+                        case LocationType.Chest:
+                            _patches.SetTreasureChest(location);
+                            break;
+                        case LocationType.AreaEvent when location.Region == RegionID.WINDMILL && location.ID == 0:
+                            _patches.SetWindmillCheck(location);
+                            break;
+                        case LocationType.Nexus:
+                            {
+                                Guid guid = _patches.SetNexusPad(location.Region, location_id);
+                                _checkGates.Add(location.Region, guid); //Need to set them not alive when loading save for the first time
+                                break;
+                            }
+                        case LocationType.AreaEvent when location.Region == RegionID.FIELDS:
+                            switch (location.Index)
+                            {
+                                case 0:
+                                    _patches.SetBoxTradeCheck(location_id);
+                                    break;
+                                case 1:
+                                    _patches.SetShopkeepTradeCheck();
+                                    break;
+                                case 2:
+                                    _patches.SetMitraTradeCheck();
+                                    break;
+                                default:
+                                    DebugLogger.AddError($"Unknown Fields area event {location.Index}", false);
+                                    break;
+                            }
+                            break;
+                        case LocationType.AreaEvent when location.Region == RegionID.GO && location.ID == 0:
+                            break;
+                        default:
+                            DebugLogger.AddError($"Missing location patch: {_session.Locations.GetLocationNameFromId(location_id) ?? location_id.ToString()}", false);
+                            break;
                     }
                 }
 
@@ -1042,7 +1056,7 @@ namespace AnodyneArchipelago
             }
             else if (VictoryCondition == VictoryCondition.AllCards)
             {
-                SendLocation("GO - Defeat Briar");
+                SendLocation(new Location(RegionID.GO,LocationType.AreaEvent,0).ID);
             }
         }
 

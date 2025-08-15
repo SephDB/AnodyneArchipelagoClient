@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Entities;
+﻿using AnodyneArchipelago.Helpers;
+using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Interactive.Npc.Windmill;
 using AnodyneSharp.GameEvents;
 
@@ -9,7 +10,7 @@ namespace AnodyneArchipelago.Entities
     {
         public override void OnEvent(GameEvent e)
         {
-            Plugin.ArchipelagoManager!.SendLocation("Windmill - Activation");
+            Plugin.ArchipelagoManager!.SendLocation(new Location(RegionID.WINDMILL, LocationType.AreaEvent, 0).ID);
             preset.Alive = exists = false;
         }
     }

@@ -7,9 +7,9 @@ using Archipelago.MultiClient.Net.Models;
 namespace AnodyneArchipelago.Entities
 {
     [NamedEntity, Collision(typeof(Player))]
-    public class FreeStandingAP(EntityPreset preset, Player p) : Entity(preset.Position, GetSprite(preset.TypeValue), DrawOrder.ENTITIES)
+    public class FreeStandingAP(EntityPreset preset, Player p) : Entity(preset.Position, GetSprite(long.Parse(preset.TypeValue)), DrawOrder.ENTITIES)
     {
-        private static StaticSpriteRenderer GetSprite(string location)
+        private static StaticSpriteRenderer GetSprite(long location)
         {
             ItemInfo? item = Plugin.ArchipelagoManager!.GetScoutedLocation(location);
             if (item is null)
@@ -23,7 +23,7 @@ namespace AnodyneArchipelago.Entities
         public override void Collided(Entity other)
         {
             base.Collided(other);
-            Plugin.ArchipelagoManager!.SendLocation(preset.TypeValue);
+            Plugin.ArchipelagoManager!.SendLocation(long.Parse(preset.TypeValue));
             preset.Alive = exists = false;
         }
     }
