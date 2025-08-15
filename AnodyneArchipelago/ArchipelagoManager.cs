@@ -89,7 +89,7 @@ namespace AnodyneArchipelago
 
         private string _seedName = "NULL";
         private Dictionary<Guid, string> BigGateTypes = [];
-        private string[] _unlockedGates = [];
+        private RegionID[] _unlockedGates = [];
         private Dictionary<RegionID, Guid> _checkGates = [];
         private string? _playerSpriteName;
         private Texture2D? _originalPlayerTexture;
@@ -195,7 +195,7 @@ namespace AnodyneArchipelago
 
             VictoryCondition = GetSlotData("victory_condition", VictoryCondition.DefeatBriar, login);
 
-            _unlockedGates = GetSlotDataArray<string>("nexus_gates_unlocked", login);
+            _unlockedGates = GetSlotDataArray<RegionID>("nexus_gates_unlocked", login);
 
             PostgameMode = GetSlotData("postgame_mode", PostgameMode.Disabled, login);
 
@@ -242,21 +242,6 @@ namespace AnodyneArchipelago
             return result;
         }
 
-        public static string GetNexusGateMapName(string region)
-        {
-            region = string.Join("", region.Split(' ').TakeWhile(s => Char.IsUpper(s[0]))).ToUpperInvariant();
-
-            return region switch
-            {
-                "TEMPLE" => "BEDROOM",
-                "CLIFFS" => "CLIFF",
-                "MOUNTAINCAVERN" => "CROWD",
-                "DEEPFOREST" => "FOREST",
-                "YOUNGTOWN" => "SUBURB",
-                _ => region
-            };
-        }
-
         public static string GetTrackerMapName(string map)
         {
             return map switch
@@ -295,13 +280,9 @@ namespace AnodyneArchipelago
 
             if (newGame)
             {
-                foreach (string gate in _unlockedGates)
+                foreach (RegionID gate in _unlockedGates)
                 {
-                    string? mapName = GetNexusGateMapName(gate);
-                    if (mapName.Length > 0)
-                    {
-                        events.ActivatedNexusPortals.Add(mapName);
-                    }
+                    events.ActivatedNexusPortals.Add(gate.ToString());
                 }
                 foreach (Guid guid in _checkGates.Values)
                 {
