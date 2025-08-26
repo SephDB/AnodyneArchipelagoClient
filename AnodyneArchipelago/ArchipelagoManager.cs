@@ -605,7 +605,7 @@ namespace AnodyneArchipelago
                         EnableExtendedSwap();
                     }
                     break;
-                case ItemType.Inventory when itemInfo.SubType == 4 && PostgameMode == PostgameMode.Progression:
+                case ItemType.Inventory when itemInfo.SubType == 5 && PostgameMode == PostgameMode.Progression:
                     EquipBroomIfEmpty(BroomType.Transformer);
 
                     events.IncEvent("SwapStage");
@@ -816,7 +816,7 @@ namespace AnodyneArchipelago
                         case LocationType.Chest:
                             _patches.SetTreasureChest(location);
                             break;
-                        case LocationType.AreaEvent when location.Region == RegionID.WINDMILL && location.ID == 0:
+                        case LocationType.AreaEvent when location.Region == RegionID.WINDMILL && location.Index == 0:
                             _patches.SetWindmillCheck(location);
                             break;
                         case LocationType.Nexus:
@@ -842,7 +842,7 @@ namespace AnodyneArchipelago
                                     break;
                             }
                             break;
-                        case LocationType.AreaEvent when location.Region == RegionID.GO && location.ID == 0:
+                        case LocationType.AreaEvent when location.Region == RegionID.GO && location.Index == 0:
                             break;
                         case LocationType.AreaEvent when location.Region == RegionID.BLUE || location.Region == RegionID.HAPPY:
                             _patches.SetBlueHappyReward(location);
