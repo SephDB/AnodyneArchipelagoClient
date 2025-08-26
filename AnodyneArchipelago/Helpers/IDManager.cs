@@ -12,7 +12,7 @@ namespace AnodyneArchipelago.Helpers
         BEDROOM,
         BLANK,
         BLUE,
-        BOSS_RUSH,
+        BOSSRUSH,
         CELL,
         CIRCUS,
         CLIFF,

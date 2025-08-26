@@ -504,18 +504,18 @@ namespace AnodyneArchipelago
         {
             BaseTreasure? treasure = null;
 
-            string itemName = GetItemName(item.ItemId,GetPlayer());
+            string itemName = GetItemName(item.ItemId, GetPlayer());
             Item itemInfo = Item.Create(item.ItemId);
 
             bool handled = true;
 
-            switch(itemInfo.Type)
+            switch (itemInfo.Type)
             {
                 case ItemType.Keys when itemInfo.SubType == 0 && SmallkeyMode == SmallKeyMode.SmallKeys:
                     inventory.AddMapKey(itemInfo.Region.ToString(), 1);
                     break;
                 case ItemType.Keys when itemInfo.SubType == 1 && SmallkeyMode == SmallKeyMode.KeyRings:
-                    events.SetEvent($"{itemInfo.Region}_KeyRing_Obtained",1);
+                    events.SetEvent($"{itemInfo.Region}_KeyRing_Obtained", 1);
                     inventory.AddMapKey(itemInfo.Region.ToString(), 9);
                     break;
                 case ItemType.BigKey when (int)BigKeyShuffle >= 3:
@@ -600,7 +600,7 @@ namespace AnodyneArchipelago
                     break;
                 case ItemType.Inventory when itemInfo.SubType == 4 && (PostgameMode == PostgameMode.Vanilla || PostgameMode == PostgameMode.Unlocked):
                     EquipBroomIfEmpty(BroomType.Transformer);
-                    if(events.GetEvent("DefeatedBriar") > 0 || PostgameMode == PostgameMode.Unlocked)
+                    if (events.GetEvent("DefeatedBriar") > 0 || PostgameMode == PostgameMode.Unlocked)
                     {
                         EnableExtendedSwap();
                     }
@@ -621,7 +621,12 @@ namespace AnodyneArchipelago
                         itemName = "Progressive Swap (Limited)";
                     }
                     break;
-                //TODO: add Fountain handling
+                case ItemType.Fountain when itemInfo.Region == RegionID.BLUE:
+                    events.SetEvent("BlueDone", 1);
+                    break;
+                case ItemType.Fountain when itemInfo.Region == RegionID.HAPPY:
+                    events.SetEvent("HappyDone", 1);
+                    break;
                 default:
                     handled = false;
                     break;
@@ -644,14 +649,14 @@ namespace AnodyneArchipelago
                 message += " But it didn't have any effect.";
             }
 
-            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemName, GetPlayer());
+            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemInfo.ID, GetPlayer());
 
             return (treasure, message);
         }
 
         private static void EquipBroomIfEmpty(BroomType type)
         {
-            switch(type)
+            switch (type)
             {
                 case BroomType.Transformer:
                     inventory.HasTransformer = true;
@@ -666,7 +671,7 @@ namespace AnodyneArchipelago
                     inventory.HasWiden = true;
                     break;
             }
-            if(inventory.EquippedBroom == BroomType.NONE)
+            if (inventory.EquippedBroom == BroomType.NONE)
             {
                 inventory.EquippedBroom = type;
             }
@@ -839,6 +844,9 @@ namespace AnodyneArchipelago
                             break;
                         case LocationType.AreaEvent when location.Region == RegionID.GO && location.ID == 0:
                             break;
+                        case LocationType.AreaEvent when location.Region == RegionID.BLUE || location.Region == RegionID.HAPPY:
+                            _patches.SetBlueHappyReward(location);
+                            break;
                         default:
                             DebugLogger.AddError($"Missing location patch: {_session.Locations.GetLocationNameFromId(location_id) ?? location_id.ToString()}", false);
                             break;
@@ -877,7 +885,7 @@ namespace AnodyneArchipelago
             }
             else if (VictoryCondition == VictoryCondition.AllCards)
             {
-                SendLocation(new Location(RegionID.GO,LocationType.AreaEvent,0).ID);
+                SendLocation(new Location(RegionID.GO, LocationType.AreaEvent, 0).ID);
             }
         }
 

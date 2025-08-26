@@ -107,6 +107,7 @@ namespace AnodyneArchipelago.Entities
             private string _currency = "";
             private long _value = 0;
 
+
             public ShopItemAP(Vector2 pos, ShopItem item, bool isCardboardBox) : base(pos, new StaticSpriteRenderer("fields_npcs", 16, 16, 0), AnodyneSharp.Drawing.DrawOrder.BG_ENTITIES)
             {
                 _startPos = pos;
@@ -189,15 +190,14 @@ namespace AnodyneArchipelago.Entities
             {
                 var manager = Plugin.ArchipelagoManager!;
 
-                _itemName = manager.GetItemName(_item.itemID, _item.playerSlot);
                 var boxItem = manager.GetScoutedLocation(ShopkeepLoc.ID)!;
                 bool isBox = _otherItem != null;
 
-                (string sprite, int frame) = isBox ? TreasureHelper.GetSpriteWithTraps(_itemName, _item.playerSlot, boxItem.Flags, ShopkeepLoc.ID) : TreasureHelper.GetSprite(_itemName, _item.playerSlot, boxItem.Flags);
+                long? disguisedItemId = null;
+                ItemSpriteInfo info = isBox ? TreasureHelper.GetSpriteWithTraps(_item.itemID, _item.playerSlot, boxItem.Flags, ShopkeepLoc.ID, out disguisedItemId) : TreasureHelper.GetSprite(_item.itemID, _item.playerSlot, boxItem.Flags);
 
-
-                SetTexture(sprite, 16, 16);
-                SetFrame(frame);
+                SetTexture(info.Sprite, 16, 16);
+                SetFrame(info.Frame);
 
                 long seed = Util.StringToIntVal(manager.GetSeed()) + _item.itemID + _item.playerSlot;
 
@@ -206,10 +206,7 @@ namespace AnodyneArchipelago.Entities
                     seed *= -1;
                 }
 
-                if (isBox && Plugin.ArchipelagoManager!.HideTrapItems && boxItem.Flags.HasFlag(ItemFlags.Trap))
-                {
-                    _itemName = TreasureHelper.GetTrapName(_itemName, ShopkeepLoc.ID);
-                }
+                _itemName = Plugin.ArchipelagoManager!.GetItemName(disguisedItemId ?? _item.itemID, _item.playerSlot);
 
                 _currency = Currencies[seed % Currencies.Length];
                 _value = seed % 999 * 10;

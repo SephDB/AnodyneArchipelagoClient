@@ -19,7 +19,7 @@ namespace AnodyneArchipelago
                 return new(location, pos, "none", -1);
             }
 
-            (string tex, int frame) = TreasureHelper.GetSprite(item?.ItemName ?? "", item?.Player.Slot ?? -1, item?.Flags ?? ItemFlags.None);
+            (string tex, int frame, _) = TreasureHelper.GetSprite(item!.ItemId, item?.Player.Slot ?? -1, item?.Flags ?? ItemFlags.None);
 
             return new(location, pos, tex, frame);
         }

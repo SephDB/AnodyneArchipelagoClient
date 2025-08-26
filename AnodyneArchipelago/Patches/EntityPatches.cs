@@ -29,7 +29,7 @@ namespace AnodyneArchipelago.Patches
 
         public Dictionary<RegionID, XElement[]> GetCache(LocationType type, string lookup)
         {
-            if(entity_cache.TryGetValue(type, out var result))
+            if (entity_cache.TryGetValue(type, out var result))
             {
                 return result;
             }
@@ -60,7 +60,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetDust(Location location)
         {
-            var node = GetCache(LocationType.Dust,"Dust")[location.Region][location.Index];
+            var node = GetCache(LocationType.Dust, "Dust")[location.Region][location.Index];
             node.Name = nameof(DustAP);
             node.SetAttributeValue("type", location.ID.ToString());
         }
@@ -153,7 +153,7 @@ namespace AnodyneArchipelago.Patches
         public void SetBigKey(Location location)
         {
             var node = root.Descendants("NPC")
-                .Where(n => (string)n.Parent!.Attribute("name")! == location.Region.ToString() 
+                .Where(n => (string)n.Parent!.Attribute("name")! == location.Region.ToString()
                     && (string)n.Attribute("type")! == "big_key")
                 .First();
             node.Name = nameof(FreeStandingAP);
@@ -186,7 +186,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetTreasureChest(Location location)
         {
-            var node = GetCache(location.Type,"Treasure")[location.Region][location.Index];
+            var node = GetCache(location.Type, "Treasure")[location.Region][location.Index];
             node.AddBeforeSelf(
                 new XElement(
                     nameof(ChestAPInserter),
@@ -321,9 +321,6 @@ namespace AnodyneArchipelago.Patches
             //Go Happy blocker
             root.Descendants("NPC").Where(e => (int)e.Attribute("frame")! == 11 && (string)e.Attribute("type")! == "generic").First().Remove();
 
-            root.Descendants("Shadow_Briar").Where(m => (string)m.Parent!.Attribute("name")! == "BLUE").First().Remove();
-            root.Descendants("Shadow_Briar").Where(m => (string)m.Parent!.Attribute("name")! == "HAPPY").First().Remove();
-
             //Blue gate
             GetByID(new("FCADDA8E-CF50-3724-2724-C845AE08CEE2")).SetAttributeValue("frame", 5);
 
@@ -333,6 +330,32 @@ namespace AnodyneArchipelago.Patches
 
             //Go cutscenes
             GetByID(new("EB109441-3637-BFA7-0E9A-92B1EBD0A20C")).Remove();
+        }
+
+        public void SetBlueHappyReward(Location location)
+        {
+            XElement node = root!.Elements("map")
+                        .Where(m => (string)m.Attribute("name")! == location.Region.ToString())
+                        .First().Element("Shadow_Briar")!;
+
+            node.Name = nameof(FreeStandingAP);
+            node.SetAttributeValue("type", location.ID.ToString());
+            node.SetAttributeValue("p", 2);
+
+            switch (location.Region)
+            {
+                case RegionID.BLUE:
+                    node.SetAttributeValue("x", 5 * 16);
+                    node.SetAttributeValue("y", 2 * 16);
+                    break;
+                case RegionID.HAPPY:
+                    node.SetAttributeValue("x", 41 * 16);
+                    node.SetAttributeValue("y", 11 * 16);
+                    break;
+                default:
+                    DebugLogger.AddError($"Found Shadow Briar in unexpected region '{location.Region}'!");
+                    return;
+            }
         }
     }
 }
