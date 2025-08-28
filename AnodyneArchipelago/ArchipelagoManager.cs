@@ -621,10 +621,10 @@ namespace AnodyneArchipelago
                         itemName = "Progressive Swap (Limited)";
                     }
                     break;
-                case ItemType.Fountain when itemInfo.Region == RegionID.BLUE:
+                case ItemType.Dam when itemInfo.Region == RegionID.BLUE:
                     events.SetEvent("BlueDone", 1);
                     break;
-                case ItemType.Fountain when itemInfo.Region == RegionID.HAPPY:
+                case ItemType.Dam when itemInfo.Region == RegionID.HAPPY:
                     events.SetEvent("HappyDone", 1);
                     break;
                 default:

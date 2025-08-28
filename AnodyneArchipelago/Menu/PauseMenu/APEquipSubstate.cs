@@ -42,7 +42,7 @@ namespace AnodyneSharp.States.MenuSubstates
         private UIEntity _shoesItem;
         private UIEntity _redCave;
         private UIEntity _miao;
-        private UIEntity[] _fountains;
+        private UIEntity[] _dams;
         private UIEntity[] _statues;
 
         private UILabel _redCaveLabel;
@@ -103,7 +103,7 @@ namespace AnodyneSharp.States.MenuSubstates
                 _miao.SetFrame(21);
             }
 
-            _fountains =
+            _dams =
                 [
                     new UIEntity(new Vector2(95 + 16 + 16 , 130), "archipelago_items", GlobalState.events.GetEvent("HappyDone") != 0 ? 23 : 25 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
                     new UIEntity(new Vector2(95 + 16 + 16 * 2, 130), "archipelago_items", GlobalState.events.GetEvent("BlueDone") != 0 ? 22 : 24 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
@@ -165,9 +165,9 @@ namespace AnodyneSharp.States.MenuSubstates
                 statue.Draw();
             }
 
-            foreach (var fountain in _fountains)
+            foreach (var dam in _dams)
             {
-                fountain.Draw();
+                dam.Draw();
             }
 
             selector.Draw();
@@ -362,21 +362,21 @@ namespace AnodyneSharp.States.MenuSubstates
                 case EquipState.Happy:
                     if (GlobalState.events.GetEvent("HappyDone") != 0)
                     {
-                        SetDialogue("The Happy Fountain is active!");
+                        SetDialogue("The Happy Dam is open!");
                     }
                     else
                     {
-                        SetDialogue("The Happy Fountain is not active.");
+                        SetDialogue("The Happy Dam remains unopened.");
                     }
                     break;
                 case EquipState.Blue:
                     if (GlobalState.events.GetEvent("BlueDone") != 0)
                     {
-                        SetDialogue("The Blue Fountain is active!");
+                        SetDialogue("The Blue Dam is open!");
                     }
                     else
                     {
-                        SetDialogue("The Blue Fountain is not active.");
+                        SetDialogue("The Blue Dam remains unopened.");
                     }
                     break;
                 case EquipState.Miao:
@@ -463,11 +463,11 @@ namespace AnodyneSharp.States.MenuSubstates
                     break;
                 case EquipState.Happy:
                     ignoreOffset = true;
-                    selector.Position = _fountains[0].Position;
+                    selector.Position = _dams[0].Position;
                     break;
                 case EquipState.Blue:
                     ignoreOffset = true;
-                    selector.Position = _fountains[1].Position;
+                    selector.Position = _dams[1].Position;
                     break;
                 case EquipState.Miao:
                     ignoreOffset = true;

@@ -20,23 +20,23 @@ namespace AnodyneArchipelago.Helpers
         {
             SpriteDict = new()
             {
-                [new(ItemType.Inventory, 0)] = new("broom-icon", 0, ["broom"]),
+                [new(ItemType.Inventory, 0)] = new("broom-icon", 0, ["broom", "clean"]),
                 [new(ItemType.Inventory, 1)] = new("item_wide_attack", 0, ["wide", "widen"]),
                 [new(ItemType.Inventory, 2)] = new("item_long_attack", 0, ["long", "extend"]),
-                [new(ItemType.Inventory, 3)] = new("item_jump_shoes", 0, ["jump", "jump shoes"]),
+                [new(ItemType.Inventory, 3)] = new("item_jump_shoes", 0, ["jump", "jump shoes", "glide"]),
                 [new(ItemType.Inventory, 4)] = new("item_tranformer", 0, ["transformer", "swap"]),
                 [new(ItemType.Inventory, 5)] = new("item_tranformer", 0, ["transformer", "swap"]),
                 [new(ItemType.Cicada, 0)] = new("life_cicada", 0, ["life cicada", "health cicada"]),
                 [new(ItemType.StatueUnlocks, 0, RegionID.BEDROOM)] = new("archipelago_items", 6, ["temple of the seeing one statue"]),
-                [new(ItemType.StatueUnlocks, 0, RegionID.REDCAVE)] = new("archipelago_items", 7, ["red cavern statue", "statue"]),
-                [new(ItemType.StatueUnlocks, 0, RegionID.CROWD)] = new("archipelago_items", 8, ["mountain cavern statue", "statue"]),
-                [new(ItemType.Heal, 0)] = new("archipelago_items", 14, ["heal", "health", "heart", "hp", "potion"]),
-                [new(ItemType.Heal, 1)] = new("archipelago_items", 15, ["big heal"]),
+                [new(ItemType.StatueUnlocks, 0, RegionID.REDCAVE)] = new("archipelago_items", 7, ["red cavern statue"]),
+                [new(ItemType.StatueUnlocks, 0, RegionID.CROWD)] = new("archipelago_items", 8, ["mountain cavern statue"]),
+                [new(ItemType.Heal, 0)] = new("archipelago_items", 14, ["heal", "health", "heart", "hp"]),
+                [new(ItemType.Heal, 1)] = new("archipelago_items", 15, ["big heal",]),
                 [new(ItemType.Trap, 0)] = new("person", 0, ["person trap", "human", "anxiety"]),
                 [new(ItemType.Trap, 1)] = new("archipelago_items", 13, ["gas trap", "gas", "poison"]),
                 [new(ItemType.RedCaveUnlock, 0, RegionID.REDCAVE)] = new("archipelago_items", 3, ["progressive red cavern", "progressive red cave", "tentacle", "whip"]),
-                [new(ItemType.Fountain, 0, RegionID.BLUE)] = new("archipelago_items", 22, ["blue done", "blue"]),
-                [new(ItemType.Fountain, 0, RegionID.HAPPY)] = new("archipelago_items", 23, ["happy done", "happy", "red"]),
+                [new(ItemType.Dam, 0, RegionID.BLUE)] = new("archipelago_items", 22, ["blue done"]),
+                [new(ItemType.Dam, 0, RegionID.HAPPY)] = new("archipelago_items", 23, ["happy done"]),
                 [new(ItemType.TradingQuest, 0)] = new("fields_npcs", 0, ["miao"]),
                 [new(ItemType.TradingQuest, 1)] = new("fields_npcs", 31, ["cardboard", "box"]),
                 [new(ItemType.TradingQuest, 2)] = new("fields_npcs", 56, ["biking shoes", "shoes"]),
@@ -60,7 +60,7 @@ namespace AnodyneArchipelago.Helpers
 
             foreach (RegionID regionID in Enum.GetValues(typeof(RegionID)))
             {
-                SpriteDict.Add(new(ItemType.Nexus, 0 , regionID), new("archipelago_items", 2, ["gate"]));
+                SpriteDict.Add(new(ItemType.Nexus, 0, regionID), new("archipelago_items", 2, ["gate"]));
             }
 
             for (int i = 0; i < 3; i++)
@@ -72,7 +72,7 @@ namespace AnodyneArchipelago.Helpers
             {
                 SpriteDict.Add(new(ItemType.Card, i), new("archipelago_items", i == 49 ? 5 : 4, ["card"]));
             }
-                                                        
+
             for (int i = 0; i < 14; i++)
             {
                 SpriteDict.Add(new(ItemType.Secret, i), new("secret_trophies", i, ["secret"]));
@@ -107,8 +107,7 @@ namespace AnodyneArchipelago.Helpers
                 return SpriteDict[itemInfo];
             }
 
-            string itemName = manager.GetItemName(itemId, player).ToLower();
-            string fullCapsName = itemName.ToUpper();
+            string itemName = manager.GetItemName(itemId, player);
 
             string sprite = "external_items";
             int frame = -1;
@@ -122,97 +121,113 @@ namespace AnodyneArchipelago.Helpers
             }
             else if (Plugin.ArchipelagoManager!.MatchDifferentWorldItem == MatchDifferentWorldItem.MatchExtra)
             {
-                if (itemName.Contains("cd") || itemName.Contains("disk") || fullCapsName.Contains("TM") || fullCapsName.Contains("HM"))
+                if (StringContains(itemName, "cd", "disk") || StringContainsUpper(itemName, "TM", "HM"))
                 {
                     frame = 15;
                 }
-                else if (itemName.Contains("jigsaw") || itemName.Contains("jiggy") || itemName.Contains("puzzle"))
+                else if (StringContains(itemName, "jigsaw", "jiggy", "puzzle"))
                 {
                     frame = 16;
                 }
-                else if (itemName.Contains("emblem") || itemName.Contains("badge") || itemName.Contains("trophy"))
+                else if (StringContains(itemName, "emblem", "badge", "trophy", "accessory"))
                 {
                     frame = 17;
                 }
-                else if (itemName.Contains("mushroom"))
+                else if (StringContains(itemName, "mushroom"))
                 {
                     sprite = "forest_npcs";
                     frame = 20;
                 }
-                else if (itemName.Contains("gun"))
+                else if (StringContains(itemName, "gun", "rocket", "ammo", "bullet"))
                 {
                     sprite = "fields_npcs";
                     frame = 54;
                 }
-                else if (itemName.Contains("wallet"))
+                else if (StringContains(itemName, "wallet"))
                 {
                     sprite = "fields_npcs";
                     frame = 55;
                 }
-                else if (itemName.Contains("vacuum") || itemName.Contains("poltergust"))
+                else if (StringContains(itemName, "vacuum", "poltergust"))
                 {
                     sprite = "fields_npcs";
                     frame = 56;
                 }
-                else if (itemName.Contains("heart container") || itemName.Contains("love"))
+                else if (StringContains(itemName, "heart container", "love"))
                 {
                     frame = 20;
                 }
-                else if (itemName.Contains("piece of heart") || itemName.Contains("heart piece") || itemName.Contains("heartpiece"))
+                else if (StringContains(itemName, "piece of heart", "heart piece", "heartpiece"))
                 {
                     frame = 1;
                 }
-                else if (itemName.Contains("stick") || itemName.Contains("branch") || itemName.Contains("wood") || itemName.Contains("rod") || itemName.Contains("staff"))
+                else if (StringContains(itemName, "stick", "branch", "wood", "rod", "staff"))
                 {
                     frame = 3;
                 }
-                else if (itemName.Contains("feather") || itemName.Contains("roc's"))
+                else if (StringContains(itemName, "feather", "roc's"))
                 {
                     frame = 4;
                 }
-                else if (itemName.Contains("jar") || itemName.Contains("bottle"))
+                else if (StringContains(itemName, "jar", "bottle", "syrup", "potion"))
                 {
                     frame = 5;
                 }
-                else if (itemName.Contains("coin") || fullCapsName.EndsWith('G'))
+                else if (StringContains(itemName, "coin", "money") || itemName.EndsWith('G'))
                 {
                     frame = 6;
                 }
-                else if (itemName.Contains("rupee") || itemName.Contains("gem") || itemName.Contains("crystal") || itemName.Contains("jewel"))
+                else if (StringContains(itemName, "rupee", "gem", "crystal", "jewel"))
                 {
                     frame = 7;
                 }
-                else if (itemName.Contains("bean") || itemName.Contains("seed") || itemName.Contains("nut") || itemName.Contains("berry"))
+                else if (StringContains(itemName, "map", "chart", "compass"))
                 {
-                    frame = 8;
+                    frame = 21;
                 }
-                else if (itemName.Contains("bomb"))
+                else if (StringContains(itemName, "bomb"))
                 {
                     frame = 9;
                 }
-                else if (itemName.Contains("arrow") || itemName.Contains("bow"))
+                else if (StringContains(itemName, "arrow", "bow"))
                 {
                     frame = 10;
                 }
-                else if (itemName.Contains("shield"))
+                else if (StringContains(itemName, "shield", "equipment", "armor"))
                 {
                     frame = 11;
                 }
-                else if (itemName.Contains("star") || itemName.Contains("shine"))
+                else if (StringContains(itemName, "star", "shine"))
                 {
                     frame = 12;
                 }
-                else if (itemName.Contains("rock") || itemName.Contains("stone"))
+                else if (StringContains(itemName, "bean", "seed", "nut", "berry"))
+                {
+                    frame = 8;
+                }
+                else if (StringContains(itemName, "rock", "stone"))
                 {
                     frame = 13;
                 }
-                else if (itemName.Contains("ball") || itemName.Contains("orb") || itemName.Contains("pearl"))
+                else if (StringContains(itemName, "leaf", "herb", "poultice"))
+                {
+                    frame = 19;
+                }
+                else if (StringContains(itemName, "ball", "orb", "pearl"))
                 {
                     frame = 14;
                 }
-                else if (itemName.Contains("sword"))
+                else if (StringContains(itemName, "sword"))
                 {
                     frame = 2;
+                }
+                else if (StringContains(itemName, "energy"))
+                {
+                    frame = 18;
+                }
+                else if (StringContains(itemName, "meat", "meal", "dinner"))
+                {
+                    frame = 20;
                 }
             }
 
@@ -237,6 +252,16 @@ namespace AnodyneArchipelago.Helpers
 
             return itemList[seed % itemList.Length];
         }
+
+        private static bool StringContains(string itemName, params string[] matches)
+        {
+            return matches.Any(s => itemName.Contains(s, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        private static bool StringContainsUpper(string itemName, params string[] matches)
+        {
+            return matches.Any(itemName.Contains);
+        }
     }
 
     public class SpriteTreasure(Vector2 pos, string tex, int frame) : Treasure(tex, pos, frame, -1)
@@ -252,7 +277,7 @@ namespace AnodyneArchipelago.Helpers
     {
         public bool ContainsSynonym(string itemName)
         {
-            return Synonyms.Any(s => s.Contains(itemName.ToLower(), StringComparison.InvariantCultureIgnoreCase));
+            return Synonyms.Any(s => itemName.Contains(s, StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }

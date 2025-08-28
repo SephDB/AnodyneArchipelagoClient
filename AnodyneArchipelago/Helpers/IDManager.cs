@@ -59,7 +59,7 @@ namespace AnodyneArchipelago.Helpers
         Nexus,
         Trap,
         RedCaveUnlock,
-        Fountain,
+        Dam,
         TradingQuest
     }
 

@@ -330,6 +330,11 @@ namespace AnodyneArchipelago.Patches
 
             //Go cutscenes
             GetByID(new("EB109441-3637-BFA7-0E9A-92B1EBD0A20C")).Remove();
+
+            //The dams
+            GetByID(new("F66DA4C5-8721-DE48-D1DD-CE9BF573E3D5")).Name = nameof(DamAP);
+            GetByID(new("2784472C-0C13-F14A-5FF3-839111C96922")).Name = nameof(DamAP);
+
         }
 
         public void SetBlueHappyReward(Location location)
