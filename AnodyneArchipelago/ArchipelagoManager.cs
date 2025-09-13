@@ -162,6 +162,15 @@ namespace AnodyneArchipelago
 
             LoginSuccessful? login = (result as LoginSuccessful)!;
 
+            ApVersion = new(GetSlotData("version", "0.0.0", login).ToString());
+
+            if (!ApVersion.IsNewer(0, 3, 2))
+            {
+                return new LoginFailure("AP World is generated with an older version.\n\nPlease downgrade the Client!");
+            }
+
+            IncludeBlueHappy = GetSlotData("include_blue_happy", false, login);
+
             foreach (var (key, (value, id)) in Locations.Gates)
             {
                 BigGateTypes[id] = (string)login.SlotData.GetValueOrDefault(key, value);
@@ -232,10 +241,6 @@ namespace AnodyneArchipelago
             {
                 ShopItems = GetSlotDataArray<ShopItem>("shop_items", login);
             }
-
-            IncludeBlueHappy = GetSlotData("include_blue_happy", false, login);
-
-            ApVersion = new(GetSlotData("version", "0.0.0", login).ToString());
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
 
@@ -407,7 +412,7 @@ namespace AnodyneArchipelago
             return Checked.Contains(location);
         }
 
-        public void SendLocation(long id)
+        public void SendLocation(long location)
         {
             if (_session == null)
             {
@@ -415,14 +420,21 @@ namespace AnodyneArchipelago
                 return;
             }
 
-            events.IncEvent($"ArchipelagoLoc-{id}");
-            if (Checked.Add(id))
+            events.IncEvent($"ArchipelagoLoc-{location}");
+            if (Checked.Add(location))
             {
                 Task.Run(() => _session.Locations.CompleteLocationChecksAsync([.. Checked.Except(_session.Locations.AllLocationsChecked)])).ConfigureAwait(false);
+
+                ItemInfo item = Plugin.ArchipelagoManager!.GetScoutedLocation(location)!;
+                long itemId = item.ItemId;
+                string itemName = GetItemName(itemId, GetPlayer());
+                int player = item.Player;
+
+                DebugLogger.AddInfo($"Sent {itemName} ({itemId}) found at {GetLocationName(location, GetGameName(player))} ({location}) to {GetPlayerName(player)} ({player}).");
             }
             else
             {
-                _messages.Enqueue($"{_session.Locations.GetLocationNameFromId(id) ?? "This location"} was already checked.");
+                _messages.Enqueue($"{_session.Locations.GetLocationNameFromId(location) ?? "This location"} was already checked.");
             }
         }
 
@@ -504,8 +516,14 @@ namespace AnodyneArchipelago
         {
             BaseTreasure? treasure = null;
 
-            string itemName = GetItemName(item.ItemId, GetPlayer());
+            long itemId = item.ItemId;
+            string itemName = GetItemName(itemId, GetPlayer());
+            long location = item.LocationId;
+            int player = item.Player;
+
             Item itemInfo = Item.Create(item.ItemId);
+
+            DebugLogger.AddInfo($"Recieved {itemName} ({itemId}) found at {GetLocationName(location, GetGameName(player))} ({location}) from {GetPlayerName(player)} ({player}).");
 
             bool handled = true;
 
