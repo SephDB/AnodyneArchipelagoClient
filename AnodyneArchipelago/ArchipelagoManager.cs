@@ -767,12 +767,7 @@ namespace AnodyneArchipelago
                 _patches.RemoveMitraCutscenes();
                 _patches.FixHotelSoftlock();
                 _patches.FixHappyNexusPad();
-
-                //0.3.0 is the earliest version with version checks
-                if (ApVersion.IsNewer(0, 3, 0))
-                {
-                    _patches.LockMiao();
-                }
+                _patches.LockMiao();
 
                 if (ColorPuzzleRandomized)
                 {
