@@ -147,6 +147,8 @@ namespace AnodyneArchipelago
                 _seedName = roomInfoPacket.SeedName;
 
                 result = await _session.LoginAsync("Anodyne", slotName, ItemsHandlingFlags.AllItems, null, null, null, password == "" ? null : password);
+                _session.DataStorage[Scope.Game, "roomSeed"].Initialize(RNG.Next(0,1000000));
+                _seedName += $"_{await _session.DataStorage[Scope.Game, "roomSeed"].GetAsync<int>():D6}";
             }
             catch (Exception e)
             {
