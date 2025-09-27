@@ -77,7 +77,9 @@ namespace AnodyneArchipelago.Helpers
                 NexusGate("SPACE", "Space"),
                 NexusGate("CELL", "Cell"),
                 NexusGate("SUBURB", "Suburb"),
-                NexusGate("BLUE", "Blue")
+                NexusGate("BLUE", "Blue"),
+                GameEvent("BlueDone","BlueDone"),
+                GameEvent("HappyDone","HappyDone")
             ];
 
         static EventWatch NexusGate(string MapName, string eventName)
