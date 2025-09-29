@@ -178,11 +178,6 @@ namespace AnodyneArchipelago
                 BigGateTypes[id] = (string)login.SlotData.GetValueOrDefault(key, value);
             }
 
-            if (login.SlotData.ContainsKey("endgame_card_requirement"))
-            {
-                BigGateTypes[Locations.Gates["terminal_endgame_gate"].guid] = $"cards_{(long)login.SlotData["endgame_card_requirement"]}";
-            }
-
 
             if (login.SlotData.ContainsKey("seed"))
             {
@@ -276,6 +271,8 @@ namespace AnodyneArchipelago
                     ["mapIndex"] = screenTracker.Tracker.location.X + MAP_GRID_WIDTH * screenTracker.Tracker.location.Y
                 }
             });
+            _session.DataStorage[Scope.Slot, "MapIndex"] = (int)Enum.Parse<RegionID>(screenTracker.Tracker.mapName);
+            _session.DataStorage[Scope.Slot, "MapLocation"] = JObject.FromObject(screenTracker.Tracker.location);
         }
 
         public void PostSaveloadInit(bool newGame, string playerSprite, MatchDifferentWorldItem matchDifferentWorldItem, bool hideTrapItems, bool colorPuzzleHelp)
