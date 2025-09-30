@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Collections;
+using System.Collections.Concurrent;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy.Apartment;
 using AnodyneSharp.Entities.Enemy.Bedroom;
@@ -25,6 +26,15 @@ namespace AnodyneArchipelago.Helpers
         {
             public ulong BitMask => ((ulong)1) << EventWatchList.IndexOf(this);
         };
+
+        public static OperationSpecification UpdateList(Array list)
+        {
+            return new OperationSpecification
+            {
+                OperationType = OperationType.Update,
+                Value = JToken.FromObject(list)
+            };
+        }
 
         static readonly string BitMapName = "EventMap";
         static readonly string ArrayName = "EventArray";
@@ -112,7 +122,6 @@ namespace AnodyneArchipelago.Helpers
             return ret;
         }
 
-
         static EventWatch Tentacle(string DataName, Guid guid)
         {
             return new(DataName, () => !(EntityManager.State.GetValueOrDefault(guid)?.Alive ?? true), () =>
@@ -138,7 +147,6 @@ namespace AnodyneArchipelago.Helpers
 
         private ArchipelagoSession _session;
         private ConcurrentQueue<EventWatch> _serverEvents = new();
-        private ConcurrentDictionary<Guid, ulong> _requestedChanges = new();
         private ulong LastFrameMask = 0;
 
         private DataStorageElement BitMap { get => _session.DataStorage[Scope.Slot, BitMapName]; set => _session.DataStorage[Scope.Slot, BitMapName] = value; }
@@ -166,19 +174,6 @@ namespace AnodyneArchipelago.Helpers
             ulong bitmask = (ulong)newValue;
             var events = MaskToEvents(bitmask);
             events.ForEach(_serverEvents.Enqueue);
-
-            if (additionalArguments.TryGetValue("UpdateCheck", out JToken? value) && _requestedChanges.TryRemove((Guid)value, out ulong requested))
-            {
-                //Only get the events we actually added and add them to the datastorage set
-                ulong mask = NewlySet((ulong)originalValue & requested, (ulong)newValue & requested);
-                DebugLogger.AddDebug($"Received new mask {mask}");
-                var newEvents = MaskToEvents(mask);
-                foreach (var ev in newEvents)
-                {
-                    DebugLogger.AddDebug($"Setting {ev.EventName}");
-                }
-                EventArray += newEvents.Select(e => e.EventName).ToArray();
-            }
         }
 
         public void Update()
@@ -202,13 +197,12 @@ namespace AnodyneArchipelago.Helpers
 
             if (newEntries != 0)
             {
-                Guid guid = Guid.NewGuid();
-                _requestedChanges.TryAdd(guid, newEntries);
                 foreach (var ev in MaskToEvents(newEntries))
                 {
                     DebugLogger.AddDebug($"Setting mask for {ev.EventName}");
                 }
-                BitMap = BitMap + Bitwise.Or(newEntries) + AdditionalArgument.Add("UpdateCheck", guid);
+                EventArray += UpdateList(MaskToEvents(newEntries).Select(e=>e.EventName).ToArray());
+                BitMap += Bitwise.Or(newEntries);
             }
 
             LastFrameMask = CurrentMask();
