@@ -5,6 +5,7 @@ using AnodyneArchipelago.Entities;
 using AnodyneArchipelago.Helpers;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget;
+using AnodyneSharp.Entities.Interactive;
 using AnodyneSharp.Logging;
 using Microsoft.Xna.Framework;
 
@@ -14,7 +15,7 @@ namespace AnodyneArchipelago.Patches
     {
         private XDocument Document;
         private XElement root;
-        private Dictionary<LocationType, Dictionary<RegionID, XElement[]>> entity_cache = new();
+        private Dictionary<LocationType, Dictionary<RegionID, XElement[]>> entity_cache = [];
 
         public EntityPatches(Stream s)
         {
@@ -27,15 +28,19 @@ namespace AnodyneArchipelago.Patches
             return new MemoryStream(Encoding.Default.GetBytes(Document.ToString()));
         }
 
-        public Dictionary<RegionID, XElement[]> GetCache(LocationType type, string lookup)
+        public Dictionary<RegionID, XElement[]> GetCache(LocationType type, NamedEntity lookup)
         {
             if (entity_cache.TryGetValue(type, out var result))
             {
                 return result;
             }
             result = root!.Elements("map")
-                .Where(m => m.Element(lookup) != null)
-                .ToDictionary(m => Enum.Parse<RegionID>((string)m.Attribute("name")!), m => m.Elements(lookup).ToArray());
+                .Select(m => (Enum.Parse<RegionID>((string)m.Attribute("name")!),
+                                m.Elements(lookup.GetName(null)).Where(
+                                    e => lookup.Matches(int.Parse(e.Attribute("frame")?.Value ?? "0"),e.Attribute("type")?.Value ?? "", (string)m.Attribute("name")!))
+                                .ToArray()))
+                .Where(s => s.Item2.Length > 0)
+                .ToDictionary(s => s.Item1, s => s.Item2);
             entity_cache[type] = result;
             return result;
         }
@@ -60,7 +65,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetDust(Location location)
         {
-            var node = GetCache(LocationType.Dust, "Dust")[location.Region][location.Index];
+            var node = GetCache(LocationType.Dust, new(nameof(Dust)))[location.Region][location.Index];
             node.Name = nameof(DustAP);
             node.SetAttributeValue("type", location.ID.ToString());
         }
@@ -163,7 +168,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetTentacle(Location location)
         {
-            var node = GetCache(location.Type, nameof(Red_Pillar))[location.Region][location.Index];
+            var node = GetCache(location.Type, new(nameof(Red_Pillar)))[location.Region][location.Index];
             node.Name = nameof(FreeStandingAP);
             node.SetAttributeValue("type", location.ID.ToString());
             node.SetAttributeValue("p", 2);
@@ -171,7 +176,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetCicada(Location location)
         {
-            var node = GetCache(location.Type, "Health_Cicada")[location.Region][location.Index];
+            var node = GetCache(location.Type, new("Health_Cicada"))[location.Region][location.Index];
             if (node.Parent!.Elements("Event").Where(e => (string)e.Attribute("type")! == "entrance").Any())
             {
                 node.Name = nameof(BossItemAP);
@@ -186,7 +191,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetTreasureChest(Location location)
         {
-            var node = GetCache(location.Type, "Treasure")[location.Region][location.Index];
+            var node = GetCache(location.Type, new("Treasure"))[location.Region][location.Index];
             node.AddBeforeSelf(
                 new XElement(
                     nameof(ChestAPInserter),
