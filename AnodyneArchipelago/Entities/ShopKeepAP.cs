@@ -6,6 +6,7 @@ using AnodyneSharp.Entities.Interactive.Npc.RunningTradeNPCs;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Utilities;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Entities
@@ -14,6 +15,7 @@ namespace AnodyneArchipelago.Entities
     public class ShopKeepAP : ShopKeep, Interactable
     {
         private List<ShopItemAP> _items;
+        private ShopKeepBoxAP _box;
         private bool _useShopItems;
 
         private EntityPreset _preset;
@@ -32,20 +34,19 @@ namespace AnodyneArchipelago.Entities
 
             if (_useShopItems)
             {
-
                 _items =
                 [
-                    new(itemBasePos, manager.ShopItems[0], false),
-                    new(itemBasePos + Vector2.UnitX * 34, manager.ShopItems[1], false),
-                    new(itemBasePos + Vector2.UnitX * 34 * 2, manager.ShopItems[2], GlobalState.events.GetEvent("UsedCardboardBox") == 0)
+                    new(itemBasePos, manager.ShopItems[0]),
+                    new(itemBasePos + Vector2.UnitX * 34, manager.ShopItems[1]),
+                    new(itemBasePos + Vector2.UnitX * 34 * 2, manager.ShopItems[2])
                 ];
+                _box = new(itemBasePos + Vector2.UnitX * 34 * 2, _items[2]);
             }
             else
             {
-                _items =
-                [
-                    new(itemBasePos + Vector2.UnitX * 34 * 2, manager.ShopItems[2], GlobalState.events.GetEvent("UsedCardboardBox") == 0)
-                ];
+                _items = [];
+                _box = new(itemBasePos + Vector2.UnitX * 34 * 2, base.SubEntities().Last());
+                base.SubEntities().Last().SetFrame(57); //Make sure the jump shoes aren't shown
             }
         }
 
@@ -54,12 +55,20 @@ namespace AnodyneArchipelago.Entities
             if (!_useShopItems)
             {
                 var baseSubEntities = base.SubEntities();
+                if(_preset.Activated)
+                {
+                    return baseSubEntities;
+                }
 
-                return [baseSubEntities.ElementAt(0), baseSubEntities.ElementAt(1), _items.Last()];
+                return [baseSubEntities.ElementAt(0), baseSubEntities.ElementAt(1), _box];
             }
             else
             {
-                return _items;
+                if(_preset.Activated)
+                {
+                    return _items;
+                }
+                return [_items[0],_items[1],_box];
             }
         }
 
@@ -73,7 +82,7 @@ namespace AnodyneArchipelago.Entities
                 _preset.Activated = true;
 
                 Plugin.ArchipelagoManager!.SendLocation(ShopkeepLoc.ID);
-                _items.Last().ActivateAnim();
+                _box.ActivateAnim();
 
                 return true;
             }
@@ -97,66 +106,34 @@ namespace AnodyneArchipelago.Entities
                 "Gold"
                 ];
 
-
-            private Vector2 _startPos;
-
-            private ShopItem _item;
-            private ShopItem? _otherItem;
+            protected ShopItem _item;
 
             private string _itemName = "";
             private string _currency = "";
             private long _value = 0;
 
-
-            public ShopItemAP(Vector2 pos, ShopItem item, bool isCardboardBox) : base(pos, new StaticSpriteRenderer("fields_npcs", 16, 16, 0), AnodyneSharp.Drawing.DrawOrder.BG_ENTITIES)
+            public ShopItemAP(Vector2 pos) : base(pos, new StaticSpriteRenderer("fields_npcs", 16, 16, 0), AnodyneSharp.Drawing.DrawOrder.BG_ENTITIES)
             {
-                _startPos = pos;
                 immovable = true;
+            }
 
-                if (!isCardboardBox)
-                {
-                    _item = item;
-                    _otherItem = null;
-                }
-                else
-                {
-                    var boxItem = Plugin.ArchipelagoManager!.GetScoutedLocation(ShopkeepLoc.ID)!;
-                    _item = new ShopItem(boxItem.ItemId, boxItem.Player.Slot);
-                    _otherItem = item;
-                }
+            public ShopItemAP(Vector2 pos, ShopItem item) : this(pos)
+            {
+                _item = item;
 
                 PrepareItem();
+            }
+
+            public override void Update()
+            {
+                base.Update();
+                MathUtilities.MoveTo(ref opacity, 1, 0.3f);
             }
 
             public override void Collided(Entity other)
             {
                 base.Collided(other);
                 Separate(this, other);
-            }
-
-            public override void Update()
-            {
-                base.Update();
-                if (velocity.Y < -10 && velocity.Y > -15)
-                {
-                    Flicker(1);
-                }
-                else if (velocity.Y < -25)
-                {
-                    acceleration = Vector2.Zero;
-                    velocity = Vector2.Zero;
-                    Position = _startPos;
-                    opacity = 0;
-
-                    _item = _otherItem!.Value;
-                    PrepareItem();
-                }
-                MathUtilities.MoveTo(ref opacity, 1, 0.3f);
-            }
-
-            public void ActivateAnim()
-            {
-                acceleration.Y = -10;
             }
 
             public bool PlayerInteraction(Facing player_direction)
@@ -186,15 +163,12 @@ namespace AnodyneArchipelago.Entities
                 return true;
             }
 
-            private void PrepareItem()
+            protected void PrepareItem(bool is_trap = false)
             {
                 var manager = Plugin.ArchipelagoManager!;
 
-                var boxItem = manager.GetScoutedLocation(ShopkeepLoc.ID)!;
-                bool isBox = _otherItem != null;
-
                 long? disguisedItemId = null;
-                ItemSpriteInfo info = isBox ? TreasureHelper.GetSpriteWithTraps(_item.itemID, _item.playerSlot, boxItem.Flags, ShopkeepLoc.ID, out disguisedItemId) : TreasureHelper.GetSprite(_item.itemID, _item.playerSlot, boxItem.Flags);
+                ItemSpriteInfo info = TreasureHelper.GetSpriteWithTraps(_item.itemID, _item.playerSlot, is_trap ? ItemFlags.Trap : ItemFlags.Advancement, ShopkeepLoc.ID, out disguisedItemId);
 
                 SetTexture(info.Sprite, 16, 16);
                 SetFrame(info.Frame);
@@ -211,6 +185,50 @@ namespace AnodyneArchipelago.Entities
                 _currency = Currencies[seed % Currencies.Length];
                 _value = seed % 999 * 10;
                 _checked = false;
+            }
+        }
+
+        public class ShopKeepBoxAP : ShopItemAP
+        {
+            Entity post_grab;
+            private Vector2 _startPos;
+
+            public ShopKeepBoxAP(Vector2 pos, Entity post_grab) : base(pos)
+            {
+                _startPos = pos;
+
+                var boxItem = Plugin.ArchipelagoManager!.GetScoutedLocation(ShopkeepLoc.ID)!;
+                _item = new ShopItem(boxItem.ItemId, boxItem.Player.Slot);
+
+                PrepareItem(boxItem.Flags.HasFlag(ItemFlags.Trap));
+                
+                this.post_grab = post_grab;
+                post_grab.exists = false;
+            }
+
+            public override IEnumerable<Entity> SubEntities()
+            {
+                return [post_grab];
+            }
+
+            public override void Update()
+            {
+                base.Update();
+                if (velocity.Y < -10 && velocity.Y > -15)
+                {
+                    Flicker(1);
+                }
+                else if (velocity.Y < -25)
+                {
+                    post_grab.opacity = 0;
+                    post_grab.exists = true;
+                    exists = false;
+                }
+            }
+
+            public void ActivateAnim()
+            {
+                acceleration.Y = -10;
             }
         }
     }
