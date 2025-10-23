@@ -271,8 +271,9 @@ namespace AnodyneArchipelago
                     ["mapIndex"] = screenTracker.Tracker.location.X + MAP_GRID_WIDTH * screenTracker.Tracker.location.Y
                 }
             });
-            _session.DataStorage[Scope.Slot, "MapIndex"] = (int)Enum.Parse<RegionID>(screenTracker.Tracker.mapName);
-            _session.DataStorage[Scope.Slot, "MapLocation"] = JObject.FromObject(screenTracker.Tracker.location);
+            int map_id = (int)Enum.Parse<RegionID>(screenTracker.Tracker.mapName);
+            _session.DataStorage[Scope.Slot, "MapIndex"] = map_id;
+            _session.DataStorage[Scope.Slot, "MapLocation"] = JObject.FromObject(new {Map=map_id, screenTracker.Tracker.location.X, screenTracker.Tracker.location.Y});
         }
 
         public void PostSaveloadInit(bool newGame, string playerSprite, MatchDifferentWorldItem matchDifferentWorldItem, bool hideTrapItems, bool colorPuzzleHelp)
