@@ -3,11 +3,16 @@ using AnodyneSharp;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Registry;
 using AnodyneSharp.States;
+using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago
 {
     public class Plugin : IStateSetter
     {
+        public static readonly Color NormalItemColor = new(255, 199, 79, 255);
+        public static readonly Color ImportantItemColor = new(76, 255, 0, 255);
+        public static readonly Color TrapItemColor = new(255, 0, 0, 255);
+
         public static Plugin? Instance = null;
 
         static FieldInfo playerField = typeof(PlayState).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance)!;

@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entities\ColorPuzzleNotifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\DungeonStatueAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\DamAP.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entities\RockAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\MiaoAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\DustAP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entities\FixedCardGate.cs" />

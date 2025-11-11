@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
+using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 
 namespace AnodyneArchipelago
 {
@@ -63,6 +65,30 @@ namespace AnodyneArchipelago
             }
 
             return val;
+        }
+
+
+        public static Microsoft.Xna.Framework.Color GetSparkleColor(long location)
+        {
+            ItemInfo? info = Plugin.ArchipelagoManager!.GetScoutedLocation(location);
+
+            if (info == null)
+            {
+                return Microsoft.Xna.Framework.Color.White;
+            }
+
+            if (info.Flags.HasFlag(ItemFlags.Trap))
+            {
+                return Plugin.ArchipelagoManager!.HideTrapItems ? Plugin.ImportantItemColor : Plugin.TrapItemColor;
+            }
+            else if (info.Flags.HasFlag(ItemFlags.Advancement))
+            {
+                return Plugin.ImportantItemColor;
+            }
+            else
+            {
+                return Plugin.NormalItemColor;
+            }
         }
     }
 }

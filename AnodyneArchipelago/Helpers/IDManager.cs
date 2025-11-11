@@ -43,7 +43,8 @@ namespace AnodyneArchipelago.Helpers
         Tentacle,
         Dust,
         Nexus,
-        AreaEvent
+        AreaEvent,
+        Rock
     }
 
     public enum ItemType

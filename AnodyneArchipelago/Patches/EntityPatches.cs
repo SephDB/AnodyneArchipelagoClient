@@ -205,6 +205,13 @@ namespace AnodyneArchipelago.Patches
                 );
         }
 
+        public void SetRockLocation(Location location)
+        {
+            var node = GetCache(location.Type, new("NPC", "rock"))[location.Region][location.Index];
+            node.Name = nameof(RockAP);
+            node.SetAttributeValue("type", location.ID.ToString());
+        }
+
         public void SetWindmillCheck(Location location)
         {
             var map = root.Elements().Where(m => (string)m.Attribute("name")! == "WINDMILL").First();

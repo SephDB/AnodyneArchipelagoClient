@@ -829,6 +829,9 @@ namespace AnodyneArchipelago
                         case LocationType.Chest:
                             _patches.SetTreasureChest(location);
                             break;
+                        case LocationType.Rock:
+                            _patches.SetRockLocation(location);
+                            break;
                         case LocationType.AreaEvent when location.Region == RegionID.WINDMILL && location.Index == 0:
                             _patches.SetWindmillCheck(location);
                             break;

@@ -59,8 +59,9 @@ namespace AnodyneArchipelago.Entities
 
         public class Sparkle : Entity
         {
-            public Sparkle() : base(Vector2.Zero, new AnimatedSpriteRenderer("key_sparkle", 7, 7, new Anim("sparkle", [3, 2, 1, 0], 8, false)), DrawOrder.FG_SPRITES)
+            public Sparkle(Color? color = null) : base(Vector2.Zero, new AnimatedSpriteRenderer("key_sparkle", 7, 7, new Anim("sparkle", [3, 2, 1, 0], 8, false)), DrawOrder.FG_SPRITES)
             {
+                sprite.Color = color ?? Color.White;
             }
 
             public override void PostUpdate()

@@ -1,6 +1,8 @@
 ﻿using AnodyneSharp.Entities;
+using AnodyneSharp.Utilities;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
+using static AnodyneArchipelago.Entities.ColorPuzzleNotifier;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace AnodyneArchipelago.Entities
@@ -8,20 +10,27 @@ namespace AnodyneArchipelago.Entities
     [NamedEntity, Collision(typeof(Dust), MapCollision = true, KeepOnScreen = true)]
     internal class DustAP : Dust
     {
-        private static readonly Color NormalItemColor = new(255, 199, 79, 255);
-        private static readonly Color ImportantItemColor = new(76, 255, 0, 255);
-        private static readonly Color TrapItemColor = new(255, 0, 0, 255);
-
+        private EntityPool<Sparkle> _sparkles;
         private EntityPreset _preset;
+        private float sparkleTimer = 0f;
 
         public DustAP(EntityPreset preset, Player p)
             : base(preset, p)
         {
             _preset = preset;
 
-            if (!_preset.Activated)
+            Color color = Util.GetSparkleColor(long.Parse(_preset.TypeValue));
+
+            _sparkles = new(10, () => new Sparkle(color));
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            if (!_preset.Activated && MathUtilities.MoveTo(ref sparkleTimer, 0.15f, 1))
             {
-                sprite.Color = GetDustColor();
+                _sparkles.Spawn(s => s.Spawn(this, false));
+                sparkleTimer = 0;
             }
         }
 
@@ -38,27 +47,9 @@ namespace AnodyneArchipelago.Entities
             }
         }
 
-        private Color GetDustColor()
+        public override IEnumerable<Entity> SubEntities()
         {
-            ItemInfo? info = Plugin.ArchipelagoManager!.GetScoutedLocation(long.Parse(_preset.TypeValue));
-
-            if (info == null)
-            {
-                return Color.Black;
-            }
-
-            if (info.Flags.HasFlag(ItemFlags.Trap))
-            {
-                return Plugin.ArchipelagoManager!.HideTrapItems ? ImportantItemColor : TrapItemColor;
-            }
-            else if (info.Flags.HasFlag(ItemFlags.Advancement))
-            {
-                return ImportantItemColor;
-            }
-            else
-            {
-                return NormalItemColor;
-            }
+            return _sparkles.Entities;
         }
     }
 }
