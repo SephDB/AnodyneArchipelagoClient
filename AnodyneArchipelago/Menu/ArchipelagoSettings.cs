@@ -37,7 +37,7 @@ namespace AnodyneArchipelago.Menu
         public string PlayerSprite = "young_player";
         public MatchDifferentWorldItem MatchDifferentWorldItem = MatchDifferentWorldItem.MatchExtra;
         public bool HideTrapItems = true;
-        internal bool ColorPuzzleHelp = true;
+        public bool ColorPuzzleHelp = true;
 
         public static string GetFilePath() => string.Format("{0}Saves/ap_settings.dat", GameConstants.SavePath);
 
