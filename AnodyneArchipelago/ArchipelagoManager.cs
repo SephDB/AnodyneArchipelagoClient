@@ -362,6 +362,12 @@ namespace AnodyneArchipelago
             return _scoutTask.Result[location_id];
         }
 
+        public string GetItemName(long id)
+        {
+            return _session!.Items.GetItemName(id) ?? "Something";
+        }
+
+
         public string GetItemName(long id, int player)
         {
             return _session!.Items.GetItemName(id, GetGameName(player)) ?? "Something";

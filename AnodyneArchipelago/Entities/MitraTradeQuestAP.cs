@@ -60,7 +60,7 @@ namespace AnodyneArchipelago.Entities
             ArchipelagoManager manager = Plugin.ArchipelagoManager!;
 
             MitraHint hint = manager.MitraHints[hintIndex];
-            string item = manager.GetItemName(hint.itemID, hint.playerSlot);
+            string item = manager.GetItemName(hint.itemID);
             string player = manager.GetPlayerName(hint.playerSlot);
             string location = manager.GetPlayerLocationName(hint.locationID, hint.playerSlot);
 

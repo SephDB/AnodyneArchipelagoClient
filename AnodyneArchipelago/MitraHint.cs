@@ -10,5 +10,10 @@ namespace AnodyneArchipelago
         public readonly long locationID;
         [JsonProperty("location_player")]
         public readonly int playerSlot;
+
+        public override string ToString()
+        {
+            return $"{playerSlot} - {locationID} - {itemID}";
+        }
     }
 }
