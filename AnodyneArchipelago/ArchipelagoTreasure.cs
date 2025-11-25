@@ -10,14 +10,16 @@ namespace AnodyneArchipelago
     internal class ArchipelagoTreasure : Treasure
     {
         private long _location;
+        private bool _otherPlayer = true;
 
         public static ArchipelagoTreasure Create(long location, Vector2 pos)
         {
             ItemInfo? item = Plugin.ArchipelagoManager!.GetScoutedLocation(location);
             if (item?.Player == Plugin.ArchipelagoManager.GetPlayer())
             {
-                return new(location, pos, "none", -1);
+                return new(location, pos, "none", -1) { _otherPlayer = false };
             }
+
 
             (string tex, int frame, _) = TreasureHelper.GetSprite(item!.ItemId, item?.Player.Slot ?? -1, item?.Flags ?? ItemFlags.None);
 
@@ -31,8 +33,8 @@ namespace AnodyneArchipelago
 
         public override void GetTreasure()
         {
-            //Cards should not be drawn
-            if (sprite.Frame != -1)
+            //Cards should not be drawn, unless belonging to another player
+            if (_otherPlayer || sprite.Frame != -1)
             {
                 base.GetTreasure();
             }

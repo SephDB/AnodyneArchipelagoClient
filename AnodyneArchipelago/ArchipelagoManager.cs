@@ -125,6 +125,7 @@ namespace AnodyneArchipelago
 
         public MitraHint[] MitraHints { get; private set; } = [];
         public ShopItem[] ShopItems { get; private set; } = [];
+        public SwapData? SwapData { get; private set; } = null;
 
         public bool IncludeBlueHappy { get; private set; } = false;
 
@@ -237,6 +238,11 @@ namespace AnodyneArchipelago
             if (login.SlotData.ContainsKey("shop_items"))
             {
                 ShopItems = GetSlotDataArray<ShopItem>("shop_items", login);
+            }
+
+            if (login.SlotData.ContainsKey("swap_areas"))
+            {
+                SwapData = new((JArray)login.SlotData["swap_areas"]);
             }
 
             (_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture) = GetPlayerTextures();
@@ -880,8 +886,10 @@ namespace AnodyneArchipelago
             else if (path.EndsWith("Swapper.dat"))
             {
                 stream?.Close();
+                RegionID region = Enum.Parse<RegionID>(path.Split('.')[^3]);
+
                 string? newContents = string.Join("\n",
-                    SwapData.GetRectanglesForMap(path.Split('.')[^3], events.GetEvent("ExtendedSwap") == 1)
+                    SwapData!.GetRectanglesForMap(region, events.GetEvent("ExtendedSwap") == 1)
                             .Select(r => $"Allow\t{r.X}\t{r.Y}\t{r.Width}\t{r.Height}"));
                 stream = new MemoryStream(Encoding.Default.GetBytes(newContents));
             }
