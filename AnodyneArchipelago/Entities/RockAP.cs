@@ -1,10 +1,14 @@
 ﻿using System;
+using AnodyneArchipelago.Helpers;
 using AnodyneSharp.Dialogue;
 using AnodyneSharp.Drawing;
 using AnodyneSharp.Entities;
+using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Entities.Interactive.Npc;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Utilities;
+using Archipelago.MultiClient.Net.Models;
+using Microsoft.Xna.Framework;
 using static AnodyneArchipelago.Entities.ColorPuzzleNotifier;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -19,6 +23,8 @@ namespace AnodyneArchipelago.Entities
         private string scene;
         private float sparkleTimer = 0f;
 
+        private long _locationId;
+
         public RockAP(EntityPreset preset, Player p)
             : base(preset.Position, Rock.GetSprite(), DrawOrder.ENTITIES)
         {
@@ -28,7 +34,8 @@ namespace AnodyneArchipelago.Entities
 
             scene = MathUtilities.IntToString(preset.Frame + 1);
 
-            Color color = Util.GetSparkleColor(long.Parse(_preset.TypeValue));
+            _locationId = long.Parse(_preset.TypeValue);
+            Color color = Util.GetSparkleColor(_locationId);
 
             _sparkles = new(10, () => new Sparkle(color));
         }
@@ -50,7 +57,7 @@ namespace AnodyneArchipelago.Entities
 
         public override IEnumerable<Entity> SubEntities()
         {
-            return _sparkles.Entities;
+            return base.SubEntities().Concat( _sparkles.Entities);
         }
 
         public bool PlayerInteraction(Facing player_direction)
@@ -77,5 +84,6 @@ namespace AnodyneArchipelago.Entities
 
             return true;
         }
+
     }
 }

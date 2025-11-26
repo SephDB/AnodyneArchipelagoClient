@@ -14,14 +14,13 @@ namespace AnodyneArchipelago
 
         public static ArchipelagoTreasure Create(long location, Vector2 pos)
         {
-            ItemInfo? item = Plugin.ArchipelagoManager!.GetScoutedLocation(location);
+            ScoutedItemInfo? item = Plugin.ArchipelagoManager!.GetScoutedLocation(location);
             if (item?.Player == Plugin.ArchipelagoManager.GetPlayer())
             {
                 return new(location, pos, "none", -1) { _otherPlayer = false };
             }
 
-
-            (string tex, int frame, _) = TreasureHelper.GetSprite(item!.ItemId, item?.Player.Slot ?? -1, item?.Flags ?? ItemFlags.None);
+            (string tex, int frame, _) = TreasureHelper.GetSprite(item!.ItemId, item?.Player.Slot ?? -1, item?.IsReceiverRelatedToActivePlayer ?? false, item?.Flags ?? ItemFlags.None);
 
             return new(location, pos, tex, frame);
         }
@@ -36,7 +35,7 @@ namespace AnodyneArchipelago
             //Cards should not be drawn, unless belonging to another player
             if (_otherPlayer || sprite.Frame != -1)
             {
-                base.GetTreasure();
+
             }
             else
             {

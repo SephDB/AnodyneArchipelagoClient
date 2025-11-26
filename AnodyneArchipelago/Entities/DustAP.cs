@@ -1,7 +1,5 @@
 ﻿using AnodyneSharp.Entities;
 using AnodyneSharp.Utilities;
-using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Models;
 using static AnodyneArchipelago.Entities.ColorPuzzleNotifier;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -11,6 +9,7 @@ namespace AnodyneArchipelago.Entities
     internal class DustAP : Dust
     {
         private EntityPool<Sparkle> _sparkles;
+        private long _locationId;
         private EntityPreset _preset;
         private float sparkleTimer = 0f;
 
@@ -22,6 +21,7 @@ namespace AnodyneArchipelago.Entities
             Color color = Util.GetSparkleColor(long.Parse(_preset.TypeValue));
 
             _sparkles = new(10, () => new Sparkle(color));
+            _locationId = long.Parse(_preset.TypeValue);
         }
 
         public override void Update()

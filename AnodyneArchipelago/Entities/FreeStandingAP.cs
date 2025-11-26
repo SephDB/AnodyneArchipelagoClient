@@ -11,13 +11,13 @@ namespace AnodyneArchipelago.Entities
     {
         private static StaticSpriteRenderer GetSprite(long location)
         {
-            ItemInfo? item = Plugin.ArchipelagoManager!.GetScoutedLocation(location);
+            ScoutedItemInfo? item = Plugin.ArchipelagoManager!.GetScoutedLocation(location);
             if (item is null)
             {
                 return new("archipelago_items", 16, 16);
             }
 
-            (string tex, int frame, _) = TreasureHelper.GetSpriteWithTraps(item.ItemId, item.Player.Slot, item.Flags, location, out _);
+            (string tex, int frame, _) = TreasureHelper.GetSpriteWithTraps(item.ItemId, item.Player.Slot, item.IsReceiverRelatedToActivePlayer, item.Flags, location, out _);
             return new(tex, 16, 16, frame);
         }
 

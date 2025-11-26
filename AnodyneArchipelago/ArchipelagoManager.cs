@@ -358,7 +358,7 @@ namespace AnodyneArchipelago
             return locationInfo;
         }
 
-        public ItemInfo? GetScoutedLocation(long location_id)
+        public ScoutedItemInfo? GetScoutedLocation(long location_id)
         {
             if (_scoutTask == null || !_scoutTask.IsCompleted || !_scoutTask.Result.ContainsKey(location_id))
             {
@@ -437,12 +437,19 @@ namespace AnodyneArchipelago
             {
                 Task.Run(() => _session.Locations.CompleteLocationChecksAsync([.. Checked.Except(_session.Locations.AllLocationsChecked)])).ConfigureAwait(false);
 
-                ItemInfo item = Plugin.ArchipelagoManager!.GetScoutedLocation(location)!;
+                ScoutedItemInfo item = Plugin.ArchipelagoManager!.GetScoutedLocation(location)!;
                 long itemId = item.ItemId;
                 string itemName = GetItemName(itemId, GetPlayer());
                 int player = item.Player;
 
                 DebugLogger.AddInfo($"Sent {itemName} ({itemId}) found at {GetLocationName(location, GetGameName(player))} ({location}) to {GetPlayerName(player)} ({player}).");
+
+                if (!item.IsReceiverRelatedToActivePlayer)
+                {
+                    BaseTreasure treasure = SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), item.ItemId, item.Player, item.IsReceiverRelatedToActivePlayer);
+                    SpawnEntity(treasure);
+                    treasure.GetTreasure();
+                }
             }
             else
             {
@@ -679,7 +686,7 @@ namespace AnodyneArchipelago
                 message += " But it didn't have any effect.";
             }
 
-            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemInfo.ID, GetPlayer());
+            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemInfo.ID, GetPlayer(), true);
 
             return (treasure, message);
         }

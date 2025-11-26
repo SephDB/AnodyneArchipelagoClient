@@ -168,7 +168,8 @@ namespace AnodyneArchipelago.Entities
                 var manager = Plugin.ArchipelagoManager!;
 
                 long? disguisedItemId = null;
-                ItemSpriteInfo info = TreasureHelper.GetSpriteWithTraps(_item.itemID, _item.playerSlot, is_trap ? ItemFlags.Trap : ItemFlags.Advancement, ShopkeepLoc.ID, out disguisedItemId);
+
+                ItemSpriteInfo info = TreasureHelper.GetSpriteWithTraps(_item.itemID, _item.playerSlot, Plugin.ArchipelagoManager!.GetScoutedLocation(ShopkeepLoc.ID)!.IsReceiverRelatedToActivePlayer, is_trap ? ItemFlags.Trap : ItemFlags.Advancement, ShopkeepLoc.ID, out disguisedItemId);
 
                 SetTexture(info.Sprite, 16, 16);
                 SetFrame(info.Frame);

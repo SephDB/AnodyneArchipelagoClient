@@ -79,7 +79,7 @@ namespace AnodyneArchipelago.Helpers
             }
         }
 
-        public static ItemSpriteInfo GetSpriteWithTraps(long itemId, int player, ItemFlags itemFlags, long location, out long? disguisedItemId)
+        public static ItemSpriteInfo GetSpriteWithTraps(long itemId, int player, bool isOwnItem, ItemFlags itemFlags, long location, out long? disguisedItemId)
         {
             if (Plugin.ArchipelagoManager!.HideTrapItems && itemFlags.HasFlag(ItemFlags.Trap))
             {
@@ -89,15 +89,15 @@ namespace AnodyneArchipelago.Helpers
             else
             {
                 disguisedItemId = null;
-                return GetSprite(itemId, player, itemFlags);
+                return GetSprite(itemId, player, isOwnItem, itemFlags);
             }
         }
 
-        public static ItemSpriteInfo GetSprite(long itemId, int player, ItemFlags itemFlags)
+        public static ItemSpriteInfo GetSprite(long itemId, int player, bool isOwnItem, ItemFlags itemFlags)
         {
             ArchipelagoManager manager = Plugin.ArchipelagoManager!;
 
-            if (manager.MatchDifferentWorldItem == MatchDifferentWorldItem.Disabled && player != manager.GetPlayer())
+            if (manager.MatchDifferentWorldItem == MatchDifferentWorldItem.Disabled && !isOwnItem)
             {
                 return new("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1, []);
             }
@@ -266,9 +266,9 @@ namespace AnodyneArchipelago.Helpers
 
     public class SpriteTreasure(Vector2 pos, string tex, int frame) : Treasure(tex, pos, frame, -1)
     {
-        public static SpriteTreasure Get(Vector2 pos, long itemId, int player)
+        public static SpriteTreasure Get(Vector2 pos, long itemId, int player, bool isOwnItem)
         {
-            (string tex, int frame, _) = TreasureHelper.GetSprite(itemId, player, ItemFlags.None);
+            (string tex, int frame, _) = TreasureHelper.GetSprite(itemId, player, isOwnItem, ItemFlags.None);
             return new(pos, tex, frame);
         }
     }
