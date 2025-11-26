@@ -18,6 +18,42 @@ namespace AnodyneArchipelago.Entities
             }
         }
 
+        private string[] _ownTextFlair = 
+            [
+            "You should go get it!",
+            "Maybe check it out?",
+            "Good luck!",
+            "Maybe worth a check?",
+            "That's what Wares told me at least."
+            ];
+
+        private string[] _otherTextFlair =
+            [
+            "Maybe they can help you out?",
+            "Have you asked them about it?",
+            "Might be worth a check?",
+            "If they have time to check it.",
+            "Might get you unstuck!"
+            ];
+
+        private string[] _ownVagueFlair =
+            [
+            "That's what Wares told me at least.",
+            "I think there's something important there.",
+            "Maybe worth a check?",
+            "It can be something helpful!",
+            "Maybe check it out?",
+            ];
+
+        private string[] _otherVagueFlair =
+            [
+            "Maybe they can help you out?",
+            "Might be worth a check?",
+            "Have you asked them about it?",
+            "Might get you unstuck!"
+            "If they have time to check it.",
+            ];
+
         protected override string GetInteractionText()
         {
             if (GlobalState.events.GetEvent("ReceivedBikingShoes") == 1 && GlobalState.events.GetEvent("UsedBikingShoes") == 0)
@@ -66,29 +102,29 @@ namespace AnodyneArchipelago.Entities
 
             if (manager.MitraHintType != MitraHintType.Vague)
             {
+                if (manager.MitraHintType == MitraHintType.PreciseHint)
+                {
+                    manager.SendHint(hint.playerSlot, hint.locationID);
+                }
+
                 if (manager.GetPlayer() == hint.playerSlot)
                 {
-                    if (manager.MitraHintType == MitraHintType.PreciseHint)
-                    {
-                        manager.SendHint(hint.playerSlot, hint.locationID);
-                    }
-
-                    return $"I heard your {item} is at {location}! You should go get it!";
+                    return $"I heard your {item} is at {location}! {_ownTextFlair[hintIndex % _ownTextFlair.Length]}";
                 }
                 else
                 {
-                    return $"I heard your {item} is at {player}'s {location}. Maybe they can help you out?";
+                    return $"I heard your {item} is at {player}'s {location}. {_otherTextFlair[hintIndex % _otherTextFlair.Length]}";
                 }
             }
             else
             {
                 if (manager.GetPlayer() == hint.playerSlot)
                 {
-                    return $"Have you tried looking at {location}? I think there's something important there.";
+                    return $"Have you tried looking at {location}? {_ownVagueFlair[hintIndex % _ownVagueFlair.Length]}";
                 }
                 else
                 {
-                    return $"There has to be something important over at {location}! Have you asked {player} about it?";
+                    return $"There has to be something important over at {location}! {_otherVagueFlair[hintIndex % _otherVagueFlair.Length]}";
                 }
             }
         }
