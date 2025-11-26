@@ -414,9 +414,9 @@ namespace AnodyneArchipelago
             return GetLocationName(locationId, _session!.Players.GetPlayerInfo(player).Game);
         }
 
-        public async void SendHint(long locationId)
+        public void SendHint(int player, long locationId)
         {
-            await _session!.Locations.ScoutLocationsAsync(true, locationId);
+            _session!.Hints.CreateHints(player, HintStatus.Unspecified, locationId);
         }
 
         public bool IsChecked(long location)

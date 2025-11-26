@@ -70,7 +70,7 @@ namespace AnodyneArchipelago.Entities
                 {
                     if (manager.MitraHintType == MitraHintType.PreciseHint)
                     {
-                        manager.SendHint(hint.locationID);
+                        manager.SendHint(hint.playerSlot, hint.locationID);
                     }
 
                     return $"I heard your {item} is at {location}! You should go get it!";
