@@ -18,7 +18,7 @@ namespace AnodyneArchipelago.Entities
             }
         }
 
-        private string[] _ownTextFlair = 
+        private string[] _ownTextFlair =
             [
             "You should go get it!",
             "Maybe check it out?",
@@ -50,7 +50,7 @@ namespace AnodyneArchipelago.Entities
             "Maybe they can help you out?",
             "Might be worth a check?",
             "Have you asked them about it?",
-            "Might get you unstuck!"
+            "Might get you unstuck!",
             "If they have time to check it.",
             ];
 

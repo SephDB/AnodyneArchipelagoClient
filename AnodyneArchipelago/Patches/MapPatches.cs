@@ -1,4 +1,5 @@
-﻿using AnodyneSharp.Registry;
+﻿using System.Xml.Linq;
+using AnodyneSharp.Registry;
 using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Patches
@@ -18,6 +19,21 @@ namespace AnodyneArchipelago.Patches
             {
                 //Fix easy OOL jump past Crowd's statue
                 map[43][92] = 4;
+            }
+            else if (mapName == "OVERWORLD")
+            {
+
+                for (int i = 11; i <= 58; i++)
+                {
+                    map[i][99] = 13;
+                }
+
+                map[99][18] = 4;
+
+                for (int i = 19; i <= 50; i++)
+                {
+                    map[99][i] = 5;
+                }
             }
 
             if (Plugin.ArchipelagoManager?.ColorPuzzleRandomized ?? false)
