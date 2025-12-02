@@ -609,8 +609,16 @@ namespace AnodyneArchipelago
                     }
                     break;
                 case ItemType.Trap when itemInfo.SubType == 1:
-                    Plugin.Player.reversed = true;
-                    wave.active = true;
+                    if (!Plugin.Player.reversed)
+                    {
+                        Plugin.Player.reversed = true;
+                        wave.active = true;
+                    }
+                    else
+                    {
+                        var field = typeof(Player).GetField("_revTimer", BindingFlags.NonPublic | BindingFlags.Instance)!;
+                        field.SetValue(Plugin.Player, (float)field.GetValue(Plugin.Player)! - 0.9f);
+                    }
                     break;
                 case ItemType.Secret:
                     treasure = new SecretTreasure(Plugin.Player.Position, (int)itemInfo.SubType, -1);
