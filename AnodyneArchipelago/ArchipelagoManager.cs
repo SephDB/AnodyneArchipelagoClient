@@ -148,7 +148,7 @@ namespace AnodyneArchipelago
                 _seedName = roomInfoPacket.SeedName;
 
                 result = await _session.LoginAsync("Anodyne", slotName, ItemsHandlingFlags.AllItems, null, null, null, password == "" ? null : password);
-                _session.DataStorage[Scope.Game, "roomSeed"].Initialize(RNG.Next(0,1000000));
+                _session.DataStorage[Scope.Game, "roomSeed"].Initialize(RNG.Next(0, 1000000));
                 _seedName += $"_{await _session.DataStorage[Scope.Game, "roomSeed"].GetAsync<int>():D6}";
             }
             catch (Exception e)
@@ -279,7 +279,7 @@ namespace AnodyneArchipelago
             });
             int map_id = (int)Enum.Parse<RegionID>(screenTracker.Tracker.mapName);
             _session.DataStorage[Scope.Slot, "MapIndex"] = map_id;
-            _session.DataStorage[Scope.Slot, "MapLocation"] = JObject.FromObject(new {Map=map_id, screenTracker.Tracker.location.X, screenTracker.Tracker.location.Y});
+            _session.DataStorage[Scope.Slot, "MapLocation"] = JObject.FromObject(new { Map = map_id, screenTracker.Tracker.location.X, screenTracker.Tracker.location.Y });
         }
 
         public void PostSaveloadInit(bool newGame, string playerSprite, MatchDifferentWorldItem matchDifferentWorldItem, bool hideTrapItems, bool colorPuzzleHelp)
@@ -584,8 +584,6 @@ namespace AnodyneArchipelago
                     treasure = new CardTreasure(Plugin.Player.Position, (int)itemInfo.SubType);
                     break;
                 case ItemType.Nexus when _checkGates.ContainsKey(itemInfo.Region):
-                    var gate = _checkGates[itemInfo.Region];
-                    EntityManager.SetAlive(gate, true);
                     events.ActivatedNexusPortals.Add(itemInfo.Region.ToString());
                     break;
                 case ItemType.Trap when itemInfo.SubType == 0:

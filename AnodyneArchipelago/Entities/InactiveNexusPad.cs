@@ -1,11 +1,13 @@
-﻿using AnodyneSharp.Entities;
+﻿using AnodyneArchipelago.Helpers;
+using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget.Doors;
 using AnodyneSharp.Registry;
+using AnodyneSharp.Sounds;
 using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Entities
 {
-    [NamedEntity]
+    [NamedEntity, Collision(typeof(Player))]
     public class InactiveNexusPad : Entity
     {
         private EntityPreset _preset;
@@ -19,8 +21,7 @@ namespace AnodyneArchipelago.Entities
 
             if (GlobalState.events.ActivatedNexusPortals.Contains(GlobalState.CURRENT_MAP_NAME))
             {
-                _preset.Alive = false;
-                exists = false;
+                SpawnPad();
                 return;
             }
 
@@ -39,11 +40,23 @@ namespace AnodyneArchipelago.Entities
         {
             if (GlobalState.events.ActivatedNexusPortals.Contains(GlobalState.CURRENT_MAP_NAME))
             {
-                _preset.Alive = false;
-                exists = false;
-
-                GlobalState.SpawnEntity(new NexusPad(EntityManager.GetLinkedDoor(EntityManager.GetNexusGateForCurrentMap().Door).Door, _player));
+                SpawnPad();
             }
+        }
+
+        public override void Collided(Entity other)
+        {
+            if (other is Player p && p.state == PlayerState.GROUND)
+            {
+                SpawnPad();
+            }
+        }
+
+        private void SpawnPad()
+        {
+            exists = false;
+
+            GlobalState.SpawnEntity(new NexusPad(EntityManager.GetLinkedDoor(EntityManager.GetNexusGateForCurrentMap().Door).Door, _player));
         }
     }
 }
