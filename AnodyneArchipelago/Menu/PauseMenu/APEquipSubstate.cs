@@ -1,4 +1,5 @@
 ﻿using AnodyneArchipelago;
+using AnodyneArchipelago.Helpers;
 using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Input;
@@ -47,6 +48,9 @@ namespace AnodyneSharp.States.MenuSubstates
 
         private UILabel _redCaveLabel;
 
+        private bool[] statuesMoved = [];
+        private bool splitWindmill = false;
+
         private EquipState _state;
         private EquipState _lastState;
 
@@ -76,6 +80,21 @@ namespace AnodyneSharp.States.MenuSubstates
             _redCave.SetFrame(3);
 
             _redCaveLabel = new UILabel(new Vector2(62 + 16, 150 + 2), true, $"x{GlobalState.events.GetEvent("ProgressiveRedGrotto")}");
+
+            if (Plugin.ArchipelagoManager!.SplitWindmill)
+            {
+                statuesMoved = [
+                    GlobalState.events.GetEvent($"StatueMoved_{RegionID.BEDROOM}") != 0,
+                    GlobalState.events.GetEvent($"StatueMoved_{RegionID.REDCAVE}") != 0,
+                    GlobalState.events.GetEvent($"StatueMoved_{RegionID.CROWD}") != 0
+                    ];
+
+                splitWindmill = true;
+            }
+            else
+            {
+                statuesMoved = [.. Enumerable.Repeat(GlobalState.events.GetEvent("WindmillOpened") != 0, 3)];
+            }
 
             if (GlobalState.events.GetEvent("ReceivedCardboardBox") != 0)
             {
@@ -112,9 +131,9 @@ namespace AnodyneSharp.States.MenuSubstates
 
             _statues =
                 [
-                    new UIEntity(new Vector2(95 + 16, 150), "archipelago_items", GlobalState.events.GetEvent("StatueMoved_Temple") != 0 ? 6 : 9 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
-                    new UIEntity(new Vector2(95 + 32, 150), "archipelago_items", GlobalState.events.GetEvent("StatueMoved_Grotto") != 0 ? 7 : 10 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
-                    new UIEntity(new Vector2(95 + 48, 150), "archipelago_items", GlobalState.events.GetEvent("StatueMoved_Mountain") != 0 ? 8 : 11 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)
+                    new UIEntity(new Vector2(95 + 16, 150), "archipelago_items", statuesMoved[0] ? 6 : 9 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
+                    new UIEntity(new Vector2(95 + 32, 150), "archipelago_items", statuesMoved[1] ? 7 : 10 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON),
+                    new UIEntity(new Vector2(95 + 48, 150), "archipelago_items", statuesMoved[2] ? 8 : 11 , 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON)
                     ];
 
             SetEquipped();
@@ -393,33 +412,45 @@ namespace AnodyneSharp.States.MenuSubstates
                     SetDialogue($"You currently have {GlobalState.events.GetEvent("ProgressiveRedGrotto")} progressive Red Cave Items.");
                     break;
                 case EquipState.Statue1:
-                    if (GlobalState.events.GetEvent("StatueMoved_Temple") != 0)
+                    if (statuesMoved[0])
                     {
-                        SetDialogue("The statue in the Temple of the Seeing One has moved.");
+                        SetDialogue(splitWindmill ? 
+                            "The statue in the Temple of the Seeing One has moved." :
+                            "How does turning on a windmill even move statues??? Come on game designers!");
                     }
                     else
                     {
-                        SetDialogue("The statue in the Temple of the Seeing One has not yet moved.");
+                        SetDialogue(splitWindmill ? 
+                            "The statue in the Temple of the Seeing One has not yet moved." :
+                            "Go do the windmill and maybe I'll move.");
                     }
                     break;
                 case EquipState.Statue2:
-                    if (GlobalState.events.GetEvent("StatueMoved_Grotto") != 0)
+                    if (statuesMoved[1])
                     {
-                        SetDialogue("The statue in the Red Cave has moved.");
+                        SetDialogue(splitWindmill ? 
+                            "The statue in the Red Cave has moved." :
+                            "I think it's about abortions or something.");
                     }
                     else
                     {
-                        SetDialogue("The statue in the Red Cave has not yet moved.");
+                        SetDialogue(splitWindmill ?
+                            "The statue in the Red Cave has not yet moved." :
+                            "Idk man. Go do the windmill or something.");
                     }
                     break;
                 case EquipState.Statue3:
-                    if (GlobalState.events.GetEvent("StatueMoved_Mountain") != 0)
+                    if (statuesMoved[2])
                     {
-                        SetDialogue("The statue in the Mountain Cavern has moved.");
+                        SetDialogue(splitWindmill ? 
+                            "The statue in the Mountain Cavern has moved." :
+                            "Here we go! Wahoo!!!!!");
                     }
                     else
                     {
-                        SetDialogue("The statue in the Mountain Cavern has not yet moved.");
+                        SetDialogue(splitWindmill ? 
+                            "The statue in the Mountain Cavern has not yet moved." :
+                            "Oh no! Mama mia!!!");
                     }
                     break;
             }

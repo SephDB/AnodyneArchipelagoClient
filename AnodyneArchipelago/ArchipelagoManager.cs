@@ -167,7 +167,7 @@ namespace AnodyneArchipelago
 
             ApVersion = new(GetSlotData("version", "0.0.0", login).ToString());
 
-            if (!ApVersion.IsNewer(0, 4, 0))
+            if (!ApVersion.IsNewer(0, 5, 0))
             {
                 return new LoginFailure("AP World is generated with an older version.\n\nPlease downgrade the Client!");
             }
