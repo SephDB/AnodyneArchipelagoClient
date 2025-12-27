@@ -641,9 +641,9 @@ namespace AnodyneArchipelago
                 case ItemType.Inventory when itemInfo.SubType == 3:
                     inventory.CanJump = true;
                     break;
-                case ItemType.Inventory when itemInfo.SubType == 4 && (PostgameMode == PostgameMode.Vanilla || PostgameMode == PostgameMode.Unlocked):
+                case ItemType.Inventory when itemInfo.SubType == 4 && PostgameMode != PostgameMode.Progression:
                     EquipBroomIfEmpty(BroomType.Transformer);
-                    if (events.GetEvent("DefeatedBriar") > 0 || PostgameMode == PostgameMode.Unlocked)
+                    if ((events.GetEvent("DefeatedBriar") > 0 && PostgameMode != PostgameMode.Disabled) || PostgameMode == PostgameMode.Unlocked)
                     {
                         EnableExtendedSwap();
                     }
