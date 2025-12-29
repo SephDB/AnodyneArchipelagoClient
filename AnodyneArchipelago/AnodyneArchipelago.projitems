@@ -9,6 +9,7 @@
     <Import_RootNamespace>AnodyneArchipelago</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)APGrayScale.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ArchipelagoManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ArchipelagoTreasure.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorPuzzle.cs" />

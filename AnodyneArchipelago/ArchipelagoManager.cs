@@ -1,11 +1,17 @@
-﻿using AnodyneArchipelago.Helpers;
+﻿using System.ComponentModel;
+using System.Reflection;
+using System.Text;
+using AnodyneArchipelago.Helpers;
 using AnodyneArchipelago.Patches;
+using AnodyneSharp;
 using AnodyneSharp.Dialogue;
+using AnodyneSharp.Drawing.Effects;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Logging;
 using AnodyneSharp.MapData;
+using AnodyneSharp.MapData.Settings;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Resources;
 using AnodyneSharp.Sounds;
@@ -20,9 +26,6 @@ using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
-using System.ComponentModel;
-using System.Reflection;
-using System.Text;
 using static AnodyneSharp.Registry.GlobalState;
 using static AnodyneSharp.States.CutsceneState;
 
@@ -75,6 +78,9 @@ namespace AnodyneArchipelago
 
     public class ArchipelagoManager
     {
+        private const float ChaosTimerMax = 2f;
+        private const float GrayscaleTimerMax = 3;
+
         private ArchipelagoSession? _session;
         private static int ItemIndex
         {
@@ -101,6 +107,12 @@ namespace AnodyneArchipelago
         private Task<Dictionary<long, ScoutedItemInfo>>? _scoutTask;
 
         private ScreenChangeTracker screenTracker = new();
+
+        public APGrayScale grayScale = new();
+
+        private float _chaosModeTimer = 0;
+        private float _extremeChaosTimer = 0;
+        private float _grayscaleTimer = 0;
 
         public ColorPuzzle ColorPuzzle { get; } = new();
         public bool UnlockSmallKeyGates => SmallkeyMode == SmallKeyMode.Unlocked;
@@ -251,6 +263,11 @@ namespace AnodyneArchipelago
 
             _eventTracker = new(_session);
 
+            if (!fullScreenEffects.Contains(grayScale))
+            {
+                fullScreenEffects.Add(grayScale);
+            }
+
             return result;
         }
 
@@ -349,6 +366,8 @@ namespace AnodyneArchipelago
             _session = null;
 
             PatchPlayerTextures(_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture);
+
+            fullScreenEffects.Remove(grayScale);
         }
 
         private async Task<Dictionary<long, ScoutedItemInfo>> ScoutAllLocations()
@@ -495,9 +514,61 @@ namespace AnodyneArchipelago
                     DeathLinkReason = message;
                     ReceivedDeath = true;
                 }
+                else
+                {
+                    HandleTrapTimers();
+                }
             }
 
+
             _eventTracker?.Update();
+        }
+
+        private void HandleTrapTimers()
+        {
+            if (Dialogue != "")
+            {
+                return;
+            }
+
+            //Extreme chaos overrides normal chaos
+            if (_extremeChaosTimer > 0)
+            {
+                _extremeChaosTimer -= GameTimes.DeltaTime;
+
+                if (_extremeChaosTimer <= 0)
+                {
+                    if (_chaosModeTimer > 0)
+                    {
+                        GlobalState.GameMode = AnodyneSharp.Registry.GameMode.Chaos;
+                    }
+                    else
+                    {
+                        GlobalState.GameMode = AnodyneSharp.Registry.GameMode.Normal;
+                        ForceTextureReload = true;
+                    }
+                }
+            }
+            else if (_chaosModeTimer > 0)
+            {
+                _chaosModeTimer -= GameTimes.DeltaTime;
+
+                if (_chaosModeTimer <= 0)
+                {
+                    GlobalState.GameMode = AnodyneSharp.Registry.GameMode.Normal;
+                    ForceTextureReload = true;
+                }
+            }
+
+            if (_grayscaleTimer > 0)
+            {
+                _grayscaleTimer -= GameTimes.DeltaTime;
+
+                if (_grayscaleTimer <= 0)
+                {
+                    grayScale.Deactivate();
+                }
+            }
         }
 
         private IEnumerator<CutsceneEvent> GetItemsAndMessages()
@@ -617,6 +688,35 @@ namespace AnodyneArchipelago
                         var field = typeof(Player).GetField("_revTimer", BindingFlags.NonPublic | BindingFlags.Instance)!;
                         field.SetValue(Plugin.Player, (float)field.GetValue(Plugin.Player)! - 0.9f);
                     }
+                    break;
+                case ItemType.Trap when itemInfo.SubType == 2:
+                    _chaosModeTimer += ChaosTimerMax;
+                    if (GlobalState.GameMode != AnodyneSharp.Registry.GameMode.Chaos)
+                    {
+                        GlobalState.GameMode = AnodyneSharp.Registry.GameMode.Chaos;
+                        ForceTextureReload = true;
+                    }
+
+                    SoundManager.PlaySoundEffect("shieldy-hit");
+                    SoundManager.PlaySoundEffect("small_wave");
+                    SoundManager.PlaySoundEffect("big_door_locked");
+                    break;
+                case ItemType.Trap when itemInfo.SubType == 3:
+                    _extremeChaosTimer += ChaosTimerMax;
+                    if (GlobalState.GameMode != AnodyneSharp.Registry.GameMode.EXTREME_CHAOS)
+                    {
+                        GlobalState.GameMode = AnodyneSharp.Registry.GameMode.EXTREME_CHAOS;
+                        ForceTextureReload = true;
+                    }
+
+                    SoundManager.PlaySoundEffect("shieldy-hit");
+                    SoundManager.PlaySoundEffect("small_wave");
+                    SoundManager.PlaySoundEffect("big_door_locked");
+                    SoundManager.PlaySoundEffect("fall_in_hole");
+                    break;
+                case ItemType.Trap when itemInfo.SubType == 4:
+                    _grayscaleTimer += GrayscaleTimerMax;
+                    grayScale.active = true;
                     break;
                 case ItemType.Secret:
                     treasure = new SecretTreasure(Plugin.Player.Position, (int)itemInfo.SubType, -1);
