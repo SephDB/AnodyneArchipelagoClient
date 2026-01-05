@@ -59,7 +59,7 @@ namespace AnodyneArchipelago.Entities
             }
             opened = true;
             GlobalState.CurrentMinimap.RemoveInterest();
-            GlobalState.Dialogue = $"Huh??^Why???\n^Why would you STILL do this?????";
+            GlobalState.Dialogue = $"Huh??^ Why???\n^Why would you STILL do this?????";
             SoundManager.PlaySoundEffect("fall_in_hole");
             SoundManager.PlaySoundEffect("sun_guy_scream");
 

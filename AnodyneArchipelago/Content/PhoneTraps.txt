@@ -1,28 +1,34 @@
-﻿(Pokemon Crystal)Elm: Hello [player]! I'm just checking in to see how your pokedex is filling up. What? This isn't [player]? I must have called the wrong number. My bad!
+﻿(MitraHint)Mitra: Hey Young!^ I just called with Wares and he told me your [item] is found at [location] in [world].^\nYou should check it out!^ Talk to you later, ok?
 
-Sage: Hello? Young? It's me Sage.^The way you are treating your Raymond is frankly unacceptable!I want you to inform me when he's in boxes so he can move in with me. He deserves my tender care! I will hear from you later. 
+(Anodyne)Mitra: Hey Young!^ I just called with Wares and he told me your-^\nWait, you're not "[player]" Young, are you?^\nSorry, I must have called the wrong Young!^ My bad!
 
-Sage: Hello? Young? This is Sage.I saw that you shared that post from Mitra's social media page and not from mine! I want you to undo your share and share it from my page instead! Please! I deserve this! My account only has 2 followers!
+(Pokemon Crystal)Elm: Hello [player]!^I'm just checking in to see how your pokedex is filling up.^\nWhat?^This isn't [player]?^\nI must have called the wrong number.^ My bad!
 
-Briar: Hey Young. Are you done with your "AP World" yet? I heard a new sandwich shop opened up downtown. Wanna go get a sandwich when you're done? See ya. 
+(Deltarune)Sans: hello.^\nis this the hotline for idiot babies?^ i'm calling for [player].^ oh.^ this isn't the hotline for idiot babies? must have called the wrong number. my bad!
 
-Mitra: Hey Young! I just called with Wares and he told me your [item] is found at [location]. You should check it out! Talk to you later, ok?
+(APBingo)Sage: Young!^\nWhy are you playing Bingo?^\nYou're supposed to help The Briar!^\nStop fooling around and save The Land!
 
-Mitra: Hey Young. Someone named "xSageIsCool3000x" just friended me, but not long after they blocked me. Do you know who that is? Talk to you later, ok?
+Sage: Hello?^ Young?^ It's me Sage.^\n The way you are treating your Raymond is frankly unacceptable!^\nI want you to inform me when he's in boxes so he can move in with me.^\nHe deserves my tender care!^ I will hear from you later. 
 
-Sage: Young? Please answer me! I don't like that you're talking to this "Mitra"! If you don't stop I'll... I'll run away! And I'll start my own The land and it'll be New and I'll be seen as a God by all of its inhabitants and be the Center of all attention. And you don't want that! I'll hear from you later. 
+Sage: Hello?^ Young?^ This is Sage.^\nI saw that you shared that post from Mitra's social media page and not from mine!^\nI want you to undo your share and share it from my page instead!^ Please!^ I deserve this!^\nMy account only has 2 followers!
 
-Dog: Hello?^ Yes.^ This is dog.^\nIt's in my nature.^ Woof.
+Briar: Hey Young.^ Are you done with your "AP World" yet?^\nI heard a new sandwich shop opened up downtown.^\nWanna go get a sandwich when you're done?^\nSee ya. 
 
-James: Hello. I'm James. James the Bear. Don't forget to eat a pawful of berries after you procreate. You'll need the energy for the following winter.
+Mitra: Hey Young.^ Someone named "xSageIsCool3000x" just friended me,^ but not long after they blocked me.^\nDo you know who that is?^\nTalk to you later, ok?
 
-Sage: Young! I just watched this cartoon on the television. And the professor turned himself into a pickle out of all things! It's the funniest thing I've ever seen! I'll show you some time later!
+Sage: Young?^ Please answer me!^\nI don't like that you're talking to this "Mitra"!^\nIf you don't stop I'll...^ I'll run away!^ And I'll start my own The Land^ and it'll be New and I'll be seen as a God by all of its inhabitants^ and be the Center of all attention!^\nAnd you don't want that!^ I'll hear from you later. 
 
-Mitra: Hey Young! I just wanted to check in on you to see you're doing fine! You are? That's good to hear! I'll talk to you later, ok?
+Dog: Hello?^ Yes.^ This is dog.^\nIt's in my nature to woof.
 
-Sage: Hello Young. I just bought something called an "Ape" and I heard it might make me rich some day! I'll see you in a few years when I bought my first yacht! What's that? They're worthless? My money... Gone! I  have to go!
+James: Hello.^ I'm James.^ James the Bear.^\nDon't forget to eat a pawful of berries after you procreate.^\nYou'll need the energy for the following winter.
 
-Rank: Hah! You're still using that broom as a "weapon"! You need a sword to get on my level! You can't even cut grass with that thing! Ehehe! See ya!
+Sage: Young!^\nI just watched this cartoon on the television.^ And the professor turned himself into a pickle out of all things!^\nIt's the funniest thing I've ever seen!^ I'll show you some time later!
+
+Mitra: Hey Young!^ I just wanted to check in on you to see if you're doing fine!^\nYou are?^ That's good to hear!^\nI'll talk to you later, ok?
+
+Sage: Hello Young.^\nI just bought something called an "Ape"^ and I heard it might make me rich some day!^\nI'll see you in a few years when I bought my first yacht!^\nWhat's that?^ They're worthless?^\nMy money...^ Gone! I have to go!
+
+Rank: Hah!^ You're still using that broom as a "weapon"!^\nYou need a sword to get on my level!^\nYou can't even cut grass with that thing!^ Ehehe!^ See ya!
 
 Finty: Moneybag.^ Vacuum.^ Gun?^\nYou want it?^\nIt's yours my friend, as long as you got enough rubies.^\nWhat's that?^\nSorry Young.^\nI don't give credit!^\nCome back when you're a little...^\nHmmmm.^ Richer!
 
@@ -30,4 +36,20 @@ Briar: Hey Young.^\nYou ever wonder if anything is even real?^\nWhat if it was a
 
 Wares: Ring^ ring
 
-???: why do they call it oven when you of in the cold food of out hot eat the food
+???: why do they call it oven^ when you of in the cold food^ of out hot eat the food
+
+Sometimes people can call you to give useful tricks and hints.\n^But not rocks. Rocks don't do that.
+
+Sage: Young!^ I asked about progress of my favorite game in the "future game design" thread,^ but someone responded saying that "if there was any progress, it would have been posted"!^\nWhat am I supposed to do with this?^\nIs someone working on this game or not?^\nI need to play my favorite game!
+
+Statue: The Village Elder in name only, for he is neither.
+
+Hello?^ Is This Young?^\nI'm trying to reach you about your broom's extended warranty.^\nPlease don't hang up on me I have a wife and ki-
+
+Yes.^\nI'm a kitty cat.^\nAnd I dance dance dance^ and I dance dance dance!
+
+James: Hello.^ I'm James.^ James the Bear.^\nI heard someone talk about something called BK.^\nDoes that stand for Bears are Kool?^\nI think it should.
+
+Olive: Hi, I'm Olive the rabbit.^\nI love cereal so much!^\nSo much it's gonna make me act unwise!^\nNobody can stop me once I finished all of my cereal!
+
+Sage: Hello Young.^\nIt's me Sage.^\nI just spent my remaining hint points and all I got was information about a trap item.^\nHow do I get more hint points?^\nI can't continue with my game!

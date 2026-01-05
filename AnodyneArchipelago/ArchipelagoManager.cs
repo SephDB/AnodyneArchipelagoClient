@@ -428,9 +428,14 @@ namespace AnodyneArchipelago
             return GetPlayerName(GetPlayer());
         }
 
-        public PlayerInfo? GetPlayerOfGame(string game)
+        public PlayerInfo? GetPlayerOfGame(string game, bool excludeCurrent = true)
         {
-            var players = _session!.Players.AllPlayers.Where(p => p.Game == game).ToArray();
+            PlayerInfo[] players = [.. _session!.Players.AllPlayers.Where(p => string.Equals(p.Game, game, StringComparison.InvariantCultureIgnoreCase))];
+
+            if (excludeCurrent)
+            {
+                players = [.. players.Where(p => p.Slot != GetPlayer())];
+            }
 
             if (!players.Any())
             {
@@ -762,12 +767,42 @@ namespace AnodyneArchipelago
                         yield return null;
                     }
 
-                    bool fastText = GlobalState.settings.fast_text;
-                    GlobalState.settings.fast_text = false;
+                    timer = 0;
+
+                    SoundManager.PlaySoundEffect("dash_pad_2");
+
+                    while (timer < 0.2f)
+                    {
+                        timer += GameTimes.DeltaTime;
+                        yield return null;
+                    }
+
+                    bool fastText = settings.fast_text;
+                    settings.fast_text = false;
 
                     yield return new DialogueEvent(GetPhoneTrapMessage(player, location));
 
-                    GlobalState.settings.fast_text = fastText;
+                    timer = 0;
+
+                    SoundManager.PlaySoundEffect("dash_pad_1");
+
+                    while (timer < 0.6f)
+                    {
+                        timer += GameTimes.DeltaTime;
+                        yield return null;
+                    }
+
+                    timer = 0;
+
+                    SoundManager.PlaySoundEffect("dustpoof");
+
+                    while (timer < 0.8f)
+                    {
+                        timer += GameTimes.DeltaTime;
+                        yield return null;
+                    }
+
+                    settings.fast_text = fastText;
                     yield break;
                 case ItemType.Secret:
                     treasure = new SecretTreasure(Plugin.Player.Position, (int)itemInfo.SubType, -1);
@@ -1135,14 +1170,33 @@ namespace AnodyneArchipelago
                     if (line.StartsWith('('))
                     {
                         string gameName = line.Split('(', ')')[1];
-                        PlayerInfo? player = GetPlayerOfGame(gameName);
 
-                        if (player == null)
+                        if (gameName == "MitraHint")
                         {
-                            continue;
+                            if (MitraHints.Length == 0)
+                            {
+                                continue;
+                            }
+
+                            var hint = MitraHints.Last();
+                            string item = GetItemName(hint.itemID);
+                            string location = GetPlayerLocationName(hint.locationID, hint.playerSlot);
+                            string world = hint.playerSlot == GetPlayer() ? "this world" : $"{GetPlayerName(hint.playerSlot)}'s world";
+
+                            line = line[(line.IndexOf(')') + 1)..].Replace("[item]", item).Replace("[location]", location).Replace("[world]", world);
+                        }
+                        else
+                        {
+                            PlayerInfo? player = GetPlayerOfGame(gameName);
+
+                            if (player == null)
+                            {
+                                continue;
+                            }
+
+                            line = line[(line.IndexOf(')') + 1)..].Replace("[player]", player.Name);
                         }
 
-                        line = line[(line.IndexOf(')') + 1)..].Replace("[player]", player.Name);
                     }
                     _phoneTraps.Add(line);
                 }
@@ -1151,7 +1205,7 @@ namespace AnodyneArchipelago
 
         private string GetPhoneTrapMessage(int slot, long location)
         {
-            int staleCount = 3;
+            int staleCount = 5;
             List<int> lastStaleMessages = [];
             List<int> validMessages = [];
 
@@ -1168,7 +1222,15 @@ namespace AnodyneArchipelago
                 }
             }
 
-            long seed = Util.StringToIntVal(Plugin.ArchipelagoManager!.GetSeed()) + slot * location;
+            long rngVal = slot * location;
+
+            //Cheat console sent item
+            if (slot == 0)
+            {
+                rngVal += RNG.Next();
+            }
+
+            long seed = Util.StringToIntVal(Plugin.ArchipelagoManager!.GetSeed()) + rngVal;
 
             if (seed < 0)
             {
@@ -1183,6 +1245,13 @@ namespace AnodyneArchipelago
             }
 
             events.SetEvent($"PhoneTrap0", messageId + 1);
+
+            //Mitra hint
+            if (messageId == 0 && MitraHintType == MitraHintType.PreciseHint)
+            {
+                var hint = MitraHints.Last();
+                SendHint(hint.playerSlot, hint.locationID);
+            }
 
             return _phoneTraps[messageId];
         }
