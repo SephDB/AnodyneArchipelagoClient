@@ -20,6 +20,7 @@ using AnodyneSharp.UI;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
@@ -107,6 +108,8 @@ namespace AnodyneArchipelago
         private Task<Dictionary<long, ScoutedItemInfo>>? _scoutTask;
 
         private ScreenChangeTracker screenTracker = new();
+
+        private List<string> _phoneTraps = [];
 
         public APGrayScale grayScale = new();
 
@@ -268,6 +271,8 @@ namespace AnodyneArchipelago
                 fullScreenEffects.Add(grayScale);
             }
 
+            LoadPhoneTrapMessages();
+
             return result;
         }
 
@@ -423,6 +428,18 @@ namespace AnodyneArchipelago
             return GetPlayerName(GetPlayer());
         }
 
+        public PlayerInfo? GetPlayerOfGame(string game)
+        {
+            var players = _session!.Players.AllPlayers.Where(p => p.Game == game).ToArray();
+
+            if (!players.Any())
+            {
+                return null;
+            }
+
+            return players[RNG.Next(0, players.Length)];
+        }
+
         public string GetLocationName(long locationId, string game)
         {
             return _session!.Locations.GetLocationNameFromId(locationId, game);
@@ -526,7 +543,7 @@ namespace AnodyneArchipelago
 
         private void HandleTrapTimers()
         {
-            if (Dialogue != "")
+            if (!string.IsNullOrEmpty(Dialogue))
             {
                 return;
             }
@@ -571,18 +588,23 @@ namespace AnodyneArchipelago
             }
         }
 
-        private IEnumerator<CutsceneEvent> GetItemsAndMessages()
+        private IEnumerator<CutsceneEvent?> GetItemsAndMessages()
         {
             Queue<BaseTreasure>? treasures = new();
 
             while (ItemIndex < _session!.Items.Index)
             {
-                var (treasure, diag) = HandleItem(_session.Items.AllItemsReceived[ItemIndex]);
+                IEnumerator<CutsceneEvent?> e = HandleItem(_session.Items.AllItemsReceived[ItemIndex]);
                 events.IncEvent("ArchipelagoItemIndex");
-                treasure.GetTreasure();
-                treasures.Enqueue(treasure);
-                yield return new EntityEvent(Enumerable.Repeat(treasure, 1));
-                yield return new DialogueEvent(diag); //This pauses until dialogue is finished
+                while (e.MoveNext())
+                {
+                    if (e.Current is EntityEvent ee)
+                    {
+                        treasures.Enqueue((BaseTreasure)ee.NewEntities.First());
+                    }
+
+                    yield return e.Current;
+                }
             }
 
             while (_messages.TryDequeue(out string? message))
@@ -602,7 +624,7 @@ namespace AnodyneArchipelago
             yield break;
         }
 
-        private (BaseTreasure treasure, string diag) HandleItem(ItemInfo item)
+        private IEnumerator<CutsceneEvent?> HandleItem(ItemInfo item)
         {
             BaseTreasure? treasure = null;
 
@@ -616,6 +638,7 @@ namespace AnodyneArchipelago
             DebugLogger.AddInfo($"Recieved {itemName} ({itemId}) found at {GetLocationName(location, GetGameName(player))} ({location}) from {GetPlayerName(player)} ({player}).");
 
             bool handled = true;
+            bool skipMessage = item.Flags.HasFlag(ItemFlags.None) || item.Flags.HasFlag(ItemFlags.Trap);
 
             switch (itemInfo.Type)
             {
@@ -718,8 +741,37 @@ namespace AnodyneArchipelago
                     _grayscaleTimer += GrayscaleTimerMax;
                     grayScale.active = true;
                     break;
+                case ItemType.Trap when itemInfo.SubType == 5:
+                    float timer = 0;
+
+                    SoundManager.PlaySoundEffect("open");
+
+                    while (timer < 2f)
+                    {
+                        timer += GameTimes.DeltaTime;
+                        yield return null;
+                    }
+
+                    timer = 0;
+
+                    SoundManager.PlaySoundEffect("open");
+
+                    while (timer < 2f)
+                    {
+                        timer += GameTimes.DeltaTime;
+                        yield return null;
+                    }
+
+                    bool fastText = GlobalState.settings.fast_text;
+                    GlobalState.settings.fast_text = false;
+
+                    yield return new DialogueEvent(GetPhoneTrapMessage(player, location));
+
+                    GlobalState.settings.fast_text = fastText;
+                    yield break;
                 case ItemType.Secret:
                     treasure = new SecretTreasure(Plugin.Player.Position, (int)itemInfo.SubType, -1);
+                    skipMessage = false;
                     break;
                 case ItemType.TradingQuest when itemInfo.SubType <= 2:
                     string name = itemInfo.SubType switch
@@ -794,7 +846,15 @@ namespace AnodyneArchipelago
 
             treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemInfo.ID, GetPlayer(), true);
 
-            return (treasure, message);
+            treasure.GetTreasure();
+            yield return new EntityEvent(Enumerable.Repeat(treasure, 1));
+
+            if (!skipMessage)
+            {
+                yield return new DialogueEvent(message); //This pauses until dialogue is finished
+            }
+
+            yield break;
         }
 
         private static void EquipBroomIfEmpty(BroomType type)
@@ -1054,6 +1114,77 @@ namespace AnodyneArchipelago
                     SendDeath();
                 }
             }
+        }
+
+        private void LoadPhoneTrapMessages()
+        {
+            _phoneTraps = [];
+
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "AnodyneArchipelago.MonoGame.Content.PhoneTraps.txt";
+
+            using Stream stream = assembly.GetManifestResourceStream(resourceName)!;
+            using StreamReader reader = new(stream);
+
+            while (!reader.EndOfStream)
+            {
+                string line = reader.ReadLine()!;
+
+                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
+                {
+                    if (line.StartsWith('('))
+                    {
+                        string gameName = line.Split('(', ')')[1];
+                        PlayerInfo? player = GetPlayerOfGame(gameName);
+
+                        if (player == null)
+                        {
+                            continue;
+                        }
+
+                        line = line[(line.IndexOf(')') + 1)..].Replace("[player]", player.Name);
+                    }
+                    _phoneTraps.Add(line);
+                }
+            }
+        }
+
+        private string GetPhoneTrapMessage(int slot, long location)
+        {
+            int staleCount = 3;
+            List<int> lastStaleMessages = [];
+            List<int> validMessages = [];
+
+            for (int i = 0; i < staleCount; i++)
+            {
+                lastStaleMessages.Add(events.GetEvent($"PhoneTrap{i}") - 1);
+            }
+
+            for (int i = 0; i < _phoneTraps.Count; i++)
+            {
+                if (!lastStaleMessages.Contains(i))
+                {
+                    validMessages.Add(i);
+                }
+            }
+
+            long seed = Util.StringToIntVal(Plugin.ArchipelagoManager!.GetSeed()) + slot * location;
+
+            if (seed < 0)
+            {
+                seed *= -1;
+            }
+
+            int messageId = validMessages[(int)(seed % validMessages.Count)];
+
+            for (int i = staleCount - 1; i > 0; i--)
+            {
+                events.SetEvent($"PhoneTrap{i}", events.GetEvent($"PhoneTrap{i - 1}"));
+            }
+
+            events.SetEvent($"PhoneTrap0", messageId + 1);
+
+            return _phoneTraps[messageId];
         }
 
         private string RandomizeSprite()

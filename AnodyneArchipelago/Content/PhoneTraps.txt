@@ -1,0 +1,33 @@
+﻿(Pokemon Crystal)Elm: Hello [player]! I'm just checking in to see how your pokedex is filling up. What? This isn't [player]? I must have called the wrong number. My bad!
+
+Sage: Hello? Young? It's me Sage.^The way you are treating your Raymond is frankly unacceptable!I want you to inform me when he's in boxes so he can move in with me. He deserves my tender care! I will hear from you later. 
+
+Sage: Hello? Young? This is Sage.I saw that you shared that post from Mitra's social media page and not from mine! I want you to undo your share and share it from my page instead! Please! I deserve this! My account only has 2 followers!
+
+Briar: Hey Young. Are you done with your "AP World" yet? I heard a new sandwich shop opened up downtown. Wanna go get a sandwich when you're done? See ya. 
+
+Mitra: Hey Young! I just called with Wares and he told me your [item] is found at [location]. You should check it out! Talk to you later, ok?
+
+Mitra: Hey Young. Someone named "xSageIsCool3000x" just friended me, but not long after they blocked me. Do you know who that is? Talk to you later, ok?
+
+Sage: Young? Please answer me! I don't like that you're talking to this "Mitra"! If you don't stop I'll... I'll run away! And I'll start my own The land and it'll be New and I'll be seen as a God by all of its inhabitants and be the Center of all attention. And you don't want that! I'll hear from you later. 
+
+Dog: Hello?^ Yes.^ This is dog.^\nIt's in my nature.^ Woof.
+
+James: Hello. I'm James. James the Bear. Don't forget to eat a pawful of berries after you procreate. You'll need the energy for the following winter.
+
+Sage: Young! I just watched this cartoon on the television. And the professor turned himself into a pickle out of all things! It's the funniest thing I've ever seen! I'll show you some time later!
+
+Mitra: Hey Young! I just wanted to check in on you to see you're doing fine! You are? That's good to hear! I'll talk to you later, ok?
+
+Sage: Hello Young. I just bought something called an "Ape" and I heard it might make me rich some day! I'll see you in a few years when I bought my first yacht! What's that? They're worthless? My money... Gone! I  have to go!
+
+Rank: Hah! You're still using that broom as a "weapon"! You need a sword to get on my level! You can't even cut grass with that thing! Ehehe! See ya!
+
+Finty: Moneybag.^ Vacuum.^ Gun?^\nYou want it?^\nIt's yours my friend, as long as you got enough rubies.^\nWhat's that?^\nSorry Young.^\nI don't give credit!^\nCome back when you're a little...^\nHmmmm.^ Richer!
+
+Briar: Hey Young.^\nYou ever wonder if anything is even real?^\nWhat if it was all a dream and didn't even matter in the end.^\nWhat's that?^\nYou still think it matters in the end?^\nEven if it's all a dream?^\nThat's good to hear. Thank you.
+
+Wares: Ring^ ring
+
+???: why do they call it oven when you of in the cold food of out hot eat the food
