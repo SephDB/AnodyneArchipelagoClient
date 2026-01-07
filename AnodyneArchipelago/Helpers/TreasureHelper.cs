@@ -37,6 +37,7 @@ namespace AnodyneArchipelago.Helpers
                 [new(ItemType.Trap, 2)] = new("archipelago_items", 30, ["glitch", "chaos"]),
                 [new(ItemType.Trap, 3)] = new("archipelago_items", 31, ["you did this to yourself"]),
                 [new(ItemType.Trap, 4)] = new("suburb_walkers", 0, ["grayscale", "greyscale", "sepia"]),
+                [new(ItemType.Trap, 5)] = new("archipelago_items", 34, ["phone", "phone trap", "phone number"]),
                 [new(ItemType.RedCaveUnlock, 0, RegionID.REDCAVE)] = new("archipelago_items", 3, ["progressive red cavern", "progressive red cave", "tentacle", "whip"]),
                 [new(ItemType.Dam, 0, RegionID.BLUE)] = new("archipelago_items", 22, ["blue done"]),
                 [new(ItemType.Dam, 0, RegionID.HAPPY)] = new("archipelago_items", 23, ["happy done"]),
@@ -84,7 +85,7 @@ namespace AnodyneArchipelago.Helpers
 
         public static ItemSpriteInfo GetSpriteWithTraps(long itemId, int player, bool isOwnItem, ItemFlags itemFlags, long location, out long? disguisedItemId)
         {
-            if (Plugin.ArchipelagoManager!.HideTrapItems && itemFlags.HasFlag(ItemFlags.Trap))
+            if (Plugin.ArchipelagoManager!.HideTrapItems && itemFlags.HasFlag(ItemFlags.Trap) && !itemFlags.HasFlag(ItemFlags.Advancement))
             {
                 (string sprite, int frame, disguisedItemId) = GetTrapSprite(itemId, location);
                 return new(sprite, frame, []);
@@ -102,7 +103,7 @@ namespace AnodyneArchipelago.Helpers
 
             if (manager.MatchDifferentWorldItem == MatchDifferentWorldItem.Disabled && !isOwnItem)
             {
-                return new("archipelago_items", itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1, []);
+                return new("archipelago_items", GetArchipelagoFrame(itemFlags), []);
             }
             else if (manager.GetGameName(player) == "Anodyne")
             {
@@ -237,7 +238,8 @@ namespace AnodyneArchipelago.Helpers
             if (frame == -1)
             {
                 sprite = "archipelago_items";
-                frame = itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : itemFlags.HasFlag(ItemFlags.Trap) ? 12 : 1;
+
+                frame = GetArchipelagoFrame(itemFlags);
             }
 
             return new(sprite, frame, []);
@@ -254,6 +256,27 @@ namespace AnodyneArchipelago.Helpers
             }
 
             return itemList[seed % itemList.Length];
+        }
+
+        private static int GetArchipelagoFrame(ItemFlags itemFlags)
+        {
+            if (itemFlags.HasFlag(ItemFlags.Trap))
+            {
+                if (itemFlags.HasFlag(ItemFlags.Advancement))
+                {
+                    return 32;
+                }
+                else if (itemFlags.HasFlag(ItemFlags.NeverExclude))
+                {
+                    return 33;
+                }
+                else
+                {
+                    return 12;
+                }
+            }
+
+            return itemFlags.HasFlag(ItemFlags.Advancement) ? 0 : 1;
         }
 
         private static bool StringContains(string itemName, params string[] matches)

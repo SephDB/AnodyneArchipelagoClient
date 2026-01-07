@@ -5,6 +5,7 @@ using AnodyneArchipelago.Helpers;
 using AnodyneArchipelago.Patches;
 using AnodyneSharp;
 using AnodyneSharp.Dialogue;
+using AnodyneSharp.Drawing;
 using AnodyneSharp.Drawing.Effects;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy;
@@ -79,8 +80,10 @@ namespace AnodyneArchipelago
 
     public class ArchipelagoManager
     {
-        private const float ChaosTimerMax = 2f;
-        private const float GrayscaleTimerMax = 3;
+        private const float ChaosTimerMax = 3f;
+        private const float ExtremeChaosTimerMax = 5f;
+        private const float GrayscaleTimerMax = 3f;
+        private const float FlipTimerMax = 3f;
 
         private ArchipelagoSession? _session;
         private static int ItemIndex
@@ -116,6 +119,7 @@ namespace AnodyneArchipelago
         private float _chaosModeTimer = 0;
         private float _extremeChaosTimer = 0;
         private float _grayscaleTimer = 0;
+        private float _flipTimer = 0;
 
         public ColorPuzzle ColorPuzzle { get; } = new();
         public bool UnlockSmallKeyGates => SmallkeyMode == SmallKeyMode.Unlocked;
@@ -643,7 +647,7 @@ namespace AnodyneArchipelago
             DebugLogger.AddInfo($"Recieved {itemName} ({itemId}) found at {GetLocationName(location, GetGameName(player))} ({location}) from {GetPlayerName(player)} ({player}).");
 
             bool handled = true;
-            bool skipMessage = item.Flags.HasFlag(ItemFlags.None) || item.Flags.HasFlag(ItemFlags.Trap);
+            bool skipMessage = !item.Flags.HasFlag(ItemFlags.Advancement) || item.Flags.HasFlag(ItemFlags.Trap);
 
             switch (itemInfo.Type)
             {
@@ -730,7 +734,7 @@ namespace AnodyneArchipelago
                     SoundManager.PlaySoundEffect("big_door_locked");
                     break;
                 case ItemType.Trap when itemInfo.SubType == 3:
-                    _extremeChaosTimer += ChaosTimerMax;
+                    _extremeChaosTimer += ExtremeChaosTimerMax;
                     if (GlobalState.GameMode != AnodyneSharp.Registry.GameMode.EXTREME_CHAOS)
                     {
                         GlobalState.GameMode = AnodyneSharp.Registry.GameMode.EXTREME_CHAOS;
