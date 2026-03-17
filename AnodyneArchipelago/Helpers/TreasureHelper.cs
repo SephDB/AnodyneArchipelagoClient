@@ -1,4 +1,5 @@
 ﻿using AnodyneSharp.Entities.Gadget.Treasures;
+using AnodyneSharp.Logging;
 using Archipelago.MultiClient.Net.Enums;
 using Microsoft.Xna.Framework;
 
@@ -108,7 +109,15 @@ namespace AnodyneArchipelago.Helpers
             else if (manager.GetGameName(player) == "Anodyne")
             {
                 Item itemInfo = Item.Create(itemId);
-                return SpriteDict[itemInfo];
+                if(SpriteDict.TryGetValue(itemInfo, out ItemSpriteInfo? item))
+                {
+                    return item;
+                }
+                else
+                {
+                    DebugLogger.AddWarning($"Missing item sprite for {itemId}!");
+                    return new("archipelago_items", GetArchipelagoFrame(itemFlags), []);
+                }
             }
 
             string itemName = manager.GetItemName(itemId, player);
@@ -292,9 +301,9 @@ namespace AnodyneArchipelago.Helpers
 
     public class SpriteTreasure(Vector2 pos, string tex, int frame) : Treasure(tex, pos, frame, -1)
     {
-        public static SpriteTreasure Get(Vector2 pos, long itemId, int player, bool isOwnItem)
+        public static SpriteTreasure Get(Vector2 pos, long itemId, int player, bool isOwnItem, ItemFlags itemFlags)
         {
-            (string tex, int frame, _) = TreasureHelper.GetSprite(itemId, player, isOwnItem, ItemFlags.None);
+            (string tex, int frame, _) = TreasureHelper.GetSprite(itemId, player, isOwnItem, itemFlags);
             return new(pos, tex, frame);
         }
     }
