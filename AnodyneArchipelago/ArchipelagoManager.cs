@@ -154,6 +154,7 @@ namespace AnodyneArchipelago
         private FieldInfo? _gasTimer;
         private FieldInfo? _playerInvincible;
         private MethodInfo? _hurtMethod;
+        private List<ArchipelagoPacketBase> _trapPackages = [];
 
         public ColorPuzzle ColorPuzzle { get; } = new();
         public bool UnlockSmallKeyGates => SmallkeyMode == SmallKeyMode.Unlocked;
@@ -348,50 +349,52 @@ namespace AnodyneArchipelago
             if (packet is BouncePacket bp && bp.Tags.Contains("TrapLink"))
             {
                 if (bp.Data.TryGetValue("source", out JToken? source) &&
-                    bp.Data.TryGetValue("trap_name", out JToken? trapName))
+                    bp.Data.TryGetValue("trap_name", out JToken? trap))
                 {
                     string player = source.ToString();
+                    string trapName = trap.ToString().Replace(" Trap", "");
+                    TrapType? trapType;
+
                     if (player == GetCurrentPlayerName())
                     {
                         return;
                     }
 
-                    TrapType? trap = trapName.ToString() switch
+                    if (Enum.TryParse(trapName, out TrapType t))
                     {
-                        "Gas Trap" => TrapType.Gas,
-                        "Poison Trap" => TrapType.Gas,
-                        "Reverse Controls Trap" => TrapType.Gas,
-                        "Reverse Trap" => TrapType.Gas,
-                        "Confuse Trap" => TrapType.Gas,
-
-                        "Grayscale Trap" => TrapType.Grayscale,
-                        "Greyscale Trap" => TrapType.Grayscale,
-
-                        "Stun Trap" => TrapType.Stun,
-                        "Freeze Trap" => TrapType.Stun,
-                        "Chaos Control Trap" => TrapType.Stun,
-
-                        "Pixelate Trap" => TrapType.Pixelate,
-                        "Pixellation Trap" => TrapType.Pixelate,
-
-                        "Phone Trap" => TrapType.Phone,
-                        "Text Trap" => TrapType.Phone,
-
-                        "Chaos Trap" => TrapType.Chaos,
-                        "Extreme Chaos Trap" => TrapType.Extreme_Chaos,
-
-                        "Person Trap" => TrapType.Person,
-
-                        "Damage Trap" => TrapType.Damage,
-                        "One Hit KO" => TrapType.One_Hit_KO,
-
-                        "Invisible Trap" => TrapType.Invisibile,
-                        _ => null,
-                    };
-
-                    if (trap != null)
+                        trapType = t;
+                    }
+                    else
                     {
-                        SetSubstate(new APItemCutscene(HandleTrap(trap.Value, GetPlayerSlot(player))));
+                        trapType = trapName.ToString() switch
+                        {
+                            "Poison" => TrapType.Gas,
+                            "Reverse Controls" => TrapType.Gas,
+                            "Reverse" => TrapType.Gas,
+                            "Reversal" => TrapType.Gas,
+                            "Confuse" => TrapType.Gas,
+                            "Fuzzy" => TrapType.Gas,
+
+                            "Greyscale" => TrapType.Grayscale,
+
+                            "Paralize" => TrapType.Stun,
+                            "Freeze" => TrapType.Stun,
+                            "Chaos Control" => TrapType.Stun,
+
+                            "Pixellation" => TrapType.Pixelate,
+
+                            "Text" => TrapType.Phone,
+
+                            "One Hit KO" => TrapType.One_Hit_KO,
+                            _ => null,
+                        };
+
+                    }
+
+
+                    if (trapType != null)
+                    {
+                        SetSubstate(new APItemCutscene(HandleTrap(trapType.Value, GetPlayerSlot(player))));
                     }
                 }
             }
@@ -669,9 +672,15 @@ namespace AnodyneArchipelago
                 else
                 {
                     HandleTrapTimers();
+
+                    if (_trapPackages.Any())
+                    {
+                        _session!.Socket.SendMultiplePackets(_trapPackages);
+                        _trapPackages.Clear();
+                    }
+
                 }
             }
-
 
             _eventTracker?.Update();
         }
@@ -844,18 +853,19 @@ namespace AnodyneArchipelago
                     TrapType trapType = (TrapType)itemInfo.SubType;
                     IEnumerator<CutsceneEvent?> e = HandleTrap(trapType, player);
 
-                    var package = new BouncePacket
+
+                    BouncePacket package = new()
                     {
                         Tags = ["TrapLink"],
-                        Data = new Dictionary<string, JToken>
+                        Data = new()
                         {
-                            { "time", DateTime.Now.Ticks},
-                            { "source", GetCurrentPlayerName() },
-                            { "trap_name", trapType.ToString() + " Trap" }
+                            ["time"] = DateTime.Now.Ticks,
+                            ["source"] = GetCurrentPlayerName(),
+                            ["trap_name"] = trapType.ToString() + " Trap"
                         }
                     };
 
-                    _session!.Socket.SendPacket(package);
+                    _trapPackages.Add(package);
 
                     while (e.MoveNext())
                     {
