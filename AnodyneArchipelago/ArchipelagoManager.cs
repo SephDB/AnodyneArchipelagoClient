@@ -352,7 +352,7 @@ namespace AnodyneArchipelago
                     bp.Data.TryGetValue("trap_name", out JToken? trap))
                 {
                     string player = source.ToString();
-                    string trapName = trap.ToString().Replace(" Trap", "");
+                    string trapName = trap.ToString().Replace(" Trap", "").Replace("Trap", "");
                     TrapType? trapType;
 
                     if (player == GetCurrentPlayerName())
@@ -373,6 +373,7 @@ namespace AnodyneArchipelago
                             "Reverse" => TrapType.Gas,
                             "Reversal" => TrapType.Gas,
                             "Confuse" => TrapType.Gas,
+                            "Confusion" => TrapType.Gas,
                             "Fuzzy" => TrapType.Gas,
 
                             "Greyscale" => TrapType.Grayscale,
@@ -380,10 +381,19 @@ namespace AnodyneArchipelago
                             "Paralize" => TrapType.Stun,
                             "Freeze" => TrapType.Stun,
                             "Chaos Control" => TrapType.Stun,
+                            "Sleep" => TrapType.Stun,
 
                             "Pixellation" => TrapType.Pixelate,
+                            "144p" => TrapType.Pixelate,
+                            "Fake Transition" => TrapType.Pixelate,
 
                             "Text" => TrapType.Phone,
+                            "Omo" => TrapType.Phone,
+                            "Literature" => TrapType.Phone,
+                            "Cutscene" => TrapType.Phone,
+
+                            "Police" => TrapType.Person,
+                            "Army" => TrapType.Person,
 
                             "One Hit KO" => TrapType.One_Hit_KO,
                             _ => null,
