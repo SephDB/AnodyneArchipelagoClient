@@ -1,11 +1,7 @@
-﻿using AnodyneArchipelago.Effects;
-using AnodyneArchipelago.Helpers;
+﻿using AnodyneArchipelago.Helpers;
 using AnodyneArchipelago.Patches;
-using AnodyneSharp;
 using AnodyneSharp.Dialogue;
 using AnodyneSharp.Entities;
-using AnodyneSharp.Entities.Enemy;
-using AnodyneSharp.Entities.Enemy.Bedroom;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Logging;
 using AnodyneSharp.MapData;
@@ -23,7 +19,6 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
 using System.Reflection;
@@ -78,38 +73,8 @@ namespace AnodyneArchipelago
         PreciseHint
     }
 
-    public enum TrapType
-    {
-        Person = 0,
-        Gas,
-        Chaos,
-        Extreme_Chaos,
-        Grayscale,
-        Phone,
-        Pixelate,
-        Stun,
-        Damage,
-        One_Hit_KO,
-        Invisibile
-    }
-
     public class ArchipelagoManager
     {
-        private const float ChaosIncrease = 3f;
-        private const float ExtremeChaosIncrease = 5f;
-        private const float GrayscaleIncrease = 3f;
-        private const float PixelateIncrease = 3f;
-        private const float StunIncrease = 0.5f;
-        private const float InvisibleIncrease = 1f;
-        private const float FlipIncrease = 3f;
-
-        private const float ChaosLimit = ChaosIncrease * 5;
-        private const float ExtremeChaosLimit = ExtremeChaosIncrease * 5;
-        private const float GrayscaleLimit = GrayscaleIncrease * 5;
-        private const float PixelateLimit = PixelateIncrease * 5;
-        private const float StunLimit = StunIncrease * 5;
-        private const float InvisibleLimit = InvisibleIncrease * 5;
-
         private ArchipelagoSession? _session;
         private static int ItemIndex
         {
@@ -137,24 +102,7 @@ namespace AnodyneArchipelago
 
         private ScreenChangeTracker screenTracker = new();
 
-        private List<string> _phoneTraps = [];
-        private List<TrapType> _enabledTraps = [];
-
-        public APGrayScale grayScale = new();
-        public APPIxelate pixelate = new();
-
-        private float _chaosModeTimer = 0;
-        private float _extremeChaosTimer = 0;
-        private float _grayscaleTimer = 0;
-        private float _pixelateTimer = 0;
-        private float _stunTimer = 0;
-        private float _invisibleTimer = 0;
-        private float _flipTimer = 0;
-
-        private FieldInfo? _gasTimer;
-        private FieldInfo? _playerInvincible;
-        private MethodInfo? _hurtMethod;
-        private List<ArchipelagoPacketBase> _trapPackages = [];
+        private TrapHelper _trapHelper;
 
         public ColorPuzzle ColorPuzzle { get; } = new();
         public bool UnlockSmallKeyGates => SmallkeyMode == SmallKeyMode.Unlocked;
@@ -191,9 +139,7 @@ namespace AnodyneArchipelago
 
         public ArchipelagoManager()
         {
-            _playerInvincible = typeof(Player).GetField("invincible", BindingFlags.NonPublic | BindingFlags.Instance);
-            _hurtMethod = typeof(Player).GetMethod("ReceiveDamage", BindingFlags.NonPublic | BindingFlags.Instance);
-            _gasTimer = typeof(Player).GetField("_revTimer", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            _trapHelper = new(this);
         }
 
         public async Task<LoginResult> Connect(string url, string slotName, string password)
@@ -274,14 +220,11 @@ namespace AnodyneArchipelago
                 _session.ConnectionInfo.UpdateConnectionOptions(["TrapLink"]);
             }
 
+            TrapType[] enabledTraps = [];
+
             if (login.SlotData.ContainsKey("traps_enabled"))
             {
-                var traps = GetSlotDataArray<int>("traps_enabled", login);
-
-                foreach (var trapId in traps)
-                {
-                    _enabledTraps.Add((TrapType)Item.Create(trapId).SubType);
-                }
+                enabledTraps = [.. GetSlotDataArray<int>("traps_enabled", login).Select(id => (TrapType)Item.Create(id).SubType)];
             }
 
             if (GetSlotData("death_link", false, login))
@@ -329,17 +272,7 @@ namespace AnodyneArchipelago
 
             _eventTracker = new(_session);
 
-            if (!fullScreenEffects.Contains(grayScale))
-            {
-                fullScreenEffects.Add(grayScale);
-            }
-
-            if (!gameEffects.Contains(pixelate))
-            {
-                gameEffects.Add(pixelate);
-            }
-
-            LoadPhoneTrapMessages();
+            _trapHelper.Connect(enabledTraps);
 
             return result;
         }
@@ -353,59 +286,13 @@ namespace AnodyneArchipelago
                 {
                     string player = source.ToString();
                     string trapName = trap.ToString().Replace(" Trap", "").Replace("Trap", "");
-                    TrapType? trapType;
 
                     if (player == GetCurrentPlayerName())
                     {
                         return;
                     }
 
-                    if (Enum.TryParse(trapName, out TrapType t))
-                    {
-                        trapType = t;
-                    }
-                    else
-                    {
-                        trapType = trapName.ToString() switch
-                        {
-                            "Poison" => TrapType.Gas,
-                            "Reverse Controls" => TrapType.Gas,
-                            "Reverse" => TrapType.Gas,
-                            "Reversal" => TrapType.Gas,
-                            "Confuse" => TrapType.Gas,
-                            "Confusion" => TrapType.Gas,
-                            "Fuzzy" => TrapType.Gas,
-
-                            "Greyscale" => TrapType.Grayscale,
-
-                            "Paralize" => TrapType.Stun,
-                            "Freeze" => TrapType.Stun,
-                            "Chaos Control" => TrapType.Stun,
-                            "Sleep" => TrapType.Stun,
-
-                            "Pixellation" => TrapType.Pixelate,
-                            "144p" => TrapType.Pixelate,
-                            "Fake Transition" => TrapType.Pixelate,
-
-                            "Text" => TrapType.Phone,
-                            "Omo" => TrapType.Phone,
-                            "Literature" => TrapType.Phone,
-                            "Cutscene" => TrapType.Phone,
-
-                            "Police" => TrapType.Person,
-                            "Army" => TrapType.Person,
-
-                            "One Hit KO" => TrapType.One_Hit_KO,
-                            _ => null,
-                        };
-
-                    }
-
-
-                    if (trapType != null)
-                    {
-                        SetSubstate(new APItemCutscene(HandleTrap(trapType.Value, GetPlayerSlot(player))));
-                    }
+                    _trapHelper.ReceiveTraplink(player, trapName);
                 }
             }
         }
@@ -506,8 +393,7 @@ namespace AnodyneArchipelago
 
             PatchPlayerTextures(_originalPlayerTexture, _originalCellTexture, _originalReflectionTexture);
 
-            fullScreenEffects.Remove(grayScale);
-            gameEffects.Remove(pixelate);
+            _trapHelper.Disconnect();
         }
 
         private async Task<Dictionary<long, ScoutedItemInfo>> ScoutAllLocations()
@@ -681,90 +567,11 @@ namespace AnodyneArchipelago
                 }
                 else
                 {
-                    HandleTrapTimers();
-
-                    if (_trapPackages.Any())
-                    {
-                        _session!.Socket.SendMultiplePackets(_trapPackages);
-                        _trapPackages.Clear();
-                    }
-
+                    _trapHelper.Update(_session.Socket);
                 }
             }
 
             _eventTracker?.Update();
-        }
-
-        private void HandleTrapTimers()
-        {
-            if (!string.IsNullOrEmpty(Dialogue))
-            {
-                return;
-            }
-
-            //Extreme chaos overrides normal chaos
-            if (_extremeChaosTimer > 0)
-            {
-                _extremeChaosTimer -= GameTimes.DeltaTime;
-
-                if (_extremeChaosTimer <= 0)
-                {
-                    if (_chaosModeTimer > 0)
-                    {
-                        GlobalState.GameMode = AnodyneSharp.Registry.GameMode.Chaos;
-                    }
-                    else
-                    {
-                        GlobalState.GameMode = AnodyneSharp.Registry.GameMode.Normal;
-                        ForceTextureReload = true;
-                    }
-                }
-            }
-            else if (_chaosModeTimer > 0)
-            {
-                _chaosModeTimer -= GameTimes.DeltaTime;
-
-                if (_chaosModeTimer <= 0)
-                {
-                    GlobalState.GameMode = AnodyneSharp.Registry.GameMode.Normal;
-                    ForceTextureReload = true;
-                }
-            }
-
-            if (_grayscaleTimer > 0)
-            {
-                _grayscaleTimer -= GameTimes.DeltaTime;
-
-                if (_grayscaleTimer <= 0)
-                {
-                    grayScale.Deactivate();
-                }
-            }
-
-            if (_pixelateTimer > 0)
-            {
-                _pixelateTimer -= GameTimes.DeltaTime;
-
-                pixelate.AddPixelation(2f);
-            }
-            else if (pixelate.Active())
-            {
-                pixelate.RemovePixelation(1f);
-            }
-
-            if (_stunTimer > 0)
-            {
-                _stunTimer -= GameTimes.DeltaTime;
-
-                if (_stunTimer <= 0)
-                {
-                    Plugin.Player.dontMove = false;
-                }
-                else
-                {
-                    Plugin.Player.dontMove = true;
-                }
-            }
         }
 
         private IEnumerator<CutsceneEvent?> GetItemsAndMessages()
@@ -861,21 +668,9 @@ namespace AnodyneArchipelago
                     break;
                 case ItemType.Trap:
                     TrapType trapType = (TrapType)itemInfo.SubType;
-                    IEnumerator<CutsceneEvent?> e = HandleTrap(trapType, player);
+                    IEnumerator<CutsceneEvent?> e = _trapHelper.HandleTrap(trapType, player);
 
-
-                    BouncePacket package = new()
-                    {
-                        Tags = ["TrapLink"],
-                        Data = new()
-                        {
-                            ["time"] = DateTime.Now.Ticks,
-                            ["source"] = GetCurrentPlayerName(),
-                            ["trap_name"] = trapType.ToString() + " Trap"
-                        }
-                    };
-
-                    _trapPackages.Add(package);
+                    _trapHelper.AddTrapPackage(trapType);
 
                     while (e.MoveNext())
                     {
@@ -972,166 +767,6 @@ namespace AnodyneArchipelago
             }
 
             yield break;
-        }
-
-        private IEnumerator<CutsceneEvent?> HandleTrap(TrapType trap, int sender)
-        {
-            switch (trap)
-            {
-                case TrapType.Person:
-                    int offset = 16;
-
-                    int min = -offset;
-                    int max = offset + 1;
-
-                    for (int? i = 0; i < 6; i++)
-                    {
-                        SpawnEntity(
-                            new Person(
-                                new EntityPreset(
-                                    typeof(Person),
-                                    Plugin.Player.Position + new Vector2(RNG.Next(min, max), RNG.Next(min, max)),
-                                    new Guid(),
-                                    RNG.Next(0, 5)
-                                    ),
-                                Plugin.Player)
-                            );
-                    }
-                    break;
-                case TrapType.Gas:
-                    if (!Plugin.Player.reversed)
-                    {
-                        Plugin.Player.reversed = true;
-                        wave.active = true;
-                    }
-                    else
-                    {
-                        _gasTimer.SetValue(Plugin.Player, (float)_gasTimer.GetValue(Plugin.Player)! - 0.9f);
-                    }
-                    break;
-                case TrapType.Chaos:
-                    AddTimer(ref _chaosModeTimer, ChaosIncrease, ChaosLimit);
-
-                    if (GlobalState.GameMode != AnodyneSharp.Registry.GameMode.Chaos)
-                    {
-                        GlobalState.GameMode = AnodyneSharp.Registry.GameMode.Chaos;
-                        ForceTextureReload = true;
-                    }
-
-                    SoundManager.PlaySoundEffect("shieldy-hit");
-                    SoundManager.PlaySoundEffect("small_wave");
-                    SoundManager.PlaySoundEffect("big_door_locked");
-                    break;
-                case TrapType.Extreme_Chaos:
-                    AddTimer(ref _extremeChaosTimer, ExtremeChaosIncrease, ExtremeChaosLimit);
-
-                    if (GlobalState.GameMode != AnodyneSharp.Registry.GameMode.EXTREME_CHAOS)
-                    {
-                        GlobalState.GameMode = AnodyneSharp.Registry.GameMode.EXTREME_CHAOS;
-
-                        ForceTextureReload = true;
-                    }
-
-                    SoundManager.PlaySoundEffect("shieldy-hit");
-                    SoundManager.PlaySoundEffect("small_wave");
-                    SoundManager.PlaySoundEffect("big_door_locked");
-                    SoundManager.PlaySoundEffect("fall_in_hole");
-                    break;
-                case TrapType.Grayscale:
-                    AddTimer(ref _grayscaleTimer, GrayscaleIncrease, GrayscaleLimit);
-                    grayScale.active = true;
-                    break;
-                case TrapType.Pixelate:
-                    AddTimer(ref _pixelateTimer, PixelateIncrease, PixelateLimit);
-                    _pixelateTimer += PixelateIncrease;
-                    break;
-                case TrapType.Stun:
-                    AddTimer(ref _stunTimer, StunIncrease, StunLimit);
-                    break;
-                case TrapType.Damage:
-                    PlayerDamage(1, sender);
-                    break;
-                case TrapType.One_Hit_KO:
-                    PlayerDamage(CUR_HEALTH - 1, sender);
-                    break;
-                case TrapType.Invisibile:
-                    AddTimer(ref _invisibleTimer, InvisibleIncrease, InvisibleLimit);
-                    Plugin.Player.visible = false;
-                    break;
-                case TrapType.Phone:
-                    float timer = 0;
-
-                    SoundManager.PlaySoundEffect("open");
-
-                    while (timer < 2f)
-                    {
-                        timer += GameTimes.DeltaTime;
-                        yield return null;
-                    }
-
-                    timer = 0;
-
-                    SoundManager.PlaySoundEffect("open");
-
-                    while (timer < 2f)
-                    {
-                        timer += GameTimes.DeltaTime;
-                        yield return null;
-                    }
-
-                    timer = 0;
-
-                    SoundManager.PlaySoundEffect("dash_pad_2");
-
-                    while (timer < 0.2f)
-                    {
-                        timer += GameTimes.DeltaTime;
-                        yield return null;
-                    }
-
-                    bool fastText = settings.fast_text;
-                    settings.fast_text = false;
-
-                    yield return new DialogueEvent(GetPhoneTrapMessage(sender, 0));
-
-                    timer = 0;
-
-                    SoundManager.PlaySoundEffect("dash_pad_1");
-
-                    while (timer < 0.6f)
-                    {
-                        timer += GameTimes.DeltaTime;
-                        yield return null;
-                    }
-
-                    timer = 0;
-
-                    SoundManager.PlaySoundEffect("dustpoof");
-
-                    while (timer < 0.8f)
-                    {
-                        timer += GameTimes.DeltaTime;
-                        yield return null;
-                    }
-
-                    settings.fast_text = fastText;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private static void AddTimer(ref float timer, float addition, float limit)
-        {
-            timer = Math.Min(timer + addition, limit);
-        }
-
-        private void PlayerDamage(int damage, int sender)
-        {
-            damage = CUR_HEALTH > 1 ? damage : 0;
-
-            _playerInvincible?.SetValue(Plugin.Player, false);
-            _hurtMethod?.Invoke(Plugin.Player, [damage, GetPlayerName(sender), true, true]);
         }
 
         private static void EquipBroomIfEmpty(BroomType type)
@@ -1393,111 +1028,6 @@ namespace AnodyneArchipelago
             }
         }
 
-        private void LoadPhoneTrapMessages()
-        {
-            _phoneTraps = [];
-
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "AnodyneArchipelago.MonoGame.Content.PhoneTraps.txt";
-
-            using Stream stream = assembly.GetManifestResourceStream(resourceName)!;
-            using StreamReader reader = new(stream);
-
-            while (!reader.EndOfStream)
-            {
-                string line = reader.ReadLine()!;
-
-                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
-                {
-                    if (line.StartsWith('('))
-                    {
-                        string gameName = line.Split('(', ')')[1];
-
-                        if (gameName == "MitraHint")
-                        {
-                            if (MitraHints.Length == 0)
-                            {
-                                continue;
-                            }
-
-                            MitraHint hint = MitraHints.Last();
-                            string item = GetItemName(hint.itemID);
-                            string location = GetPlayerLocationName(hint.locationID, hint.playerSlot);
-                            string world = hint.playerSlot == GetPlayer() ? "this world" : $"{GetPlayerName(hint.playerSlot)}'s world";
-
-                            line = line[(line.IndexOf(')') + 1)..].Replace("[item]", item).Replace("[location]", location).Replace("[world]", world);
-                        }
-                        else
-                        {
-                            PlayerInfo? player = GetPlayerOfGame(gameName);
-
-                            if (player == null)
-                            {
-                                continue;
-                            }
-
-                            line = line[(line.IndexOf(')') + 1)..].Replace("[player]", player.Name);
-                        }
-
-                    }
-                    _phoneTraps.Add(line);
-                }
-            }
-        }
-
-        private string GetPhoneTrapMessage(int slot, long location)
-        {
-            int staleCount = 5;
-            List<int> lastStaleMessages = [];
-            List<int> validMessages = [];
-
-            for (int i = 0; i < staleCount; i++)
-            {
-                lastStaleMessages.Add(events.GetEvent($"PhoneTrap{i}") - 1);
-            }
-
-            for (int i = 0; i < _phoneTraps.Count; i++)
-            {
-                if (!lastStaleMessages.Contains(i))
-                {
-                    validMessages.Add(i);
-                }
-            }
-
-            long rngVal = slot * location;
-
-            //Cheat console sent item
-            if (slot == 0)
-            {
-                rngVal += RNG.Next();
-            }
-
-            long seed = Util.StringToIntVal(Plugin.ArchipelagoManager!.GetSeed()) + rngVal;
-
-            if (seed < 0)
-            {
-                seed *= -1;
-            }
-
-            int messageId = validMessages[(int)(seed % validMessages.Count)];
-
-            for (int i = staleCount - 1; i > 0; i--)
-            {
-                events.SetEvent($"PhoneTrap{i}", events.GetEvent($"PhoneTrap{i - 1}"));
-            }
-
-            events.SetEvent($"PhoneTrap0", messageId + 1);
-
-            //Mitra hint
-            if (messageId == 0 && MitraHintType == MitraHintType.PreciseHint)
-            {
-                MitraHint hint = MitraHints.Last();
-                SendHint(hint.playerSlot, hint.locationID);
-            }
-
-            return _phoneTraps[messageId];
-        }
-
         private string RandomizeSprite()
         {
             Dictionary<string, Texture2D>? textures = (Dictionary<string, Texture2D>)typeof(ResourceManager).GetField("_textures", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
@@ -1511,7 +1041,7 @@ namespace AnodyneArchipelago
                 seed *= -1;
             }
 
-            foreach (var sprite in textures.Keys)
+            foreach (string sprite in textures.Keys)
             {
                 if (sprite.EndsWith("_cell") && !sprite.StartsWith("broom"))
                 {

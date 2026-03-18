@@ -37,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\EventTracker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\IDManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ScreenChangeTracker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TrapHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\TreasureHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Locations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\ArchipelagoSettings.cs" />
