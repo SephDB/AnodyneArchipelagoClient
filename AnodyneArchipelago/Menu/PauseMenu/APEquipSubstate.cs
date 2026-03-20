@@ -54,9 +54,9 @@ namespace AnodyneSharp.States.MenuSubstates
         private EquipState _state;
         private EquipState _lastState;
 
-        List<EquipState> bottom_row_enabled = [EquipState.Shoes, EquipState.Box, EquipState.BikingShoes, EquipState.Miao, EquipState.Happy, EquipState.Blue];
-        List<EquipState> very_bottom_row_enabled = [EquipState.RedCave, EquipState.Statue1, EquipState.Statue2, EquipState.Statue3];
-        int current_bottom_index = 0;
+        private List<EquipState> bottom_row_enabled = [EquipState.Shoes, EquipState.Box, EquipState.BikingShoes, EquipState.Miao, EquipState.Happy, EquipState.Blue];
+        private List<EquipState> very_bottom_row_enabled = [EquipState.RedCave, EquipState.Statue1, EquipState.Statue2, EquipState.Statue3];
+        private int current_bottom_index = 0;
 
         public APEquipSubstate()
         {
@@ -179,12 +179,12 @@ namespace AnodyneSharp.States.MenuSubstates
             _redCave.Draw();
             _redCaveLabel.Draw();
 
-            foreach (var statue in _statues)
+            foreach (UIEntity statue in _statues)
             {
                 statue.Draw();
             }
 
-            foreach (var dam in _dams)
+            foreach (UIEntity dam in _dams)
             {
                 dam.Draw();
             }
@@ -414,13 +414,13 @@ namespace AnodyneSharp.States.MenuSubstates
                 case EquipState.Statue1:
                     if (statuesMoved[0])
                     {
-                        SetDialogue(splitWindmill ? 
+                        SetDialogue(splitWindmill ?
                             "The statue in the Temple of the Seeing One has moved." :
                             "How does turning on a windmill even move statues??? Come on game designers!");
                     }
                     else
                     {
-                        SetDialogue(splitWindmill ? 
+                        SetDialogue(splitWindmill ?
                             "The statue in the Temple of the Seeing One has not yet moved." :
                             "Go do the windmill and maybe I'll move.");
                     }
@@ -428,7 +428,7 @@ namespace AnodyneSharp.States.MenuSubstates
                 case EquipState.Statue2:
                     if (statuesMoved[1])
                     {
-                        SetDialogue(splitWindmill ? 
+                        SetDialogue(splitWindmill ?
                             "The statue in the Red Cave has moved." :
                             "I think it's about abortions or something.");
                     }
@@ -442,13 +442,13 @@ namespace AnodyneSharp.States.MenuSubstates
                 case EquipState.Statue3:
                     if (statuesMoved[2])
                     {
-                        SetDialogue(splitWindmill ? 
+                        SetDialogue(splitWindmill ?
                             "The statue in the Mountain Cavern has moved." :
                             "Here we go! Wahoo!!!!!");
                     }
                     else
                     {
-                        SetDialogue(splitWindmill ? 
+                        SetDialogue(splitWindmill ?
                             "The statue in the Mountain Cavern has not yet moved." :
                             "Oh no! Mama mia!!!");
                     }

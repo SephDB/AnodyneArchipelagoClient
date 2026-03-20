@@ -1,5 +1,5 @@
-﻿using System.Text.Json;
-using AnodyneSharp.Registry;
+﻿using AnodyneSharp.Registry;
+using System.Text.Json;
 
 namespace AnodyneArchipelago.Menu
 {

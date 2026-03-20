@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using AnodyneSharp.Dialogue;
+﻿using AnodyneSharp.Dialogue;
 using AnodyneSharp.Drawing;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Resources;
@@ -8,12 +7,13 @@ using AnodyneSharp.UI;
 using AnodyneSharp.UI.PauseMenu.Config;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Reflection;
 
 namespace AnodyneArchipelago.Menu.MenuSubstate
 {
     public class ArchipelagoLocalSettings : ListSubstate
     {
-        UIEntity? _bgBox;
+        private UIEntity? _bgBox;
 
         public ArchipelagoLocalSettings()
         {
@@ -51,9 +51,9 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
                     "Match+"
                 ];
 
-            var playerSpriteLabel = new UILabel(new Vector2(menuX, y + yStep * 1.5f), true, "Player sprite", layer: DrawOrder.TEXT);
+            UILabel playerSpriteLabel = new(new Vector2(menuX, y + yStep * 1.5f), true, "Player sprite", layer: DrawOrder.TEXT);
 
-            var playerSpriteSetting = new TextSelector(
+            TextSelector playerSpriteSetting = new(
                 new Vector2(menuX, playerSpriteLabel.Position.Y + GameConstants.FONT_LINE_HEIGHT + (GlobalState.CurrentLanguage == Language.ZH_CN ? 5 : 2)),
                 110,
                 Array.FindIndex(sprites, s => s == MenuState.ArchipelagoSettings!.PlayerSprite),
@@ -64,9 +64,9 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
                 ValueChangedEvent = SpriteChanged
             };
 
-            var apItemLabel = new UILabel(playerSpriteLabel.Position + Vector2.UnitY * yStep * 1.5f, true, "AP item\nlook", layer: DrawOrder.TEXT);
+            UILabel apItemLabel = new(playerSpriteLabel.Position + Vector2.UnitY * yStep * 1.5f, true, "AP item\nlook", layer: DrawOrder.TEXT);
 
-            var apItemSetting = new TextSelector(
+            TextSelector apItemSetting = new(
                 new Vector2(x + 60, apItemLabel.Position.Y + (GlobalState.CurrentLanguage == Language.ZH_CN ? 5 : 2) + 3),
                 60,
                 (int)MenuState.ArchipelagoSettings!.MatchDifferentWorldItem,
@@ -77,9 +77,9 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
                 ValueChangedEvent = ApItemLookChanged
             };
 
-            var trapItemLabel = new UILabel(apItemLabel.Position + Vector2.UnitY * yStep * 1.5f, true, "Disguise trap\nitems", layer: DrawOrder.TEXT);
+            UILabel trapItemLabel = new(apItemLabel.Position + Vector2.UnitY * yStep * 1.5f, true, "Disguise trap\nitems", layer: DrawOrder.TEXT);
 
-            var trapItemSetting = new CheckBox(
+            CheckBox trapItemSetting = new(
                 new Vector2(x + 110, trapItemLabel.Position.Y + (GlobalState.CurrentLanguage == Language.ZH_CN ? 3 : 0) + 3),
                 MenuState.ArchipelagoSettings.HideTrapItems,
                 MenuStyle.SubMenu,
@@ -88,9 +88,9 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
                 ValueChangedEvent = (val) => { MenuState.ArchipelagoSettings.HideTrapItems = val; }
             };
 
-            var colorPuzzleHelpLabel = new UILabel(trapItemLabel.Position + Vector2.UnitY * yStep * 1.5f, true, "Color puzzle\nhelp", layer: DrawOrder.TEXT);
+            UILabel colorPuzzleHelpLabel = new(trapItemLabel.Position + Vector2.UnitY * yStep * 1.5f, true, "Color puzzle\nhelp", layer: DrawOrder.TEXT);
 
-            var colorPuzzleHelpSetting = new CheckBox(
+            CheckBox colorPuzzleHelpSetting = new(
                 new Vector2(x + 110, colorPuzzleHelpLabel.Position.Y + (GlobalState.CurrentLanguage == Language.ZH_CN ? 3 : 0) + 3),
                 MenuState.ArchipelagoSettings.ColorPuzzleHelp,
                 MenuStyle.SubMenu,
@@ -114,7 +114,7 @@ namespace AnodyneArchipelago.Menu.MenuSubstate
 
             List<string> sprites = [];
 
-            foreach (var sprite in textures.Keys)
+            foreach (string sprite in textures.Keys)
             {
                 if (sprite.EndsWith("_cell") && !sprite.StartsWith("broom"))
                 {

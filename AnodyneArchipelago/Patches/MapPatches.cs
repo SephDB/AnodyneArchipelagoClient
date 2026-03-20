@@ -1,5 +1,4 @@
-﻿using System.Xml.Linq;
-using AnodyneSharp.Registry;
+﻿using AnodyneSharp.Registry;
 using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Patches
@@ -8,7 +7,7 @@ namespace AnodyneArchipelago.Patches
     {
         public static string ChangeMap(string mapName, string BG)
         {
-            var map = BG.Trim().Split('\n').Select(s => s.Split(',').Select(int.Parse).ToArray()).ToArray();
+            int[][] map = [.. BG.Trim().Split('\n').Select(s => s.Split(',').Select(int.Parse).ToArray())];
 
             if (mapName == "FIELDS")
             {

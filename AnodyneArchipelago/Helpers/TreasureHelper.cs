@@ -109,7 +109,7 @@ namespace AnodyneArchipelago.Helpers
             else if (manager.GetGameName(player) == "Anodyne")
             {
                 Item itemInfo = Item.Create(itemId);
-                if(SpriteDict.TryGetValue(itemInfo, out ItemSpriteInfo? item))
+                if (SpriteDict.TryGetValue(itemInfo, out ItemSpriteInfo? item))
                 {
                     return item;
                 }

@@ -1,14 +1,9 @@
-﻿using System;
-using AnodyneArchipelago.Helpers;
-using AnodyneSharp.Dialogue;
+﻿using AnodyneSharp.Dialogue;
 using AnodyneSharp.Drawing;
 using AnodyneSharp.Entities;
-using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Entities.Interactive.Npc;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Utilities;
-using Archipelago.MultiClient.Net.Models;
-using Microsoft.Xna.Framework;
 using static AnodyneArchipelago.Entities.ColorPuzzleNotifier;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -57,7 +52,7 @@ namespace AnodyneArchipelago.Entities
 
         public override IEnumerable<Entity> SubEntities()
         {
-            return base.SubEntities().Concat( _sparkles.Entities);
+            return base.SubEntities().Concat(_sparkles.Entities);
         }
 
         public bool PlayerInteraction(Facing player_direction)

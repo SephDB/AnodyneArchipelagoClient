@@ -1,6 +1,5 @@
 ﻿using AnodyneArchipelago.Helpers;
 using Microsoft.Xna.Framework;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AnodyneArchipelago
@@ -10,15 +9,15 @@ namespace AnodyneArchipelago
         private Dictionary<RegionID, List<Rectangle>> _singleSwap = [];
         private Dictionary<RegionID, List<Rectangle>> _extendedSwap = [];
 
-        public SwapData(JArray swapData) 
+        public SwapData(JArray swapData)
         {
             RegionID[] regions = Enum.GetValues<RegionID>();
 
             _singleSwap = [];
             _extendedSwap = [];
 
-            for (int i = 0; i < regions.Length; i++) 
-            { 
+            for (int i = 0; i < regions.Length; i++)
+            {
                 RegionID region = regions[i];
                 JToken values = swapData.ElementAt(i);
 
@@ -42,9 +41,9 @@ namespace AnodyneArchipelago
         private static List<Rectangle> ConvertData(JToken values)
         {
             List<Rectangle> areas = [];
-            foreach (var value in values)
+            foreach (JToken value in values)
             {
-                var v = value.Values<int>().ToArray();
+                int[] v = [.. value.Values<int>()];
                 areas.Add(new(v[0], v[1], v[2], v[3]));
             }
 

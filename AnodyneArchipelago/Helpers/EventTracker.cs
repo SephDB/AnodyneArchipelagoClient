@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Concurrent;
-using AnodyneSharp.Entities;
+﻿using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy.Apartment;
 using AnodyneSharp.Entities.Enemy.Bedroom;
 using AnodyneSharp.Entities.Enemy.Circus;
@@ -16,6 +14,7 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json.Linq;
+using System.Collections.Concurrent;
 
 namespace AnodyneArchipelago.Helpers
 {
@@ -36,11 +35,11 @@ namespace AnodyneArchipelago.Helpers
             };
         }
 
-        static readonly string BitMapName = "EventMap";
-        static readonly string ArrayName = "EventArray";
+        private static readonly string BitMapName = "EventMap";
+        private static readonly string ArrayName = "EventArray";
 
         //Append-only for backwards compatibility reasons
-        static readonly List<EventWatch> EventWatchList = [
+        private static readonly List<EventWatch> EventWatchList = [
                 Boss("Defeated_Seer","BEDROOM", typeof(Seer)),
                 Boss("Defeated_Wall","CROWD", typeof(WallBoss)),
                 Boss("Defeated_Rogue","REDCAVE", typeof(Red_Boss)),
@@ -92,17 +91,17 @@ namespace AnodyneArchipelago.Helpers
                 GameEvent("HappyDone","HappyDone")
             ];
 
-        static EventWatch NexusGate(string MapName, string eventName)
+        private static EventWatch NexusGate(string MapName, string eventName)
         {
             return new($"Nexus{eventName}", () => GlobalState.events.ActivatedNexusPortals.Contains(MapName), () => GlobalState.events.ActivatedNexusPortals.Add(MapName), () => GlobalState.CURRENT_MAP_NAME == "NEXUS");
         }
 
-        static EventWatch GameEvent(string DataName, string EventName, int count = 1, Func<bool>? RequiresQuickload = null)
+        private static EventWatch GameEvent(string DataName, string EventName, int count = 1, Func<bool>? RequiresQuickload = null)
         {
             return new(DataName, () => GlobalState.events.GetEvent(EventName) >= count, () => GlobalState.events.SetEvent(EventName, count), RequiresQuickload);
         }
 
-        static EventWatch Boss(string DataName, string AreaName, Type? boss_type = null)
+        private static EventWatch Boss(string DataName, string AreaName, Type? boss_type = null)
         {
             EventWatch ret = new(DataName, () => GlobalState.events.BossDefeated.Contains(AreaName), () =>
             {
@@ -122,7 +121,7 @@ namespace AnodyneArchipelago.Helpers
             return ret;
         }
 
-        static EventWatch Tentacle(string DataName, Guid guid)
+        private static EventWatch Tentacle(string DataName, Guid guid)
         {
             return new(DataName, () => !(EntityManager.State.GetValueOrDefault(guid)?.Alive ?? true), () =>
             {
@@ -140,7 +139,7 @@ namespace AnodyneArchipelago.Helpers
             );
         }
 
-        static EventWatch BigKey(string DataName, int id)
+        private static EventWatch BigKey(string DataName, int id)
         {
             return new(DataName, () => GlobalState.inventory.BigKeyStatus[id], () => GlobalState.inventory.BigKeyStatus[id] = true);
         }
@@ -156,7 +155,7 @@ namespace AnodyneArchipelago.Helpers
         {
             _session = session;
 
-            foreach (var ev in EventWatchList)
+            foreach (EventWatch ev in EventWatchList)
             {
                 DebugLogger.AddDebug($"{ev.BitMask}");
             }
@@ -172,7 +171,7 @@ namespace AnodyneArchipelago.Helpers
         {
             //Throw everything in to update next frame, it can filter there on what is actually set
             ulong bitmask = (ulong)newValue;
-            var events = MaskToEvents(bitmask);
+            List<EventWatch> events = MaskToEvents(bitmask);
             events.ForEach(_serverEvents.Enqueue);
         }
 
@@ -183,7 +182,7 @@ namespace AnodyneArchipelago.Helpers
 
             bool needsQuickLoad = false;
 
-            while (_serverEvents.TryDequeue(out var ev))
+            while (_serverEvents.TryDequeue(out EventWatch? ev))
             {
                 ulong mask = ev.BitMask;
                 if ((mask & currentMask) == mask)
@@ -197,11 +196,11 @@ namespace AnodyneArchipelago.Helpers
 
             if (newEntries != 0)
             {
-                foreach (var ev in MaskToEvents(newEntries))
+                foreach (EventWatch ev in MaskToEvents(newEntries))
                 {
                     DebugLogger.AddDebug($"Setting mask for {ev.EventName}");
                 }
-                EventArray += UpdateList(MaskToEvents(newEntries).Select(e=>e.EventName).ToArray());
+                EventArray += UpdateList(MaskToEvents(newEntries).Select(e => e.EventName).ToArray());
                 BitMap += Bitwise.Or(newEntries);
             }
 
@@ -222,10 +221,10 @@ namespace AnodyneArchipelago.Helpers
             }
         }
 
-        static List<EventWatch> MaskToEvents(ulong mask)
+        private static List<EventWatch> MaskToEvents(ulong mask)
         {
             List<EventWatch> ret = [];
-            foreach (var ev in EventWatchList)
+            foreach (EventWatch ev in EventWatchList)
             {
                 if ((mask & ev.BitMask) == ev.BitMask)
                 {
@@ -235,11 +234,11 @@ namespace AnodyneArchipelago.Helpers
             return ret;
         }
 
-        static ulong CurrentMask()
+        private static ulong CurrentMask()
         {
             ulong currentMask = 0;
 
-            foreach (var ev in EventWatchList)
+            foreach (EventWatch ev in EventWatchList)
             {
                 if (ev.Test())
                 {
@@ -250,7 +249,7 @@ namespace AnodyneArchipelago.Helpers
             return currentMask;
         }
 
-        static ulong NewlySet(ulong old, ulong newValue)
+        private static ulong NewlySet(ulong old, ulong newValue)
         {
             return newValue & ~old;
         }

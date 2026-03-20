@@ -13,10 +13,10 @@ namespace AnodyneArchipelago.Entities
     [NamedEntity, Events(typeof(EndScreenTransition))]
     public class ColorPuzzleNotifier : Entity
     {
-        EntityPool<Sparkle> _sparkles;
-        int sparkleCount = 20;
-        float sparkleTimer = 0f;
-        bool active = false;
+        private EntityPool<Sparkle> _sparkles;
+        private int sparkleCount = 20;
+        private float sparkleTimer = 0f;
+        private bool active = false;
 
         public ColorPuzzleNotifier(EntityPreset preset, Player p) : base(preset.Position, 16, 16)
         {

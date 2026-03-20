@@ -9,6 +9,8 @@
     <Import_RootNamespace>AnodyneArchipelago</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Effects\BaseTrapEffect.cs" />
+    <Compile Include="..\AnodyneArchipelago\Effects\ScreenFlip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Effects\APPixelate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Effects\APGrayScale.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ArchipelagoManager.cs" />

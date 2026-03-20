@@ -1,7 +1,7 @@
-﻿using System.Globalization;
-using System.Text;
-using Archipelago.MultiClient.Net.Enums;
+﻿using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
+using System.Globalization;
+using System.Text;
 
 namespace AnodyneArchipelago
 {

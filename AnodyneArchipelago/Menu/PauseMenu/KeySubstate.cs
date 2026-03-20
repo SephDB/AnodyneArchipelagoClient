@@ -39,7 +39,7 @@ namespace AnodyneSharp.States.MenuSubstates
 
             string[] counts = [.. regions.Select(r => $"x{GlobalState.inventory.GetMapKeys(r.ToString())}")];
 
-            _labels = [.. names.Select((name,i) => new UILabel(new(x, y + 18 * i), true, name))];
+            _labels = [.. names.Select((name, i) => new UILabel(new(x, y + 18 * i), true, name))];
 
             if (Plugin.ArchipelagoManager!.SmallkeyMode == SmallKeyMode.SmallKeys)
             {
@@ -62,7 +62,7 @@ namespace AnodyneSharp.States.MenuSubstates
                             Drawing.DrawOrder.EQUIPMENT_ICON))];
             }
 
-            _bigKeys = [.. GlobalState.inventory.BigKeyStatus.Select((key,i) => new UIEntity(new Vector2(62 + 16 * i, 150), "key_green", key ? i * 2 : i * 2 + 1, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON))];
+            _bigKeys = [.. GlobalState.inventory.BigKeyStatus.Select((key, i) => new UIEntity(new Vector2(62 + 16 * i, 150), "key_green", key ? i * 2 : i * 2 + 1, 16, 16, Drawing.DrawOrder.EQUIPMENT_ICON))];
         }
 
         public override void GetControl()
@@ -74,17 +74,17 @@ namespace AnodyneSharp.States.MenuSubstates
         {
             base.DrawUI();
 
-            foreach (var label in _labels)
+            foreach (UILabel label in _labels)
             {
                 label.Draw();
             }
 
-            foreach (var key in _keys)
+            foreach (UIEntity key in _keys)
             {
                 key.Draw();
             }
 
-            foreach (var key in _bigKeys)
+            foreach (UIEntity key in _bigKeys)
             {
                 key.Draw();
             }

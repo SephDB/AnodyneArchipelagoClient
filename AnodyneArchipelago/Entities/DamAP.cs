@@ -1,6 +1,5 @@
 ﻿using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Interactive.Npc.Blue;
-using AnodyneSharp.Entities.Interactive.Npc.RunningTradeNPCs;
 using AnodyneSharp.Registry;
 
 namespace AnodyneArchipelago.Entities

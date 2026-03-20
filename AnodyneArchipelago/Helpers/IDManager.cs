@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AnodyneArchipelago.Helpers
+﻿namespace AnodyneArchipelago.Helpers
 {
     //All three of these enums are required to be in the same order as in the apworld.
     public enum RegionID

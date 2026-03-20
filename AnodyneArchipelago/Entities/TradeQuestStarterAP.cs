@@ -13,7 +13,7 @@ namespace AnodyneArchipelago.Entities
             if (GlobalState.inventory.tradeState == InventoryManager.TradeState.BOX)
             {
                 GlobalState.inventory.tradeState = InventoryManager.TradeState.NONE;
-                Plugin.ArchipelagoManager!.SendLocation(new Location(RegionID.FIELDS,LocationType.AreaEvent,0).ID);
+                Plugin.ArchipelagoManager!.SendLocation(new Location(RegionID.FIELDS, LocationType.AreaEvent, 0).ID);
                 preset.Alive = exists = false;
             }
         }

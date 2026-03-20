@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using AnodyneSharp.Input;
+﻿using AnodyneSharp.Input;
 using AnodyneSharp.Resources;
 using AnodyneSharp.Sounds;
 using AnodyneSharp.States;
@@ -8,6 +7,7 @@ using AnodyneSharp.UI.Font;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Microsoft.Xna.Framework;
+using System.Reflection;
 
 namespace AnodyneArchipelago.Menu
 {

@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using AnodyneSharp.Entities;
+﻿using AnodyneSharp.Entities;
 using AnodyneSharp.MapData;
 using AnodyneSharp.Registry;
+using System.Reflection;
 using Layer = AnodyneSharp.MapData.Layer;
 
 namespace AnodyneArchipelago.Patches

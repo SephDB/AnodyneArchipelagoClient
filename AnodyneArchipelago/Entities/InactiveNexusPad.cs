@@ -1,8 +1,6 @@
-﻿using AnodyneArchipelago.Helpers;
-using AnodyneSharp.Entities;
+﻿using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget.Doors;
 using AnodyneSharp.Registry;
-using AnodyneSharp.Sounds;
 using Microsoft.Xna.Framework;
 
 namespace AnodyneArchipelago.Entities

@@ -1,14 +1,14 @@
-﻿using System.Collections;
-using AnodyneSharp.Entities;
+﻿using AnodyneSharp.Entities;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Utilities;
+using System.Collections;
 
 namespace AnodyneArchipelago.Entities
 {
     [NamedEntity]
     public class BossItemAP : FreeStandingAP
     {
-        IEnumerator _state;
+        private IEnumerator _state;
 
         public BossItemAP(EntityPreset preset, Player p) : base(preset, p)
         {

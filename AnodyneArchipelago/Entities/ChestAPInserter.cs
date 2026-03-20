@@ -1,16 +1,16 @@
-﻿using System.Reflection;
-using AnodyneSharp.Entities;
+﻿using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget;
 using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
+using System.Reflection;
 
 namespace AnodyneArchipelago.Entities
 {
     [NamedEntity, Collision(typeof(TreasureChest))]
     public class ChestAPInserter(EntityPreset preset, Player p) : Entity(preset.Position, 16, 16)
     {
-        static FieldInfo treasureField = typeof(TreasureChest).GetField("_treasure", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        private static FieldInfo treasureField = typeof(TreasureChest).GetField("_treasure", BindingFlags.NonPublic | BindingFlags.Instance)!;
 
         public override void Collided(Entity other)
         {
@@ -30,8 +30,8 @@ namespace AnodyneArchipelago.Entities
     {
         public bool opened;
 
-        EntityPreset _preset;
-        int frame = 0;
+        private EntityPreset _preset;
+        private int frame = 0;
 
         public JokeTreasureChest(EntityPreset preset, Player p)
             : base(preset.Position, "treasureboxes", 16, 16, AnodyneSharp.Drawing.DrawOrder.ENTITIES)

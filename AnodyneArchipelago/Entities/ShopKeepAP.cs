@@ -28,7 +28,7 @@ namespace AnodyneArchipelago.Entities
 
             Vector2 itemBasePos = Position + new Vector2(-30, 32);
 
-            var manager = Plugin.ArchipelagoManager!;
+            ArchipelagoManager manager = Plugin.ArchipelagoManager!;
 
             _useShopItems = manager.ShopItems.Length == 3;
 
@@ -54,8 +54,8 @@ namespace AnodyneArchipelago.Entities
         {
             if (!_useShopItems)
             {
-                var baseSubEntities = base.SubEntities();
-                if(_preset.Activated)
+                IEnumerable<Entity> baseSubEntities = base.SubEntities();
+                if (_preset.Activated)
                 {
                     return baseSubEntities;
                 }
@@ -64,11 +64,11 @@ namespace AnodyneArchipelago.Entities
             }
             else
             {
-                if(_preset.Activated)
+                if (_preset.Activated)
                 {
                     return _items;
                 }
-                return [_items[0],_items[1],_box];
+                return [_items[0], _items[1], _box];
             }
         }
 
@@ -92,7 +92,7 @@ namespace AnodyneArchipelago.Entities
         [Collision(typeof(Player))]
         public class ShopItemAP : Entity, Interactable
         {
-            bool _checked = false;
+            private bool _checked = false;
 
             private static readonly string[] Currencies =
                 [
@@ -144,7 +144,7 @@ namespace AnodyneArchipelago.Entities
                 }
                 else
                 {
-                    var manager = Plugin.ArchipelagoManager!;
+                    ArchipelagoManager manager = Plugin.ArchipelagoManager!;
 
                     string player = manager.GetPlayerName(_item.playerSlot);
 
@@ -165,7 +165,7 @@ namespace AnodyneArchipelago.Entities
 
             protected void PrepareItem(bool is_trap = false)
             {
-                var manager = Plugin.ArchipelagoManager!;
+                ArchipelagoManager manager = Plugin.ArchipelagoManager!;
 
                 long? disguisedItemId = null;
 
@@ -191,18 +191,18 @@ namespace AnodyneArchipelago.Entities
 
         public class ShopKeepBoxAP : ShopItemAP
         {
-            Entity post_grab;
+            private Entity post_grab;
             private Vector2 _startPos;
 
             public ShopKeepBoxAP(Vector2 pos, Entity post_grab) : base(pos)
             {
                 _startPos = pos;
 
-                var boxItem = Plugin.ArchipelagoManager!.GetScoutedLocation(ShopkeepLoc.ID)!;
+                ScoutedItemInfo boxItem = Plugin.ArchipelagoManager!.GetScoutedLocation(ShopkeepLoc.ID)!;
                 _item = new ShopItem(boxItem.ItemId, boxItem.Player.Slot);
 
                 PrepareItem(boxItem.Flags.HasFlag(ItemFlags.Trap));
-                
+
                 this.post_grab = post_grab;
                 post_grab.exists = false;
             }

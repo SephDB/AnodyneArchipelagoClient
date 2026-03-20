@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace AnodyneArchipelago
+﻿namespace AnodyneArchipelago
 {
     public readonly record struct Version(int Major, int Minor, int Patch)
     {

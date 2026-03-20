@@ -1,13 +1,12 @@
-﻿using System.Net;
-using System.Text;
-using System.Xml.Linq;
-using AnodyneArchipelago.Entities;
+﻿using AnodyneArchipelago.Entities;
 using AnodyneArchipelago.Helpers;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Gadget;
-using AnodyneSharp.Entities.Interactive;
 using AnodyneSharp.Logging;
 using Microsoft.Xna.Framework;
+using System.Net;
+using System.Text;
+using System.Xml.Linq;
 
 namespace AnodyneArchipelago.Patches
 {
@@ -30,14 +29,14 @@ namespace AnodyneArchipelago.Patches
 
         public Dictionary<RegionID, XElement[]> GetCache(LocationType type, NamedEntity lookup)
         {
-            if (entity_cache.TryGetValue(type, out var result))
+            if (entity_cache.TryGetValue(type, out Dictionary<RegionID, XElement[]>? result))
             {
                 return result;
             }
             result = root!.Elements("map")
                 .Select(m => (Enum.Parse<RegionID>((string)m.Attribute("name")!),
                                 m.Elements(lookup.GetName(null)).Where(
-                                    e => lookup.Matches(int.Parse(e.Attribute("frame")?.Value ?? "0"),e.Attribute("type")?.Value ?? "", (string)m.Attribute("name")!))
+                                    e => lookup.Matches(int.Parse(e.Attribute("frame")?.Value ?? "0"), e.Attribute("type")?.Value ?? "", (string)m.Attribute("name")!))
                                 .ToArray()))
                 .Where(s => s.Item2.Length > 0)
                 .ToDictionary(s => s.Item1, s => s.Item2);
@@ -65,7 +64,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetDust(Location location)
         {
-            var node = GetCache(LocationType.Dust, new(nameof(Dust)))[location.Region][location.Index];
+            XElement node = GetCache(LocationType.Dust, new(nameof(Dust)))[location.Region][location.Index];
             node.Name = nameof(DustAP);
             node.SetAttributeValue("type", location.ID.ToString());
         }
@@ -80,7 +79,7 @@ namespace AnodyneArchipelago.Patches
 
         public void FixHotelSoftlock()
         {
-            var node = GetByID(new("CFE9CC42-595F-EDED-6720-90848DB38C19"));
+            XElement node = GetByID(new("CFE9CC42-595F-EDED-6720-90848DB38C19"));
             node.SetAttributeValue("x", 552);
             node.SetAttributeValue("y", 118);
         }
@@ -92,9 +91,9 @@ namespace AnodyneArchipelago.Patches
 
         public void MakeKeyRingGates()
         {
-            var gates = root.Descendants("KeyBlock").Where(k => (int)k.Attribute("frame")! == 0 && (string)k.Parent!.Attribute("name")! != "BOSSRUSH");
+            IEnumerable<XElement> gates = root.Descendants("KeyBlock").Where(k => (int)k.Attribute("frame")! == 0 && (string)k.Parent!.Attribute("name")! != "BOSSRUSH");
 
-            foreach (var gate in gates)
+            foreach (XElement? gate in gates)
             {
                 gate.Name = "KeyRingBlock";
             }
@@ -107,7 +106,7 @@ namespace AnodyneArchipelago.Patches
 
         public void LockMiao()
         {
-            var node = root.Descendants("Trade_NPC").Where(k => (int)k.Attribute("frame")! == 0).First();
+            XElement node = root.Descendants("Trade_NPC").Where(k => (int)k.Attribute("frame")! == 0).First();
             node.Name = "MiaoAP";
         }
 
@@ -119,7 +118,7 @@ namespace AnodyneArchipelago.Patches
 
         public void ForestChestJoke()
         {
-            var node = GetByID(new("737247BF-3343-677C-0A6D-0B8C4AF030D9"));
+            XElement node = GetByID(new("737247BF-3343-677C-0A6D-0B8C4AF030D9"));
             node.Name = nameof(JokeTreasureChest);
         }
 
@@ -128,9 +127,9 @@ namespace AnodyneArchipelago.Patches
             return root.Descendants("Sage").Select(s => (Guid)s.Attribute("guid")!);
         }
 
-        void SetColorPuzzleNotifier(Vector2 location, string map)
+        private void SetColorPuzzleNotifier(Vector2 location, string map)
         {
-            var mapNode = root.Elements().Where(m => (string)m.Attribute("name")! == map).First();
+            XElement mapNode = root.Elements().Where(m => (string)m.Attribute("name")! == map).First();
             mapNode.Add(new XElement(nameof(ColorPuzzleNotifier),
                 new XAttribute("guid", GenID(map[0])),
                 new XAttribute("x", location.X),
@@ -157,7 +156,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetBigKey(Location location)
         {
-            var node = root.Descendants("NPC")
+            XElement node = root.Descendants("NPC")
                 .Where(n => (string)n.Parent!.Attribute("name")! == location.Region.ToString()
                     && (string)n.Attribute("type")! == "big_key")
                 .First();
@@ -168,7 +167,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetTentacle(Location location)
         {
-            var node = GetCache(location.Type, new(nameof(Red_Pillar)))[location.Region][location.Index];
+            XElement node = GetCache(location.Type, new(nameof(Red_Pillar)))[location.Region][location.Index];
             node.Name = nameof(FreeStandingAP);
             node.SetAttributeValue("type", location.ID.ToString());
             node.SetAttributeValue("p", 2);
@@ -176,7 +175,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetCicada(Location location)
         {
-            var node = GetCache(location.Type, new("Health_Cicada"))[location.Region][location.Index];
+            XElement node = GetCache(location.Type, new("Health_Cicada"))[location.Region][location.Index];
             if (node.Parent!.Elements("Event").Where(e => (string)e.Attribute("type")! == "entrance").Any())
             {
                 node.Name = nameof(BossItemAP);
@@ -191,7 +190,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetTreasureChest(Location location)
         {
-            var node = GetCache(location.Type, new("Treasure"))[location.Region][location.Index];
+            XElement node = GetCache(location.Type, new("Treasure"))[location.Region][location.Index];
             node.AddBeforeSelf(
                 new XElement(
                     nameof(ChestAPInserter),
@@ -207,15 +206,15 @@ namespace AnodyneArchipelago.Patches
 
         public void SetRockLocation(Location location)
         {
-            var node = GetCache(location.Type, new("NPC", "rock"))[location.Region][location.Index];
+            XElement node = GetCache(location.Type, new("NPC", "rock"))[location.Region][location.Index];
             node.Name = nameof(RockAP);
             node.SetAttributeValue("type", location.ID.ToString());
         }
 
         public void SetWindmillCheck(Location location)
         {
-            var map = root.Elements().Where(m => (string)m.Attribute("name")! == "WINDMILL").First();
-            var node = new XElement(nameof(WindmillCheckAP),
+            XElement map = root.Elements().Where(m => (string)m.Attribute("name")! == "WINDMILL").First();
+            XElement node = new(nameof(WindmillCheckAP),
                     new XAttribute("guid", GenID(location.ID)),
                     new XAttribute("x", 192),
                     new XAttribute("y", 368),
@@ -225,7 +224,7 @@ namespace AnodyneArchipelago.Patches
             map.Add(
                 node
             );
-            foreach (var n in root.Descendants("Dungeon_Statue"))
+            foreach (XElement n in root.Descendants("Dungeon_Statue"))
             {
                 n.Name = "DungeonStatueAP";
             }
@@ -238,14 +237,14 @@ namespace AnodyneArchipelago.Patches
 
         public void FixHappyNexusPad()
         {
-            var nexusPad = GetNexuspad(RegionID.HAPPY);
+            XElement nexusPad = GetNexuspad(RegionID.HAPPY);
             nexusPad.SetAttributeValue("x", (int)nexusPad.Attribute("x")! + 72);
             nexusPad.SetAttributeValue("y", (int)nexusPad.Attribute("y")! - 16);
         }
 
         public Guid SetNexusPad(RegionID map, long id)
         {
-            var nexusPad = GetNexuspad(map);
+            XElement nexusPad = GetNexuspad(map);
 
             nexusPad.SetAttributeValue("p", 2); //Make sure it despawns
 
@@ -273,7 +272,7 @@ namespace AnodyneArchipelago.Patches
 
         public void SetBoxTradeCheck(long id)
         {
-            var node = root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 2).First();
+            XElement node = root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 2).First();
             node.AddAfterSelf(
                 new XElement(
                     nameof(TradeQuestStarterAP),
@@ -293,19 +292,19 @@ namespace AnodyneArchipelago.Patches
 
         public void SetMitraTradeCheck()
         {
-            var node = root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "FIELDS").First();
+            XElement node = root.Descendants("Mitra").Where(m => (string)m.Parent!.Attribute("name")! == "FIELDS").First();
             node.Name = nameof(MitraTradeQuestAP);
         }
 
         public void SetShopkeepTradeCheck()
         {
-            var node = root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 3).First();
+            XElement node = root.Descendants("Trade_NPC").Where(e => (int)e.Attribute("frame")! == 3).First();
             node.Name = nameof(ShopKeepAP);
         }
 
         public void SetBigGateReq(Guid id, string value)
         {
-            var node = GetByID(id);
+            XElement node = GetByID(id);
             if (value.EndsWith("key"))
             {
                 node.Name = "KeyBlock";

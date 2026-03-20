@@ -1,9 +1,9 @@
-﻿using System.Reflection;
-using AnodyneSharp;
+﻿using AnodyneSharp;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Registry;
 using AnodyneSharp.States;
 using Microsoft.Xna.Framework;
+using System.Reflection;
 
 namespace AnodyneArchipelago
 {
@@ -15,13 +15,13 @@ namespace AnodyneArchipelago
 
         public static Plugin? Instance = null;
 
-        static FieldInfo playerField = typeof(PlayState).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        private static FieldInfo playerField = typeof(PlayState).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance)!;
 
         public static AnodyneGame? Game;
         public static Player Player => (Player)playerField.GetValue(Game?.CurrentState as PlayState)!;
         public static ArchipelagoManager? ArchipelagoManager = null;
 
-        public const string Version = "0.6.3";
+        public const string Version = "0.7.0";
 
         public void Load()
         {
@@ -52,7 +52,7 @@ namespace AnodyneArchipelago
             }
             else if (Game.CurrentState is PlayState)
             {
-                var s = GlobalState.SetSubstate;
+                Action<State> s = GlobalState.SetSubstate;
                 GlobalState.SetSubstate = state => SubState(s, state);
             }
         }

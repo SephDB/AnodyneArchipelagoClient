@@ -2,12 +2,10 @@
 using AnodyneSharp;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy;
-using AnodyneSharp.Entities.Gadget.Treasures;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Helpers;
-using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
 using System.Reflection;
@@ -28,47 +26,39 @@ namespace AnodyneArchipelago.Helpers
         Stun,
         Damage,
         One_Hit_KO,
-        Invisibile
+        Invisibile,
+        FlipHorizontal,
+        FlipVertical
     }
 
     public class TrapHelper(ArchipelagoManager manager)
     {
+        private const int TrapCountLimit = 5;
+
         private const float ChaosIncrease = 3f;
         private const float ExtremeChaosIncrease = 5f;
-        private const float GrayscaleIncrease = 3f;
-        private const float PixelateIncrease = 3f;
         private const float StunIncrease = 0.5f;
         private const float InvisibleIncrease = 1f;
-        private const float FlipIncrease = 3f;
-
-        private const float ChaosLimit = ChaosIncrease * 5;
-        private const float ExtremeChaosLimit = ExtremeChaosIncrease * 5;
-        private const float GrayscaleLimit = GrayscaleIncrease * 5;
-        private const float PixelateLimit = PixelateIncrease * 5;
-        private const float StunLimit = StunIncrease * 5;
-        private const float InvisibleLimit = InvisibleIncrease * 5;
 
         private float _chaosModeTimer = 0;
         private float _extremeChaosTimer = 0;
-        private float _grayscaleTimer = 0;
-        private float _pixelateTimer = 0;
         private float _stunTimer = 0;
         private float _invisibleTimer = 0;
-        private float _flipTimer = 0;
 
         private List<string> _phoneTraps = [];
         private TrapType[] _enabledTraps = [];
 
-
-        public APGrayScale grayScale = new();
-        public APPIxelate pixelate = new();
+        private APGrayScale _grayScale = new();
+        private APPIxelate _pixelate = new();
+        private ScreenFlip _verticalFlip = new(false);
+        private ScreenFlip _horizontalFlip = new(true);
 
         private FieldInfo? _gasTimer = typeof(Player).GetField("_revTimer", BindingFlags.NonPublic | BindingFlags.Instance)!;
         private FieldInfo? _playerInvincible = typeof(Player).GetField("invincible", BindingFlags.NonPublic | BindingFlags.Instance);
         private MethodInfo? _hurtMethod = typeof(Player).GetMethod("ReceiveDamage", BindingFlags.NonPublic | BindingFlags.Instance);
         private List<ArchipelagoPacketBase> _trapPackages = [];
 
-        private List<(TrapType? trapType, string[] trapLinks)> trapLinks = [
+        private List<(TrapType? trapType, string[] trapLinks)> _trapLinks = [
             (TrapType.Gas, [
                 "Poison",
                 "Reverse Controls",
@@ -76,7 +66,8 @@ namespace AnodyneArchipelago.Helpers
                 "Reversal",
                 "Confuse",
                 "Confusion",
-                "Fuzzy"
+                "Fuzzy",
+                "Radiation"
                 ]),
             (TrapType.Grayscale, [
                 "Greyscale"
@@ -87,7 +78,8 @@ namespace AnodyneArchipelago.Helpers
                 "Freeze" ,
                 "Frozen" ,
                 "Chaos Control" ,
-                "Sleep" ,
+                "Sleep",
+                "Electrocutation"
                 ]),
             (TrapType.Pixelate, [
                 "Pixellation",
@@ -98,13 +90,36 @@ namespace AnodyneArchipelago.Helpers
                 "Text",
                 "Omo",
                 "Literature",
-                "Cutscene"
+                "Cutscene",
+                "Exposition"
                 ]),
             (TrapType.Person, [
                 "Police",
                 "Army"
+                ]),
+            (TrapType.Damage, [
+                "Explosion",
+                "Poison Mushroom",
+                "TNT Barrel",
+                "TNT"
+                ]),
+            (TrapType.One_Hit_KO, [
+                "Instant Death"
+                ]),
+            (TrapType.FlipHorizontal, [
+                "Flip Horizontal",
+                "Flip",
+                "Screen Flip"
+                ]),
+            (TrapType.FlipVertical, [
+                "Flip Vertical",
+                "Mirror"
                 ])
         ];
+
+        private string[] _randomTraps = [
+            "Random Status"
+            ];
 
         public void Connect(TrapType[] enabledTraps)
         {
@@ -113,21 +128,21 @@ namespace AnodyneArchipelago.Helpers
             LoadPhoneTrapMessages();
 
 
-            if (!fullScreenEffects.Contains(grayScale))
+            if (!fullScreenEffects.Contains(_grayScale))
             {
-                fullScreenEffects.Add(grayScale);
+                fullScreenEffects.Add(_grayScale);
             }
 
-            if (!gameEffects.Contains(pixelate))
+            if (!gameEffects.Contains(_pixelate))
             {
-                gameEffects.Add(pixelate);
+                gameEffects.Add(_pixelate);
             }
         }
 
         public void Disconnect()
         {
-            fullScreenEffects.Remove(grayScale);
-            gameEffects.Remove(pixelate);
+            fullScreenEffects.Remove(_grayScale);
+            gameEffects.Remove(_pixelate);
         }
 
         public void ReceiveTraplink(string player, string trapName)
@@ -143,9 +158,13 @@ namespace AnodyneArchipelago.Helpers
             {
                 trapType = t;
             }
+            else if (_randomTraps.Any(tl => tl.Equals(trapName, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                trapType = _enabledTraps[RNG.Next(0, _enabledTraps.Length)];
+            }
             else
             {
-                trapType = trapLinks.FirstOrDefault(t => t.trapLinks.Any(tl => tl.Equals(trapName, StringComparison.InvariantCultureIgnoreCase))).trapType;
+                trapType = _trapLinks.FirstOrDefault(t => t.trapLinks.Any(tl => tl.Equals(trapName, StringComparison.InvariantCultureIgnoreCase))).trapType;
             }
 
             if (trapType != null && _enabledTraps.Contains(trapType.Value))
@@ -153,7 +172,7 @@ namespace AnodyneArchipelago.Helpers
                 SetSubstate(new APItemCutscene(HandleTrap(trapType.Value, manager.GetPlayerSlot(player))));
 
                 Item item = new(ItemType.Trap, (int)trapType.Value);
-                var treasure = SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), item.ID, manager.GetPlayer(), true, Archipelago.MultiClient.Net.Enums.ItemFlags.Trap);
+                SpriteTreasure treasure = SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), item.ID, manager.GetPlayer(), true, Archipelago.MultiClient.Net.Enums.ItemFlags.Trap);
 
                 treasure.GetTreasure();
                 SpawnEntity(treasure);
@@ -207,7 +226,7 @@ namespace AnodyneArchipelago.Helpers
                     }
                     break;
                 case TrapType.Chaos:
-                    AddTimer(ref _chaosModeTimer, ChaosIncrease, ChaosLimit);
+                    AddTimer(ref _chaosModeTimer, ChaosIncrease, TrapCountLimit);
 
                     if (GlobalState.GameMode != AnodyneSharp.Registry.GameMode.Chaos)
                     {
@@ -220,7 +239,7 @@ namespace AnodyneArchipelago.Helpers
                     SoundManager.PlaySoundEffect("big_door_locked");
                     break;
                 case TrapType.Extreme_Chaos:
-                    AddTimer(ref _extremeChaosTimer, ExtremeChaosIncrease, ExtremeChaosLimit);
+                    AddTimer(ref _extremeChaosTimer, ExtremeChaosIncrease, TrapCountLimit);
 
                     if (GlobalState.GameMode != AnodyneSharp.Registry.GameMode.EXTREME_CHAOS)
                     {
@@ -234,16 +253,8 @@ namespace AnodyneArchipelago.Helpers
                     SoundManager.PlaySoundEffect("big_door_locked");
                     SoundManager.PlaySoundEffect("fall_in_hole");
                     break;
-                case TrapType.Grayscale:
-                    AddTimer(ref _grayscaleTimer, GrayscaleIncrease, GrayscaleLimit);
-                    grayScale.active = true;
-                    break;
-                case TrapType.Pixelate:
-                    AddTimer(ref _pixelateTimer, PixelateIncrease, PixelateLimit);
-                    _pixelateTimer += PixelateIncrease;
-                    break;
                 case TrapType.Stun:
-                    AddTimer(ref _stunTimer, StunIncrease, StunLimit);
+                    AddTimer(ref _stunTimer, StunIncrease, TrapCountLimit);
                     break;
                 case TrapType.Damage:
                     PlayerDamage(1, sender);
@@ -252,8 +263,20 @@ namespace AnodyneArchipelago.Helpers
                     PlayerDamage(CUR_HEALTH - 1, sender);
                     break;
                 case TrapType.Invisibile:
-                    AddTimer(ref _invisibleTimer, InvisibleIncrease, InvisibleLimit);
+                    AddTimer(ref _invisibleTimer, InvisibleIncrease, TrapCountLimit);
                     Plugin.Player.visible = false;
+                    break;
+                case TrapType.Grayscale:
+                    _grayScale.AddTimer();
+                    break;
+                case TrapType.Pixelate:
+                    _pixelate.AddTimer();
+                    break;
+                case TrapType.FlipHorizontal:
+                    _horizontalFlip.AddTimer();
+                    break;
+                case TrapType.FlipVertical:
+                    _verticalFlip.AddTimer();
                     break;
                 case TrapType.Phone:
                     float timer = 0;
@@ -354,26 +377,10 @@ namespace AnodyneArchipelago.Helpers
                 }
             }
 
-            if (_grayscaleTimer > 0)
-            {
-                _grayscaleTimer -= GameTimes.DeltaTime;
-
-                if (_grayscaleTimer <= 0)
-                {
-                    grayScale.Deactivate();
-                }
-            }
-
-            if (_pixelateTimer > 0)
-            {
-                _pixelateTimer -= GameTimes.DeltaTime;
-
-                pixelate.AddPixelation(2f);
-            }
-            else if (pixelate.Active())
-            {
-                pixelate.RemovePixelation(1f);
-            }
+            _grayScale.Update();
+            _pixelate.Update();
+            _horizontalFlip.Update();
+            _verticalFlip.Update();
 
             if (_stunTimer > 0)
             {
@@ -406,9 +413,9 @@ namespace AnodyneArchipelago.Helpers
             _trapPackages.Add(package);
         }
 
-        private static void AddTimer(ref float timer, float addition, float limit)
+        private static void AddTimer(ref float timer, float addition, int countLimit)
         {
-            timer = Math.Min(timer + addition, limit);
+            timer = Math.Min(timer + addition, addition * countLimit);
         }
 
         private void PlayerDamage(int damage, int sender)
