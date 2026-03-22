@@ -2,9 +2,9 @@
 using AnodyneSharp.Drawing.Effects;
 using AnodyneSharp.Registry;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
+using static AnodyneSharp.Registry.GlobalState;
 
 namespace AnodyneArchipelago.Effects
 {
@@ -19,6 +19,16 @@ namespace AnodyneArchipelago.Effects
         {
             FieldInfo field = typeof(GrayScale).GetField("effect", BindingFlags.NonPublic | BindingFlags.Instance)!;
             _effect = (Effect)field.GetValue(GlobalState.fullScreenEffects.OfType<GrayScale>().First())!;
+        }
+
+        public override void Initialize()
+        {
+            fullScreenEffects.Add(this);
+        }
+
+        public override void Remove()
+        {
+            fullScreenEffects.Remove(this);
         }
 
         public override bool Active()

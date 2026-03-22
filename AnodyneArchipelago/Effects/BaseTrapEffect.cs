@@ -2,6 +2,7 @@
 using AnodyneSharp.Drawing.Effects;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using static AnodyneSharp.Registry.GlobalState;
 
 namespace AnodyneArchipelago.Effects
 {
@@ -11,6 +12,21 @@ namespace AnodyneArchipelago.Effects
         protected int trapCountLimit = trapCountLimit;
 
         protected float trapTimer = 0;
+
+        ~BaseTrapEffect()
+        {
+            Remove();
+        }
+
+        public virtual void Initialize()
+        {
+            gameEffects.Add(this);
+        }
+
+        public virtual void Remove()
+        {
+            gameEffects.Remove(this);
+        }
 
         public virtual bool Active()
         {
@@ -32,6 +48,11 @@ namespace AnodyneArchipelago.Effects
 
         public virtual bool Update()
         {
+            if (!Active())
+            {
+                return false;
+            }
+
             trapTimer -= GameTimes.DeltaTime;
 
             if (trapTimer <= 0)
@@ -48,7 +69,7 @@ namespace AnodyneArchipelago.Effects
 
         public void AddTimer()
         {
-            if(trapTimer <= 0)
+            if (trapTimer <= 0)
             {
                 Activate();
             }

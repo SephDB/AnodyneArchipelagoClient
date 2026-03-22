@@ -48,10 +48,7 @@ namespace AnodyneArchipelago.Helpers
         private List<string> _phoneTraps = [];
         private TrapType[] _enabledTraps = [];
 
-        private APGrayScale _grayScale = new();
-        private APPIxelate _pixelate = new();
-        private ScreenFlip _verticalFlip = new(false);
-        private ScreenFlip _horizontalFlip = new(true);
+        private List<BaseTrapEffect> _effects = [];
 
         private FieldInfo? _gasTimer = typeof(Player).GetField("_revTimer", BindingFlags.NonPublic | BindingFlags.Instance)!;
         private FieldInfo? _playerInvincible = typeof(Player).GetField("invincible", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -127,22 +124,25 @@ namespace AnodyneArchipelago.Helpers
 
             LoadPhoneTrapMessages();
 
+            _effects = [
+                new APGrayScale(),
+                new APPIxelate(),
+                new ScreenFlip(false),
+                new ScreenFlip(true),
+                ];
 
-            if (!fullScreenEffects.Contains(_grayScale))
+            foreach (BaseTrapEffect effect in _effects)
             {
-                fullScreenEffects.Add(_grayScale);
-            }
-
-            if (!gameEffects.Contains(_pixelate))
-            {
-                gameEffects.Add(_pixelate);
+                effect.Initialize();
             }
         }
 
         public void Disconnect()
         {
-            fullScreenEffects.Remove(_grayScale);
-            gameEffects.Remove(_pixelate);
+            foreach (BaseTrapEffect effect in _effects)
+            {
+                effect.Remove();
+            }
         }
 
         public void ReceiveTraplink(string player, string trapName)
@@ -267,16 +267,16 @@ namespace AnodyneArchipelago.Helpers
                     Plugin.Player.visible = false;
                     break;
                 case TrapType.Grayscale:
-                    _grayScale.AddTimer();
+                    _effects.First(e => e is APGrayScale).AddTimer();
                     break;
                 case TrapType.Pixelate:
-                    _pixelate.AddTimer();
+                    _effects.First(e => e is APPIxelate).AddTimer();
                     break;
                 case TrapType.FlipHorizontal:
-                    _horizontalFlip.AddTimer();
+                    _effects.First(e => e is ScreenFlip sf && sf.IsHorizontal).AddTimer();
                     break;
                 case TrapType.FlipVertical:
-                    _verticalFlip.AddTimer();
+                    _effects.First(e => e is ScreenFlip sf && !sf.IsHorizontal).AddTimer();
                     break;
                 case TrapType.Phone:
                     float timer = 0;
@@ -348,6 +348,11 @@ namespace AnodyneArchipelago.Helpers
                 return;
             }
 
+            foreach (BaseTrapEffect effect in _effects)
+            {
+                effect.Update();
+            }
+
             //Extreme chaos overrides normal chaos
             if (_extremeChaosTimer > 0)
             {
@@ -376,11 +381,6 @@ namespace AnodyneArchipelago.Helpers
                     ForceTextureReload = true;
                 }
             }
-
-            _grayScale.Update();
-            _pixelate.Update();
-            _horizontalFlip.Update();
-            _verticalFlip.Update();
 
             if (_stunTimer > 0)
             {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace AnodyneArchipelago.Effects
@@ -9,6 +8,8 @@ namespace AnodyneArchipelago.Effects
         public bool active = false;
 
         private SpriteEffects _flip = isHorizontal ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically;
+
+        public bool IsHorizontal => _flip == SpriteEffects.FlipHorizontally;
 
         public override bool Active()
         {

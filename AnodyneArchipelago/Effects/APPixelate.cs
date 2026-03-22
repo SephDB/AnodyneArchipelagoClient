@@ -1,10 +1,8 @@
 ﻿using AnodyneArchipelago.Effects;
-using AnodyneSharp;
 using AnodyneSharp.Drawing;
 using AnodyneSharp.Drawing.Effects;
 using AnodyneSharp.Registry;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
 
@@ -18,7 +16,7 @@ namespace AnodyneArchipelago
         public float Pixelation { get; private set; } = 1f;
 
         public APPIxelate()
-            :base(3f)
+            : base(3f)
         {
             FieldInfo field = typeof(Pixelate).GetField("effect", BindingFlags.NonPublic | BindingFlags.Instance)!;
             _effect = (Effect)field.GetValue(GlobalState.fullScreenEffects.OfType<Pixelate>().First())!;
