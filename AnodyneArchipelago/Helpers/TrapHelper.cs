@@ -2,12 +2,14 @@
 using AnodyneSharp;
 using AnodyneSharp.Entities;
 using AnodyneSharp.Entities.Enemy;
+using AnodyneSharp.Input;
 using AnodyneSharp.Registry;
 using AnodyneSharp.Sounds;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
 using Microsoft.Xna.Framework;
+using System.Net.Sockets;
 using System.Reflection;
 using static AnodyneSharp.Registry.GlobalState;
 using static AnodyneSharp.States.CutsceneState;
@@ -28,7 +30,10 @@ namespace AnodyneArchipelago.Helpers
         One_Hit_KO,
         Invisibile,
         FlipHorizontal,
-        FlipVertical
+        FlipVertical,
+        Disarm,
+        ToolSwap,
+        Home
     }
 
     public class TrapHelper(ArchipelagoManager manager)
@@ -38,7 +43,7 @@ namespace AnodyneArchipelago.Helpers
         private const float ChaosIncrease = 3f;
         private const float ExtremeChaosIncrease = 5f;
         private const float StunIncrease = 0.5f;
-        private const float InvisibleIncrease = 1f;
+        private const float InvisibleIncrease = 1.5f;
 
         private float _chaosModeTimer = 0;
         private float _extremeChaosTimer = 0;
@@ -91,7 +96,6 @@ namespace AnodyneArchipelago.Helpers
                 "Exposition"
                 ]),
             (TrapType.Person, [
-                "Police",
                 "Army"
                 ]),
             (TrapType.Damage, [
@@ -111,6 +115,26 @@ namespace AnodyneArchipelago.Helpers
             (TrapType.FlipVertical, [
                 "Flip Vertical",
                 "Mirror"
+                ]),
+            (TrapType.Disarm, [
+                "Dry",
+                "Eject Ability",
+                "Empty Item Box",
+                "Depletion",
+                "Undo",
+                "Whoops!",
+                "Whoops"
+                ]
+            ),
+            (TrapType.ToolSwap, [
+                "Tool Swap",
+                "Gadget Shuffle"
+                ]
+            ),
+            (TrapType.Home, [
+                "Teleport",
+                "Get Out",
+                "Clear Image"
                 ])
         ];
 
@@ -171,6 +195,11 @@ namespace AnodyneArchipelago.Helpers
             {
                 SetSubstate(new APItemCutscene(HandleTrap(trapType.Value, manager.GetPlayerSlot(player))));
 
+                if(trapType == TrapType.Phone)
+                {
+                    return;
+                }
+
                 Item item = new(ItemType.Trap, (int)trapType.Value);
                 SpriteTreasure treasure = SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), item.ID, manager.GetPlayer(), true, Archipelago.MultiClient.Net.Enums.ItemFlags.Trap);
 
@@ -181,8 +210,18 @@ namespace AnodyneArchipelago.Helpers
 
         public void Update(IArchipelagoSocketHelper socket)
         {
+            if (KeyInput.JustPressedKey(Microsoft.Xna.Framework.Input.Keys.P))
+            {
+                SetSubstate(new APItemCutscene(HandleTrap(TrapType.Home, 0)));
+            }
+
             HandleTrapTimers();
 
+            SendTrapLinks(socket);
+        }
+
+        public void SendTrapLinks(IArchipelagoSocketHelper socket)
+        {
             if (_trapPackages.Any())
             {
                 socket.SendMultiplePackets(_trapPackages);
@@ -277,6 +316,44 @@ namespace AnodyneArchipelago.Helpers
                     break;
                 case TrapType.FlipVertical:
                     _effects.First(e => e is ScreenFlip sf && !sf.IsHorizontal).AddTimer();
+                    break;
+                case TrapType.Disarm:
+                    inventory.EquippedBroomChanged = true;
+                    inventory._equippedBroom = BroomType.NONE;
+                    SoundManager.PlaySoundEffect("menu_move");
+                    break;
+                case TrapType.ToolSwap:
+                    if (!inventory.HasAnyBroom)
+                    {
+                        break;
+                    }
+
+                    List<BroomType> allowedTypes = [];
+
+                    foreach (BroomType broomType in Enum.GetValues<BroomType>())
+                    {
+                        if (inventory.HasBroomType(broomType))
+                        {
+                            allowedTypes.Add(broomType);
+                        }
+                    }
+
+                    allowedTypes.Remove(inventory._equippedBroom);
+
+                    if (allowedTypes.Count == 0)
+                    {
+                        break;
+                    }
+
+                    inventory.EquippedBroomChanged = true;
+                    inventory._equippedBroom = allowedTypes[RNG.Next(0, allowedTypes.Count)];
+                    SoundManager.PlaySoundEffect("menu_move");
+                    break;
+                case TrapType.Home:
+                    DoorMapPair gate = EntityManager.GetNexusGateForCurrentMap();
+                    ReturnTarget = (gate != null) ? new(gate) : null;
+
+                    ReturnTarget?.Warp(new Vector2(10, 34));
                     break;
                 case TrapType.Phone:
                     float timer = 0;
@@ -394,6 +471,25 @@ namespace AnodyneArchipelago.Helpers
                 {
                     Plugin.Player.dontMove = true;
                 }
+            }
+
+            if (_invisibleTimer > 0)
+            {
+                _invisibleTimer -= GameTimes.DeltaTime;
+
+                if (_invisibleTimer <= 0)
+                {
+                    Plugin.Player.visible = true;
+                }
+                else
+                {
+                    Plugin.Player.visible = false;
+                }
+            }
+
+            if (!Plugin.Player.reversed && (float)_gasTimer!.GetValue(Plugin.Player)! != 0)
+            {
+                Plugin.Player.reversed = true;
             }
         }
 

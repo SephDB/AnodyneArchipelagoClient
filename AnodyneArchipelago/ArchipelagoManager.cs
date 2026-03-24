@@ -81,14 +81,14 @@ namespace AnodyneArchipelago
             get => events.GetEvent("ArchipelagoItemIndex");
             set => events.SetEvent("ArchipelagoItemIndex", value);
         }
-        private HashSet<long> Checked = [];
+        private HashSet<long> _checked = [];
         private DeathLinkService? _deathLinkService;
         private EventTracker? _eventTracker;
 
         private EntityPatches? _patches;
 
         private string _seedName = "NULL";
-        private Dictionary<Guid, string> BigGateTypes = [];
+        private Dictionary<Guid, string> _bigGateTypes = [];
         private RegionID[] _unlockedGates = [];
         private Dictionary<RegionID, Guid> _checkGates = [];
         private string? _playerSpriteName;
@@ -100,7 +100,7 @@ namespace AnodyneArchipelago
         private DeathLink? _pendingDeathLink = null;
         private Task<Dictionary<long, ScoutedItemInfo>>? _scoutTask;
 
-        private ScreenChangeTracker screenTracker = new();
+        private ScreenChangeTracker _screenTracker = new();
 
         private TrapHelper _trapHelper;
 
@@ -183,7 +183,7 @@ namespace AnodyneArchipelago
 
             foreach ((string? key, (string? value, Guid id)) in Locations.Gates)
             {
-                BigGateTypes[id] = (string)login.SlotData.GetValueOrDefault(key, value);
+                _bigGateTypes[id] = (string)login.SlotData.GetValueOrDefault(key, value);
             }
 
 
@@ -316,18 +316,18 @@ namespace AnodyneArchipelago
                 Data = new()
                 {
                     ["type"] = "MapUpdate",
-                    ["mapName"] = GetTrackerMapName(screenTracker.Tracker.mapName),
-                    ["mapIndex"] = screenTracker.Tracker.location.X + MAP_GRID_WIDTH * screenTracker.Tracker.location.Y
+                    ["mapName"] = GetTrackerMapName(_screenTracker.Tracker.mapName),
+                    ["mapIndex"] = _screenTracker.Tracker.location.X + MAP_GRID_WIDTH * _screenTracker.Tracker.location.Y
                 }
             });
-            int map_id = (int)Enum.Parse<RegionID>(screenTracker.Tracker.mapName);
+            int map_id = (int)Enum.Parse<RegionID>(_screenTracker.Tracker.mapName);
             _session.DataStorage[Scope.Slot, "MapIndex"] = map_id;
-            _session.DataStorage[Scope.Slot, "MapLocation"] = JObject.FromObject(new { Map = map_id, screenTracker.Tracker.location.X, screenTracker.Tracker.location.Y });
+            _session.DataStorage[Scope.Slot, "MapLocation"] = JObject.FromObject(new { Map = map_id, _screenTracker.Tracker.location.X, _screenTracker.Tracker.location.Y });
         }
 
         public void PostSaveloadInit(bool newGame, string playerSprite, MatchDifferentWorldItem matchDifferentWorldItem, bool hideTrapItems, bool colorPuzzleHelp)
         {
-            Checked.UnionWith(_session!.Locations.AllLocationsChecked);
+            _checked.UnionWith(_session!.Locations.AllLocationsChecked);
 
             _playerSpriteName = playerSprite == "Random" ? RandomizeSprite() : playerSprite;
             MatchDifferentWorldItem = matchDifferentWorldItem;
@@ -363,17 +363,17 @@ namespace AnodyneArchipelago
             {
                 if (events.GetEvent($"ArchipelagoLoc-{location_id}") != 0)
                 {
-                    Checked.Add(location_id);
+                    _checked.Add(location_id);
                 }
             }
 
             //Send locations that were missed last time we saved
-            _session.Locations.CompleteLocationChecks([.. Checked.Except(_session.Locations.AllLocationsChecked)]);
+            _session.Locations.CompleteLocationChecks([.. _checked.Except(_session.Locations.AllLocationsChecked)]);
         }
 
         private void NewCheckedLocations(System.Collections.ObjectModel.ReadOnlyCollection<long> newCheckedLocations)
         {
-            Checked.UnionWith(newCheckedLocations);
+            _checked.UnionWith(newCheckedLocations);
         }
 
         ~ArchipelagoManager()
@@ -491,7 +491,7 @@ namespace AnodyneArchipelago
 
         public bool IsChecked(long location)
         {
-            return Checked.Contains(location);
+            return _checked.Contains(location);
         }
 
         public void SendLocation(long location)
@@ -503,9 +503,9 @@ namespace AnodyneArchipelago
             }
 
             events.IncEvent($"ArchipelagoLoc-{location}");
-            if (Checked.Add(location))
+            if (_checked.Add(location))
             {
-                Task.Run(() => _session.Locations.CompleteLocationChecksAsync([.. Checked.Except(_session.Locations.AllLocationsChecked)])).ConfigureAwait(false);
+                Task.Run(() => _session.Locations.CompleteLocationChecksAsync([.. _checked.Except(_session.Locations.AllLocationsChecked)])).ConfigureAwait(false);
 
                 ScoutedItemInfo item = Plugin.ArchipelagoManager!.GetScoutedLocation(location)!;
                 long itemId = item.ItemId;
@@ -535,7 +535,7 @@ namespace AnodyneArchipelago
                 return;
             }
 
-            if (screenTracker.Update() && !glitch.active && screenTracker.Tracker.mapName != "")
+            if (_screenTracker.Update() && !glitch.active && _screenTracker.Tracker.mapName != "")
             {
                 SendTrackerUpdate();
             }
@@ -671,6 +671,11 @@ namespace AnodyneArchipelago
                     IEnumerator<CutsceneEvent?> e = _trapHelper.HandleTrap(trapType, player);
 
                     _trapHelper.AddTrapPackage(trapType);
+
+                    if(trapType == TrapType.Phone)
+                    {
+                        _trapHelper.SendTrapLinks(_session!.Socket);
+                    }
 
                     while (e.MoveNext())
                     {
@@ -876,7 +881,7 @@ namespace AnodyneArchipelago
                     _patches.ForestChestJoke();
                 }
 
-                foreach ((Guid id, string? value) in BigGateTypes)
+                foreach ((Guid id, string? value) in _bigGateTypes)
                 {
                     _patches.SetBigGateReq(id, value);
                 }

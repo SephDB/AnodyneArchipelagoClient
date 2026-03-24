@@ -2,7 +2,7 @@
 
 (Anodyne)Mitra: Hey Young!^ I just called with Wares and he told me your-^\nWait, you're not "[player]" Young, are you?^\nSorry, I must have called the wrong Young!^ My bad!
 
-(Pokemon Crystal)Elm: Hello [player]!^I'm just checking in to see how your pokedex is filling up.^\nWhat?^This isn't [player]?^\nI must have called the wrong number.^ My bad!
+(Pokemon Crystal)Elm: Hello [player]!^ I'm just checking in to see how your pokedex is filling up.^\nWhat?^This isn't [player]?^\nI must have called the wrong number.^ My bad!
 
 (Deltarune)Sans: hello.^\nis this the hotline for idiot babies?^ i'm calling for [player].^ oh.^ this isn't the hotline for idiot babies? must have called the wrong number. my bad!
 
