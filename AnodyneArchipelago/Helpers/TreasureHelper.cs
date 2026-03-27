@@ -9,7 +9,7 @@ namespace AnodyneArchipelago.Helpers
     {
         private static Dictionary<Item, ItemSpriteInfo> SpriteDict = [];
 
-        private static ItemType[] trapItemTypes = [
+        private static ItemType[] TrapItemTypes = [
             ItemType.Inventory,
             ItemType.TradingQuest,
             ItemType.Secret,
@@ -33,19 +33,41 @@ namespace AnodyneArchipelago.Helpers
                 [new(ItemType.StatueUnlocks, 0, RegionID.CROWD)] = new("archipelago_items", 8, ["mountain cavern statue"]),
                 [new(ItemType.Heal, 0)] = new("archipelago_items", 14, ["heal", "health", "heart", "hp"]),
                 [new(ItemType.Heal, 1)] = new("archipelago_items", 15, ["big heal",]),
-                [new(ItemType.Trap, 0)] = new("person", 0, ["person trap", "human", "anxiety"]),
-                [new(ItemType.Trap, 1)] = new("archipelago_items", 13, ["gas trap", "gas", "poison"]),
-                [new(ItemType.Trap, 2)] = new("archipelago_items", 30, ["glitch", "chaos"]),
-                [new(ItemType.Trap, 3)] = new("archipelago_items", 31, ["you did this to yourself"]),
-                [new(ItemType.Trap, 4)] = new("suburb_walkers", 0, ["grayscale", "greyscale", "sepia"]),
-                [new(ItemType.Trap, 5)] = new("archipelago_items", 34, ["phone", "phone trap", "phone number"]),
                 [new(ItemType.RedCaveUnlock, 0, RegionID.REDCAVE)] = new("archipelago_items", 3, ["progressive red cavern", "progressive red cave", "tentacle", "whip"]),
                 [new(ItemType.Dam, 0, RegionID.BLUE)] = new("archipelago_items", 22, ["blue done"]),
                 [new(ItemType.Dam, 0, RegionID.HAPPY)] = new("archipelago_items", 23, ["happy done"]),
                 [new(ItemType.TradingQuest, 0)] = new("fields_npcs", 0, ["miao"]),
                 [new(ItemType.TradingQuest, 1)] = new("fields_npcs", 31, ["cardboard", "box"]),
                 [new(ItemType.TradingQuest, 2)] = new("fields_npcs", 56, ["biking shoes", "shoes"]),
+                [new(ItemType.Trap, 0)] = new("person", 0, ["person trap", "human", "anxiety"]),
+                [new(ItemType.Trap, 1)] = new("archipelago_items", 13, ["gas trap", "gas", "poison"]),
+                [new(ItemType.Trap, 2)] = new("archipelago_items", 30, ["glitch", "chaos"]),
+                [new(ItemType.Trap, 3)] = new("archipelago_items", 31, ["you did this to yourself"]),
+                [new(ItemType.Trap, 4)] = new("suburb_walkers", 0, ["grayscale", "greyscale", "sepia"]),
+                [new(ItemType.Trap, 5)] = new("archipelago_items", 34, ["phone", "phone trap", "phone number"]),
+                [new(ItemType.Trap, 6)] = new("archipelago_items", 35, ["8bit", "8-bit", "8 bit"]),
+                [new(ItemType.Trap, 7)] = new("archipelago_items", 36, ["thunder", "shock", "paralize"]),
+                [new(ItemType.Trap, 8)] = new("archipelago_items", 37, ["skull"]),
+                [new(ItemType.Trap, 9)] = new("archipelago_items", 38, ["blood skull", "bloody skull"]),
+                [new(ItemType.Trap, 10)] = new("archipelago_items", 39, []),
+                [new(ItemType.Trap, 11)] = new("archipelago_items", 40, []),
+                [new(ItemType.Trap, 12)] = new("archipelago_items", 41, []),
+                [new(ItemType.Trap, 13)] = new("archipelago_items", 42, []),
+                [new(ItemType.Trap, 14)] = new("archipelago_items", 43, ["recycle", "refresh", "reload"]),
+                [new(ItemType.Trap, 15)] = new("archipelago_items", 44, []),
             };
+
+            foreach(var (trapType, trapLinks) in TrapHelper.TrapLinks)
+            {
+                Item item = new(ItemType.Trap, (long)trapType!);
+
+                if (SpriteDict.ContainsKey(item))
+                {
+                    var synonyms = SpriteDict[item].Synonyms;
+                    synonyms.AddRange(trapLinks);
+                    synonyms.AddRange(trapLinks.Select(t => $"{t} Trap"));
+                }
+            }
 
             RegionID[] dungeonRegions = [
                 RegionID.STREET,
@@ -257,7 +279,7 @@ namespace AnodyneArchipelago.Helpers
         public static (string sprite, int frame, long id) GetTrapSprite(long itemId, long location)
         {
             long seed = Util.StringToIntVal(Plugin.ArchipelagoManager!.GetSeed()) + itemId + location;
-            (string sprite, int frame, long id)[] itemList = [.. SpriteDict.Where(s => trapItemTypes.Contains(s.Key.Type)).Select(s => (s.Value.Sprite, s.Value.Frame, s.Key.ID))];
+            (string sprite, int frame, long id)[] itemList = [.. SpriteDict.Where(s => TrapItemTypes.Contains(s.Key.Type)).Select(s => (s.Value.Sprite, s.Value.Frame, s.Key.ID))];
 
             if (seed < 0)
             {
@@ -308,7 +330,7 @@ namespace AnodyneArchipelago.Helpers
         }
     }
 
-    public record ItemSpriteInfo(string Sprite, int Frame, string[] Synonyms)
+    public record ItemSpriteInfo(string Sprite, int Frame, List<string> Synonyms)
     {
         public bool ContainsSynonym(string itemName)
         {

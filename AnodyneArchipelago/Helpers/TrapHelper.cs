@@ -60,7 +60,7 @@ namespace AnodyneArchipelago.Helpers
         private MethodInfo? _hurtMethod = typeof(Player).GetMethod("ReceiveDamage", BindingFlags.NonPublic | BindingFlags.Instance);
         private List<ArchipelagoPacketBase> _trapPackages = [];
 
-        private List<(TrapType? trapType, string[] trapLinks)> _trapLinks = [
+        public static List<(TrapType? trapType, string[] trapLinks)> TrapLinks = [
             (TrapType.Gas, [
                 "Poison",
                 "Reverse Controls",
@@ -188,7 +188,7 @@ namespace AnodyneArchipelago.Helpers
             }
             else
             {
-                trapType = _trapLinks.FirstOrDefault(t => t.trapLinks.Any(tl => tl.Equals(trapName, StringComparison.InvariantCultureIgnoreCase))).trapType;
+                trapType = TrapLinks.FirstOrDefault(t => t.trapLinks.Any(tl => tl.Equals(trapName, StringComparison.InvariantCultureIgnoreCase))).trapType;
             }
 
             if (trapType != null && _enabledTraps.Contains(trapType.Value))
@@ -201,7 +201,7 @@ namespace AnodyneArchipelago.Helpers
                 }
 
                 Item item = new(ItemType.Trap, (int)trapType.Value);
-                SpriteTreasure treasure = SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), item.ID, manager.GetPlayer(), true, Archipelago.MultiClient.Net.Enums.ItemFlags.Trap);
+                SpriteTreasure treasure = SpriteTreasure.Get(Plugin.Player.Position - new Vector2(2, 4), item.ID, manager.GetPlayer(), true, Archipelago.MultiClient.Net.Enums.ItemFlags.Trap);
 
                 treasure.GetTreasure();
                 SpawnEntity(treasure);

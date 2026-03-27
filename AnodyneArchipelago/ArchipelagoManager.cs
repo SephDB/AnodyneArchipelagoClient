@@ -761,7 +761,7 @@ namespace AnodyneArchipelago
                 message += " But it didn't have any effect.";
             }
 
-            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), itemInfo.ID, GetPlayer(), true, item.Flags);
+            treasure ??= SpriteTreasure.Get(Plugin.Player.Position - new Vector2(2, 4), itemInfo.ID, GetPlayer(), true, item.Flags);
 
             treasure.GetTreasure();
             yield return new EntityEvent(Enumerable.Repeat(treasure, 1));
