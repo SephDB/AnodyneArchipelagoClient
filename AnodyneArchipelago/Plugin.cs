@@ -21,7 +21,7 @@ namespace AnodyneArchipelago
         public static Player Player => (Player)playerField.GetValue(Game?.CurrentState as PlayState)!;
         public static ArchipelagoManager? ArchipelagoManager = null;
 
-        public const string Version = "0.7.0";
+        public const string Version = "0.7.1";
 
         public void Load()
         {
@@ -33,7 +33,7 @@ namespace AnodyneArchipelago
 
         public static bool ReadyToReceive()
         {
-            if (Game?.CurrentState is PlayState p)
+            if (Game?.CurrentState is PlayState p && Player != null)
             {
                 bool hasStates = (typeof(PlayState).GetField("_childStates", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p) as List<State>)!.Count != 0;
                 PlayStateState s = (PlayStateState)typeof(PlayState).GetField("_state", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(p)!;

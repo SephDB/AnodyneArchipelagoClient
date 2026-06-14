@@ -507,14 +507,14 @@ namespace AnodyneArchipelago
             {
                 Task.Run(() => _session.Locations.CompleteLocationChecksAsync([.. _checked.Except(_session.Locations.AllLocationsChecked)])).ConfigureAwait(false);
 
-                ScoutedItemInfo item = Plugin.ArchipelagoManager!.GetScoutedLocation(location)!;
+                ScoutedItemInfo item = GetScoutedLocation(location)!;
                 long itemId = item.ItemId;
                 string itemName = GetItemName(itemId, GetPlayer());
                 int player = item.Player;
 
                 DebugLogger.AddInfo($"Sent {itemName} ({itemId}) found at {GetLocationName(location, GetGameName(player))} ({location}) to {GetPlayerName(player)} ({player}).");
 
-                if (!item.IsReceiverRelatedToActivePlayer)
+                if (!item.IsReceiverRelatedToActivePlayer && Plugin.Player != null)
                 {
                     BaseTreasure treasure = SpriteTreasure.Get(Plugin.Player.Position - new Vector2(4, 4), item.ItemId, item.Player, item.IsReceiverRelatedToActivePlayer, item.Flags);
                     SpawnEntity(treasure);
